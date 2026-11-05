@@ -58,15 +58,13 @@ export function QcCheckTable({
   return (
     <div className={cn('flex flex-col h-full min-h-0', className)}>
       <DataTableFrame className="flex-1 min-h-0">
-        <table className="w-full min-w-[1180px] table-fixed text-left border-separate border-spacing-0">
+        <table className="w-full min-w-[920px] table-fixed text-left border-separate border-spacing-0">
           <colgroup>
             <col className="w-8" />
-            <col className="w-[210px]" />
-            <col className="w-[170px]" />
-            <col className="w-[145px]" />
-            <col className="w-[280px]" />
-            <col className="w-[260px]" />
-            <col className="w-[145px]" />
+            <col className="w-[230px]" />
+            <col className="w-[180px]" />
+            <col className="w-[160px]" />
+            <col className="w-auto min-w-[320px]" />
           </colgroup>
           <thead className="sticky top-0 z-40 bg-muted">
             <tr className="bg-muted hover:bg-muted [&>th]:h-9 [&>th]:py-1.5 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground [&>th]:border-b [&>th]:border-border/80 [&>th]:whitespace-nowrap">
@@ -79,28 +77,20 @@ export function QcCheckTable({
                 />
               </th>
               {/* Nhân sự: Sticky left-8 */}
-              <th className="sticky top-0 left-8 z-50 w-[210px] min-w-[195px] px-2.5 bg-muted text-left border-b border-border/80">
+              <th className="sticky top-0 left-8 z-50 w-[230px] min-w-[210px] px-2.5 bg-muted text-left border-b border-border/80">
                 Nhân sự / Đối tượng
               </th>
               {/* Vị trí / Bối cảnh */}
-              <th className="sticky top-0 z-40 bg-muted w-[170px] min-w-[150px] px-2.5 text-left border-b border-border/80">
+              <th className="sticky top-0 z-40 bg-muted w-[180px] min-w-[160px] px-2.5 text-left border-b border-border/80">
                 Vị trí / Bối cảnh
               </th>
               {/* Thống kê lỗi */}
-              <th className="sticky top-0 z-40 bg-muted w-[145px] min-w-[135px] px-2.5 text-left border-b border-border/80">
-                Thống kê lỗi (30 ngày)
+              <th className="sticky top-0 z-40 bg-muted w-[160px] min-w-[145px] px-2.5 text-left border-b border-border/80">
+                Thống kê lỗi (Trong tháng)
               </th>
               {/* Thẻ vi phạm */}
-              <th className="sticky top-0 z-40 bg-muted w-[280px] min-w-[240px] px-2.5 text-left border-b border-border/80">
+              <th className="sticky top-0 z-40 bg-muted min-w-[320px] px-2.5 text-left border-b border-border/80">
                 Thẻ vi phạm (QC Tags)
-              </th>
-              {/* Xử lý gần nhất */}
-              <th className="sticky top-0 z-40 bg-muted w-[260px] min-w-[220px] px-2.5 text-left border-b border-border/80">
-                Xử lý gần nhất
-              </th>
-              {/* Trạng thái */}
-              <th className="sticky top-0 z-40 bg-muted w-[145px] min-w-[135px] px-2.5 text-left border-b border-border/80">
-                Trạng thái
               </th>
             </tr>
           </thead>

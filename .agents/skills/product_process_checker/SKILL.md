@@ -77,6 +77,17 @@ Tài liệu nghiệp vụ phải được diễn đạt bằng **ngôn ngữ t�
 
 ---
 
+### 2.5. Tiêu chuẩn Tài liệu Nâng cấp / Điều chỉnh Giao diện & Nghiệp vụ (Upgrade Specs)
+Tham chiếu mẫu Confluence chuẩn: [https://rinoeduai.atlassian.net/wiki/x/M4A_Cg](https://rinoeduai.atlassian.net/wiki/x/M4A_Cg) và tệp mẫu vàng `docs/templates/TEMPLATE-US-UPGRADE.md`:
+- **Bảng điều chỉnh 5 cột chuẩn:** `Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Nội dung điều chỉnh`. Cột "Nội dung điều chỉnh" phải phân định rõ ràng: Bổ sung, Điều chỉnh, Lược bỏ (đối với mục Lược bỏ bắt buộc bôi chữ đỏ nổi bật `<span style="color: rgb(255,86,48);">Lược bỏ...</span>` ở cả Cột 1 và Cột 5).
+- **Cấu trúc 4 phần tinh giản:**
+  1. **Changelog & Global Rules:** Bảng lịch sử thay đổi 3 cột và các ràng buộc toàn cục (Bảo toàn dữ liệu `[RULE-XXX-01]`, Che số điện thoại `[RULE-XXX-02]`, Số đếm động đi theo bộ lọc `[RULE-XXX-03]`, Lọc nháp đa tầng `[RULE-XXX-04]`).
+  2. **Mô tả giao diện:** Đính kèm link Figma và phân rã các cụm giao diện thành các tiểu mục với bảng 5 cột chuẩn.
+  3. **Khối chức năng chi tiết:** Phân nhóm Action, mỗi Action gồm luồng kích hoạt và các tiêu chí nghiệm thu (AC) logic Giả sử - Khi - Thì.
+  4. **Các trường hợp góc cạnh:** Phân chia thành từng nhóm chuyên biệt (`Nhóm 1`, `Nhóm 2`, `Nhóm 3`...), tối thiểu $\ge 5$ trường hợp cụ thể (`[CASE-01]`, `[CASE-02]...`), mỗi trường hợp gồm Tình huống và Xử lý.
+
+---
+
 ## 3. Quy trình thực hiện báo cáo kết quả
 
 Khi nhận lệnh kiểm duyệt, Agent thực hiện theo 3 bước:

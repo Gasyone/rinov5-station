@@ -1,21 +1,45 @@
 'use client'
 
-import { FileText, Check, X, ArrowRightLeft, MoreHorizontal, Eye, RefreshCw, Plus } from 'lucide-react'
+import { useState } from 'react'
+import {
+  FileText,
+  Check,
+  X,
+  ArrowRightLeft,
+  MoreHorizontal,
+  Eye,
+  RefreshCw,
+  Plus,
+  MapPin,
+  ChevronDown,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TableCell, TableRow } from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { StatusBadge, PersonnelCell, StudentProfileHoverCard, ContactCell, type StudentProfileItem } from '@/components/shared'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  StatusBadge,
+  PersonnelCell,
+  StudentProfileHoverCard,
+  ContactCell,
+  type StudentProfileItem,
+} from '@/components/shared'
 import { SessionHoverCard } from '@/components/screens/calendar/SessionHoverCard'
+import { SYSTEM_BRANCHES } from '@/components/controls'
 import { cn } from '@/lib/utils'
 import type { TrialClass } from '@/mocks/trialClasses'
 import {
   getInitials,
+  getAvatarColor,
   getTrialFamilyMembers,
   getTrialStatusLabel,
   formatSessionDateTimeRange,
@@ -25,7 +49,6 @@ import {
   getProgramAndLevel,
 } from './trialClassHelpers'
 
-
 interface TrialClassTableRowProps {
   trial: TrialClass
   index: number
@@ -34,28 +57,28 @@ interface TrialClassTableRowProps {
   onToggle: (id: string, checked: boolean) => void
   onRowClick: (id: string) => void
   onCopy: (text: string, key: string) => void
-  onRequestReschedule?: (id: string) => void
   onOpenAssign?: (id: string) => void
   onOpenAssignReschedule?: (id: string) => void
   onApprove?: (id: string) => void
   onReject?: (id: string) => void
+  onChangeBranch?: (trialId: string, newBranch: string) => void
 }
 
 export function TrialClassTableRow({
   trial,
   index,
   isSelected,
-  copiedKey,
   onToggle,
   onRowClick,
-  onCopy,
   onOpenAssign,
   onOpenAssignReschedule,
   onApprove,
   onReject,
+  onChangeBranch,
 }: TrialClassTableRowProps) {
+  const [branchPopoverOpen, setBranchPopoverOpen] = useState(false)
   const familyMembers = getTrialFamilyMembers(trial)
-  const primaryFamilyMember = familyMembers.find((member: import('@/mocks/trialClasses').TrialClassFamilyMember) => member.isPrimary) ?? familyMembers[0]
+  const primaryFamilyMember = familyMembers.find((member) => member.isPrimary) ?? familyMembers[0]
   const sessionData = buildTrialSessionData(trial)
 
   const studentProfile: StudentProfileItem = {
@@ -66,67 +89,79 @@ export function TrialClassTableRow({
     parentPhone: primaryFamilyMember.phone || trial.familyPhone,
   }
 
-  const isEven = index % 2 === 1
-  const rowBgClass = isEven ? 'bg-muted/30 dark:bg-muted/15' : 'bg-background'
-  const hoverBgClass = 'group-hover:bg-accent/40 dark:group-hover:bg-accent/30'
+  // Zebra striping synchronized with OperationsAlert / StudentsTable standard
+  const isEvenRow = typeof index === 'number' ? index % 2 === 1 : false
+  const stickyBgClass = isSelected
+    ? '!bg-sky-100 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 group-hover:bg-slate-100 dark:group-hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 group-hover:bg-slate-100 dark:group-hover:bg-zinc-800'
+  const rowBgClass = isSelected
+    ? '!bg-sky-50 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 hover:bg-slate-100 dark:hover:bg-zinc-800'
 
-  // Opaque solid background specifically for sticky fixed cells to prevent bleed-through when scrolling
-  const stickyBgClass = isEven
-    ? 'bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] dark:bg-[color-mix(in_srgb,var(--muted)_25%,var(--background))]'
-    : 'bg-background'
-  const stickyHoverClass = 'group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
+  const currentBranch = trial.branch || trial.school || 'Chưa chọn cơ sở'
 
   return (
-    <TableRow
-      className={cn(
-        'group cursor-pointer border-b border-border/60 transition-colors h-[48px] [&>td]:py-1.5 [&>td]:px-2.5',
-        rowBgClass,
-        hoverBgClass
-      )}
+    <tr
       onClick={() => onRowClick(trial.id)}
+      className={cn(
+        'group cursor-pointer transition-colors align-middle [&>td]:py-1 [&>td]:px-2 xl:[&>td]:px-2.5 2xl:[&>td]:py-2 border-b-0',
+        rowBgClass
+      )}
     >
-      <TableCell
+      {/* 1. Checkbox */}
+      <td
         className={cn(
           'sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center px-1 transition-colors',
-          stickyBgClass,
-          stickyHoverClass
+          stickyBgClass
         )}
-        onClick={(event) => event.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onToggle(trial.id, Boolean(checked))}
+          aria-label={`Chọn ${trial.studentName}`}
         />
-      </TableCell>
+      </td>
 
-      {/* Cột Học viên: Tên (N), Tuổi & Năm sinh, Trình độ dự kiến, 1 nút action menu */}
-      <TableCell
+      {/* 2. Cột Học viên */}
+      <td
         className={cn(
-          'sticky left-8 z-30 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden transition-colors',
-          stickyBgClass,
-          stickyHoverClass
+          'sticky left-8 z-30 w-[230px] min-w-[210px] xl:w-[240px] 2xl:w-[260px] px-2 xl:px-2.5 transition-colors cursor-pointer',
+          stickyBgClass
         )}
       >
-        <div className="relative z-10 max-w-full overflow-hidden pr-7">
-          <div className="flex min-w-0 items-center gap-2">
-            <div onClick={(event) => event.stopPropagation()}>
+        <div className="relative flex items-center justify-between gap-2 min-w-0 pr-1 group-hover:pr-8">
+          <div className="flex items-center gap-2 2xl:gap-2.5 min-w-0 flex-1">
+            <div onClick={(e) => e.stopPropagation()}>
               <StudentProfileHoverCard student={studentProfile} align="start" side="right">
-                <div className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md bg-muted text-xs font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary">
+                <div
+                  className={cn(
+                    'h-6.5 w-6.5 2xl:h-8 2xl:w-8 rounded flex items-center justify-center text-xs 2xl:text-sm font-medium shrink-0 hover:opacity-80 transition-opacity cursor-pointer',
+                    getAvatarColor(trial.customerId || trial.id)
+                  )}
+                >
                   {getInitials(trial.studentName)}
                 </div>
               </StudentProfileHoverCard>
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p
-                className="truncate font-medium text-xs text-foreground cursor-pointer hover:text-primary hover:underline leading-tight"
+                className="font-medium text-foreground text-xs 2xl:text-sm truncate hover:underline hover:text-primary leading-tight cursor-pointer"
                 title={`${trial.studentName} (${getAttemptNumber(trial.attempt)})`}
                 onClick={() => onRowClick(trial.id)}
               >
-                {trial.studentName} <span className="text-muted-foreground font-normal">({getAttemptNumber(trial.attempt)})</span>
+                {trial.studentName}{' '}
+                <span className="text-muted-foreground font-normal">
+                  ({getAttemptNumber(trial.attempt)})
+                </span>
               </p>
               <p
-                className="truncate text-xs text-muted-foreground leading-tight mt-0.5"
+                className="truncate text-xs text-muted-foreground font-normal leading-none mt-0.5 2xl:mt-1"
                 title={getStudentAgeText(trial)}
               >
                 {getStudentAgeText(trial)}
@@ -134,10 +169,10 @@ export function TrialClassTableRow({
             </div>
           </div>
 
-          {/* 1 Nút thao tác duy nhất, mở list dropdown menu */}
+          {/* Action dropdown on hover */}
           <div
-            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(event) => event.stopPropagation()}
+            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            onClick={(e) => e.stopPropagation()}
           >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -151,7 +186,7 @@ export function TrialClassTableRow({
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44 text-xs">
+              <DropdownMenuContent align="end" className="w-48 text-xs">
                 {trial.status === 'pending_approval' && (
                   trial.sessions.length > 0 ? (
                     onApprove && (
@@ -212,6 +247,13 @@ export function TrialClassTableRow({
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
+                  onClick={() => setBranchPopoverOpen(true)}
+                  className="cursor-pointer text-xs"
+                >
+                  <MapPin className="h-3.5 w-3.5 mr-2 text-rose-500" />
+                  Đổi cơ sở tiếp nhận
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => onRowClick(trial.id)}
                   className="cursor-pointer text-xs"
                 >
@@ -222,10 +264,13 @@ export function TrialClassTableRow({
             </DropdownMenu>
           </div>
         </div>
-      </TableCell>
+      </td>
 
-      {/* Cột Liên hệ: Sử dụng ContactCell chuẩn Design System */}
-      <TableCell onClick={(event) => event.stopPropagation()}>
+      {/* 3. Cột Liên hệ */}
+      <td
+        className="w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2 xl:px-2.5"
+        onClick={(event) => event.stopPropagation()}
+      >
         <ContactCell
           name={primaryFamilyMember.name || trial.parentName}
           phone={primaryFamilyMember.phone || trial.familyPhone}
@@ -235,19 +280,93 @@ export function TrialClassTableRow({
           showPhoneIcon={false}
           showCallButton={false}
           showFamilyIcon={false}
+          nameClassName="text-xs 2xl:text-sm font-normal text-foreground"
+          phoneClassName="text-xs 2xl:text-xs font-mono text-muted-foreground"
           additionalContacts={
             trial.familyMembers && trial.familyMembers.length > 1
               ? trial.familyMembers.map((m) => ({ name: m.name, phone: m.phone }))
               : undefined
           }
         />
-      </TableCell>
+      </td>
 
-      {/* Cột Lớp ghép & Buổi học: Dòng 1 là lịch (hover xem detail buổi), Dòng 2 là Chương trình & Level của lớp */}
-      <TableCell>
+      {/* 4. Cột Nhu cầu đăng ký (CƠ SỞ XẾP LỚP - Có cơ chế đổi cơ sở) */}
+      <td className="w-[230px] min-w-[210px] xl:w-[250px] 2xl:w-[270px] px-2 xl:px-2.5">
+        <div className="space-y-1 min-w-0">
+          {/* Dòng 1: Chương trình & Môn học */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-medium text-xs text-foreground truncate" title={trial.program}>
+              {trial.program || 'Chưa chọn CT'}
+            </span>
+            {trial.subject && (
+              <span className="text-xs text-muted-foreground font-normal">
+                ({trial.subject})
+              </span>
+            )}
+          </div>
+
+          {/* Dòng 2: Cơ sở tiếp nhận + Cơ chế đổi cơ sở nhanh */}
+          <div className="flex items-center gap-1 min-w-0" onClick={(e) => e.stopPropagation()}>
+            <Popover open={branchPopoverOpen} onOpenChange={setBranchPopoverOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/80 px-1.5 py-0.5 rounded border border-border/70 transition-colors cursor-pointer max-w-full truncate bg-background/80 shadow-2xs"
+                  title={`Cơ sở hiện tại: ${currentBranch}. Bấm để đổi cơ sở tiếp nhận.`}
+                >
+                  <MapPin className="h-3 w-3 text-rose-500 shrink-0" />
+                  <span className="truncate font-normal text-xs">{currentBranch}</span>
+                  <ChevronDown className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-56 p-1.5 text-xs shadow-md">
+                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-b mb-1">
+                  Chuyển cơ sở tiếp nhận
+                </div>
+                <div className="space-y-0.5 max-h-56 overflow-y-auto">
+                  {SYSTEM_BRANCHES.map((b) => {
+                    const isCurrent = (trial.branch || trial.school) === b
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => {
+                          setBranchPopoverOpen(false)
+                          onChangeBranch?.(trial.id, b)
+                        }}
+                        className={cn(
+                          'w-full flex items-center justify-between px-2 py-1.5 rounded text-xs text-left transition-colors cursor-pointer',
+                          isCurrent
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'hover:bg-muted text-foreground'
+                        )}
+                      >
+                        <span className="truncate">{b}</span>
+                        {isCurrent && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Dòng 3: Ghi chú lịch rảnh / Nhu cầu xếp lớp */}
+          {trial.notes ? (
+            <p className="text-xs text-muted-foreground truncate font-normal leading-tight" title={trial.notes}>
+              <span className="text-amber-600 dark:text-amber-400 font-medium mr-1">Lưu ý:</span>
+              {trial.notes}
+            </p>
+          ) : (
+            <span className="text-xs text-muted-foreground/60 italic font-normal">Chưa có ghi chú ca rảnh</span>
+          )}
+        </div>
+      </td>
+
+      {/* 5. Cột Lớp ghép & Buổi học (Thực tế bố trí) */}
+      <td className="w-[200px] min-w-[180px] xl:w-[220px] 2xl:w-[240px] px-2 xl:px-2.5">
         {trial.sessions.length > 0 ? (
           <div className="space-y-0.5">
-            {/* Dòng 1: Lịch (Hover ra detail buổi) */}
             <div onClick={(e) => e.stopPropagation()}>
               {sessionData ? (
                 <SessionHoverCard session={sessionData} side="bottom">
@@ -262,7 +381,6 @@ export function TrialClassTableRow({
               )}
             </div>
 
-            {/* Dòng 2: Chương trình & Level của lớp */}
             <p className="truncate text-xs text-muted-foreground font-normal leading-tight mt-0.5">
               {getProgramAndLevel(trial)}
             </p>
@@ -277,14 +395,17 @@ export function TrialClassTableRow({
             </p>
           </div>
         ) : (
-          <span className="text-xs text-muted-foreground italic leading-tight">
-            Chưa xếp lịch
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal border border-dashed border-border bg-muted/30 text-muted-foreground">
+            Chưa ghép lớp
           </span>
         )}
-      </TableCell>
+      </td>
 
-      {/* Cột Nhận xét / Thao tác: Hiển thị các hành động duyệt/từ chối, đổi lịch, ghép lại theo trạng thái */}
-      <TableCell onClick={(event) => event.stopPropagation()}>
+      {/* 6. Cột Nhận xét / Thao tác */}
+      <td
+        className="w-[150px] min-w-[135px] xl:w-[160px] 2xl:w-[175px] px-2 xl:px-2.5"
+        onClick={(event) => event.stopPropagation()}
+      >
         {trial.status === 'pending_approval' ? (
           <div className="flex items-center gap-1.5 flex-wrap">
             {trial.sessions.length > 0 ? (
@@ -388,19 +509,19 @@ export function TrialClassTableRow({
         ) : (
           <span className="text-muted-foreground text-xs italic font-normal">—</span>
         )}
-      </TableCell>
+      </td>
 
-      {/* Cột Trạng thái: Đặt trước Người phụ trách */}
-      <TableCell className="w-28 min-w-28 max-w-32">
+      {/* 7. Cột Trạng thái */}
+      <td className="w-[125px] min-w-[115px] xl:w-[130px] 2xl:w-[140px] px-2 xl:px-2.5">
         <StatusBadge
           status={trial.status === 'reschedule' ? 'confirmed' : trial.status}
           label={getTrialStatusLabel(trial.status)}
           className="font-normal whitespace-nowrap"
         />
-      </TableCell>
+      </td>
 
-      {/* Cột Người phụ trách: Đặt sau Trạng thái */}
-      <TableCell>
+      {/* 8. Cột Người phụ trách */}
+      <td className="w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2 xl:px-2.5">
         {trial.owner && trial.owner !== '—' ? (
           <div className="space-y-0.5">
             <PersonnelCell
@@ -408,14 +529,17 @@ export function TrialClassTableRow({
               size="xs"
               mode="single"
             />
-            <p className="truncate text-xs text-muted-foreground font-normal leading-tight mt-0.5" title={trial.branch || trial.school}>
+            <p
+              className="truncate text-xs text-muted-foreground font-normal leading-tight mt-0.5"
+              title={trial.branch || trial.school}
+            >
               {trial.branch || trial.school}
             </p>
           </div>
         ) : (
           <span className="text-muted-foreground text-xs italic font-normal">—</span>
         )}
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   )
 }

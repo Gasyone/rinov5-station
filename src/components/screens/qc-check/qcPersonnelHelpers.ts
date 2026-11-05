@@ -11,104 +11,179 @@ import { isToday as checkIsToday } from './qcCheckHelpers'
 import { getStatusColors } from '@/lib/statusColors'
 
 export function getPersonnelProfile(cleanName: string, targetGroup?: string): QcPersonnelProfile {
-  if (cleanName.includes('Hoàng Minh')) {
+  if (cleanName.includes('Trần Hồng Thiệp')) {
     return {
-      code: 'GV-0012',
-      phone: '0988 123 456',
-      email: 'minh.hoang@rinoedu.vn',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-      department: 'Tổ Giáo viên Tiếng Anh',
-      directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
-      position: 'Giáo viên',
-      subject: 'Robotics & STEM',
-      branches: ['RinoEdu Nguyễn Tuân', 'RinoEdu Hà Đông'],
-    }
-  }
-  if (cleanName.includes('Quang Huy')) {
-    return {
-      code: 'GV-0025',
-      phone: '0977 234 567',
-      email: 'huy.tq@rinoedu.vn',
+      code: 'GV-0018',
+      phone: '0982 112 334',
+      email: 'thiep.th@rinoedu.vn',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
       department: 'Tổ Giáo viên Toán Tư Duy',
-      directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
-      position: 'Giáo viên',
-      subject: 'Toán Tư Duy',
-      branches: ['RinoEdu Linh Đàm', 'RinoEdu Cầu Giấy'],
+      directManager: 'Trưởng bộ môn Toán',
+      position: 'Giáo viên Toán',
+      subject: 'Toán tư duy',
+      branches: ['Linh Đàm'],
     }
   }
-  if (cleanName.includes('Thu Thảo')) {
+  if (cleanName.includes('Đỗ Bảo Ngọc')) {
     return {
-      code: 'GV-0031',
-      phone: '0912 345 678',
-      email: 'thao.ht@rinoedu.vn',
+      code: 'GV-0021',
+      phone: '0975 223 445',
+      email: 'ngoc.db@rinoedu.vn',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-      department: 'Tổ Tiếng Anh Giao Tiếp',
-      directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
-      position: 'Giáo viên',
-      subject: 'Tiếng Anh',
-      branches: ['RinoEdu Smart City', 'RinoEdu Cầu Giấy'],
+      department: 'Tổ Giáo viên Toán Tư Duy',
+      directManager: 'Trưởng bộ môn Toán',
+      position: 'Giáo viên Toán',
+      subject: 'Toán tư duy',
+      branches: ['Linh Đàm'],
     }
   }
-  if (cleanName.includes('Thùy Dung')) {
+  if (cleanName.includes('Trúc Anh')) {
     return {
-      code: 'GV-0044',
-      phone: '0934 567 891',
-      email: 'dung.lt@rinoedu.vn',
+      code: 'TA-0005',
+      phone: '0963 334 556',
+      email: 'trucanh.ta@rinoedu.vn',
       avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
-      department: 'Tổ Tiếng Anh Mầm Non',
-      directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
-      position: 'Giáo viên',
-      subject: 'Tiếng Anh Mầm Non',
-      branches: ['RinoEdu Smart City'],
+      department: 'Đội ngũ Trợ giảng Cơ sở',
+      directManager: 'Quản lý vận hành Tonkin',
+      position: 'Trợ giảng (TA)',
+      subject: 'Toán tư duy',
+      branches: ['Tonkin'],
     }
   }
-  if (cleanName.includes('Minh Tuấn') || cleanName.includes('Tuấn')) {
+  if (cleanName.includes('FATIH KESKIN')) {
     return {
-      code: 'KT-0104',
-      phone: '0905 456 789',
-      email: 'tuan.vm@rinoedu.vn',
+      code: 'GV-NN-003',
+      phone: '0901 998 877',
+      email: 'fatih.keskin@rinoedu.vn',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-      department: 'Bộ phận Kỹ thuật & CSVC',
-      directManager: 'Trần Văn Kiên (Trưởng ban QC)',
-      position: 'Kỹ thuật viên CSVC',
-      branches: ['RinoEdu Smart City', 'RinoEdu Nguyễn Tuân'],
+      department: 'Tổ Giáo viên Bản ngữ',
+      directManager: 'Giám đốc Học thuật',
+      position: 'Giáo viên Bản ngữ (Foreign Teacher)',
+      subject: 'Tiếng Anh',
+      branches: ['Vin SA1', 'Linh Đàm'],
     }
   }
-  if (cleanName.includes('Thị Hương') || cleanName.includes('Hương')) {
+  if (cleanName.includes('Roman')) {
     return {
-      code: 'CS-0205',
-      phone: '0966 567 890',
-      email: 'huong.lt@rinoedu.vn',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-      department: 'Bộ phận Chăm sóc Khách hàng',
-      directManager: 'Lê Thị Hạnh (Trưởng phòng CSM)',
-      position: 'Chuyên viên CSM',
-      branches: ['RinoEdu Linh Đàm'],
-    }
-  }
-  if (cleanName.includes('Đức Thắng') || cleanName.includes('Thắng')) {
-    return {
-      code: 'CS-0211',
-      phone: '0933 678 901',
-      email: 'thang.pd@rinoedu.vn',
-      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
-      department: 'Bộ phận Lễ tân & Đón tiếp',
-      directManager: 'Lê Thị Hạnh (Trưởng phòng CSM)',
-      position: 'Chuyên viên CSM',
-      branches: ['RinoEdu Smart City', 'RinoEdu Hà Đông'],
-    }
-  }
-  if (cleanName.includes('Văn Tùng') || cleanName.includes('Tùng')) {
-    return {
-      code: 'QL-0088',
-      phone: '0944 789 012',
-      email: 'tung.nv@rinoedu.vn',
+      code: 'GV-NN-005',
+      phone: '0903 887 766',
+      email: 'roman.teacher@rinoedu.vn',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-      department: 'Ban Quản trị Cơ sở',
-      directManager: 'Ban Giám đốc',
+      department: 'Tổ Giáo viên Bản ngữ',
+      directManager: 'Giám đốc Học thuật',
+      position: 'Giáo viên Kindie Bản ngữ',
+      subject: 'Kindie',
+      branches: ['170 Nguyễn Tuân'],
+    }
+  }
+  if (cleanName.includes('Maria')) {
+    return {
+      code: 'GV-NN-008',
+      phone: '0905 776 655',
+      email: 'maria.teacher@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      department: 'Tổ Giáo viên Bản ngữ',
+      directManager: 'Giám đốc Học thuật',
+      position: 'Giáo viên Kindie',
+      subject: 'Kindie',
+      branches: ['Vin SA1'],
+    }
+  }
+  if (cleanName.includes('Newway')) {
+    return {
+      code: 'DT-NW-01',
+      phone: '0912 999 888',
+      email: 'contact@newway-edu.vn',
+      avatar: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150',
+      department: 'Đối tác Cung ứng Giáo viên Newway',
+      directManager: 'Trưởng ban Quản lý Đối tác',
+      position: 'Giáo viên Đối tác',
+      subject: 'Tiếng Anh',
+      branches: ['Tonkin', 'Vin SA1'],
+    }
+  }
+  if (cleanName.includes('QuangBD')) {
+    return {
+      code: 'KT-0012',
+      phone: '0934 112 233',
+      email: 'quang.bd@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
+      department: 'Bộ phận Quản trị CSVC & Kỹ thuật',
+      directManager: 'Giám đốc Chi nhánh Tonkin',
+      position: 'Kỹ thuật viên CSVC',
+      branches: ['Tonkin'],
+    }
+  }
+  if (cleanName.includes('VanLT4')) {
+    return {
+      code: 'KT-0014',
+      phone: '0945 223 344',
+      email: 'van.lt4@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+      department: 'Bộ phận Quản lý Cơ sở',
+      directManager: 'Giám đốc Chi nhánh Nguyễn Tuân',
       position: 'Quản lý Cơ sở',
-      branches: ['RinoEdu Smart City'],
+      branches: ['170 Nguyễn Tuân'],
+    }
+  }
+  if (cleanName.includes('ChiTTK3')) {
+    return {
+      code: 'CS-0033',
+      phone: '0967 334 455',
+      email: 'chi.ttk3@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+      department: 'Bộ phận Chăm sóc Khách hàng & Lễ tân',
+      directManager: 'Trưởng nhóm CSM',
+      position: 'Chuyên viên CS / Lễ tân',
+      branches: ['170 Nguyễn Tuân'],
+    }
+  }
+  if (cleanName.includes('HauTB')) {
+    return {
+      code: 'SL-0082',
+      phone: '0978 445 566',
+      email: 'hau.tb@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+      department: 'Bộ phận Tuyển sinh (Sale)',
+      directManager: 'Trưởng nhóm Tuyển sinh',
+      position: 'Chuyên viên Tư vấn Tuyển sinh',
+      branches: ['170 Nguyễn Tuân'],
+    }
+  }
+  if (cleanName.includes('ThuyPT9')) {
+    return {
+      code: 'SL-0099',
+      phone: '0989 556 677',
+      email: 'thuy.pt9@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+      department: 'Bộ phận Tuyển sinh (Sale)',
+      directManager: 'Trưởng nhóm Tuyển sinh',
+      position: 'Chuyên viên Tư vấn Tuyển sinh',
+      branches: ['Tonkin', 'KDV'],
+    }
+  }
+  if (cleanName.includes('MaiNTN6')) {
+    return {
+      code: 'SL-0066',
+      phone: '0912 667 788',
+      email: 'mai.ntn6@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      department: 'Bộ phận Tuyển sinh (Sale)',
+      directManager: 'Trưởng nhóm Tuyển sinh',
+      position: 'Chuyên viên Tư vấn Tuyển sinh',
+      branches: ['KDV'],
+    }
+  }
+  if (cleanName.includes('HongPT')) {
+    return {
+      code: 'SL-0022',
+      phone: '0923 778 899',
+      email: 'hong.pt@rinoedu.vn',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
+      department: 'Bộ phận Tuyển sinh (Sale)',
+      directManager: 'Trưởng nhóm Tuyển sinh',
+      position: 'Chuyên viên Tư vấn Tuyển sinh',
+      branches: ['Linh Đàm'],
     }
   }
 
@@ -119,9 +194,9 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
     email: 'personnel@rinoedu.vn',
     department: 'Cơ sở chi nhánh',
     directManager: 'Quản lý phụ trách',
-    position: targetGroup === 'teacher' ? 'Giáo viên' : targetGroup === 'facility' ? 'Kỹ thuật viên CSVC' : 'Chuyên viên CSM',
+    position: targetGroup === 'teacher' ? 'Giáo viên' : targetGroup === 'facility' ? 'Kỹ thuật viên CSVC' : 'Chuyên viên Vận hành / Sale',
     subject: targetGroup === 'teacher' ? 'Tiếng Anh' : undefined,
-    branches: ['RinoEdu Smart City'],
+    branches: ['170 Nguyễn Tuân', 'Linh Đàm', 'Vin SA1', 'Tonkin', 'KDV'],
   }
 }
 
@@ -302,13 +377,23 @@ export function groupIncidentsByPersonnel(incidents: QcIncident[]): QcPersonnelG
 
     if (inc.targetGroup === 'teacher') {
       rawName = inc.teacherName || inc.assignee
-      role = inc.subject ? `Giáo viên ${inc.subject}` : 'Giáo viên'
+      if (rawName.includes('Trúc Anh') || rawName.includes('Trợ giảng') || rawName.includes('TA')) {
+        role = 'Trợ giảng (TA)'
+      } else if (inc.subject) {
+        role = `Giáo viên ${inc.subject}`
+      } else {
+        role = 'Giáo viên'
+      }
     } else if (inc.targetGroup === 'facility') {
-      rawName = inc.assignee || 'Kỹ thuật cơ sở'
-      role = 'Kỹ thuật cơ sở'
+      rawName = inc.assignee || 'Kỹ thuật & CSVC'
+      role = 'Kỹ thuật & Quản trị CSVC'
     } else if (inc.targetGroup === 'operations') {
-      rawName = inc.csmName || inc.assignee || 'Chuyên viên CSM'
-      role = 'Chuyên viên CSM'
+      rawName = inc.csmName || inc.assignee || 'Chuyên viên CS / Sale'
+      if (rawName.includes('Lễ tân') || rawName.includes('ChiTTK3')) {
+        role = 'Lễ tân & CS'
+      } else {
+        role = 'Chuyên viên Sale / CS'
+      }
     }
 
     const cleanName = formatStaffName(rawName)
@@ -447,11 +532,19 @@ export function groupIncidentsByPersonnel(incidents: QcIncident[]): QcPersonnelG
 
     // Seed mock secondary class for demonstration if only 1 class exists for teachers
     if (group.targetGroup === 'teacher') {
-      if (group.cleanName.includes('Hoàng Minh')) {
-        classSet.add('IELTS Advanced K18')
-        classSet.add('IELTS Focus F02')
-      } else if (group.cleanName.includes('Quang Huy')) {
-        classSet.add('Toán Nâng Cao T6')
+      if (group.cleanName.includes('Trần Hồng Thiệp')) {
+        classSet.add('LD_TOAN_00018')
+        classSet.add('LD_TOAN_00009')
+        classSet.add('LD_TOAN_00030')
+      } else if (group.cleanName.includes('Đỗ Bảo Ngọc')) {
+        classSet.add('LD_TOAN_00031')
+        classSet.add('LD_TOAN_00001')
+      } else if (group.cleanName.includes('Trúc Anh')) {
+        classSet.add('TK_TOAN_00002')
+        classSet.add('TK_TOAN_00013')
+      } else if (group.cleanName.includes('FATIH KESKIN')) {
+        classSet.add('SA1_TA_00011')
+        classSet.add('LD_TA_00019')
       }
     }
     const assignedClasses = Array.from(classSet)
@@ -469,8 +562,9 @@ export function groupIncidentsByPersonnel(incidents: QcIncident[]): QcPersonnelG
     group.locationContext.assignedClasses = assignedClasses
     group.locationContext.roleContext = roleContext
 
-    // Error statistics: 30-day cycle & previous month comparison
-    const current30DaysCount = group.incidents.length
+    // Error statistics: Thống kê lỗi trong tháng & so sánh với tháng trước
+    const currentMonthCount = group.incidents.length
+    const current30DaysCount = currentMonthCount
     const currentOpenCount = activeCount
     let previousMonthCount = 1
     let previousMonthOpenCount = 0
@@ -505,6 +599,7 @@ export function groupIncidentsByPersonnel(incidents: QcIncident[]): QcPersonnelG
     }
 
     group.errorStats = {
+      currentMonthCount,
       current30DaysCount,
       currentOpenCount,
       previousMonthCount,

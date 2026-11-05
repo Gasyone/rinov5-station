@@ -1769,20 +1769,11 @@ export function mapLeadSubjectToBookingProgram(subject?: string): string {
  * Chuyển đổi Khóa học Lead quan tâm sang Chương trình Học thử của Trial Class Modal
  */
 export function mapLeadSubjectToTrialProgram(subject?: string): string {
-  if (!subject) return 'Cambridge Starter'
+  if (!subject) return 'Chương trình Station'
   const lower = subject.toLowerCase()
-  if (lower.includes('toán')) return 'Math Thinking'
-  if (lower.includes('starter')) return 'Cambridge Starter'
-  if (lower.includes('mover')) return 'Cambridge Movers'
-  if (lower.includes('flyer')) return 'Cambridge Flyers'
-  if (lower.includes('ielts')) return 'IELTS Junior'
-  if (lower.includes('giao tiếp') || lower.includes('communication')) return 'Communication Kids'
-  if (lower.includes('phonics')) return 'Phonics'
-  if (lower.includes('stem') || lower.includes('coding')) return 'STEM Coding'
-  if (lower.includes('robot')) return 'STEM Robotics'
-  if (lower.includes('superkids') || lower.includes('nhi đồng')) return 'Cambridge Starter'
-  if (lower.includes('kindy') || lower.includes('mẫu giáo')) return 'English Foundation'
-  return 'Cambridge Starter'
+  if (lower.includes('toán') || lower.includes('math')) return 'Chương trình Toán tư duy'
+  if (lower.includes('grammar') || lower.includes('ngữ pháp')) return 'Chương trình Station Grammar'
+  return 'Chương trình Station'
 }
 
 /**

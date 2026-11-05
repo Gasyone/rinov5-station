@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
 import {
@@ -24,6 +25,7 @@ import {
   toggleWorkSection,
   upsertWorkSlot,
 } from './workRegistrationActions'
+import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
 import { WorkRegistrationEditablePanel } from './WorkRegistrationEditablePanel'
 import { WorkRegistrationMasterRosterPanel } from './WorkRegistrationMasterRosterPanel'
 import { WorkRegistrationSlotDetailDialog } from './WorkRegistrationSlotDetailDialog'
@@ -31,6 +33,7 @@ import { WorkRegistrationStaffPanel } from './WorkRegistrationStaffPanel'
 import { WorkRegistrationToolbar } from './WorkRegistrationToolbar'
 import { WorkRegistrationWarningDialog } from './WorkRegistrationWarningDialog'
 import {
+  buildBranchSummaries,
   buildEmployeeSummaries,
   filterEmployeeSummaries,
   getEmployeeWeekRecords,
@@ -54,8 +57,9 @@ export function WorkRegistrationScreen() {
   const [weekStart] = useState(initialWeek)
   const [records, setRecords] = useState<WorkRegistrationRecord[]>(() => getMockWorkRegistrations(initialWeek))
   const priorityRules = DEFAULT_WORK_PRIORITY_RULES
-  const [activeTab, setActiveTab] = useState<WorkRegistrationTab>('mine')
+  const [activeTab, setActiveTab] = useState<WorkRegistrationTab>('staff')
   const [activeBranch, setActiveBranch] = useState(employees[0]?.branch ?? 'all')
+  const [selectedShifts, setSelectedShifts] = useState<ShiftSection[]>(['morning', 'afternoon', 'evening'])
   const [search, setSearch] = useState('')
   const [jobTitles, setJobTitles] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<WorkRegistrationStatusFilter>('all')
@@ -68,17 +72,23 @@ export function WorkRegistrationScreen() {
   const [branchDetail, setBranchDetail] = useState<{ branch: string; date?: string; dayLabel?: string } | null>(null)
   const [staffPage, setStaffPage] = useState(1)
   const [staffPageSize, setStaffPageSize] = useState(50)
+  const [centerPage, setCenterPage] = useState(1)
+  const [centerPageSize, setCenterPageSize] = useState(DEFAULT_PAGE_SIZE)
 
   const todayKey = toWorkDateKey(new Date())
   const currentWeekStart = useMemo(() => getWorkWeekStart(new Date()), [])
   const weekDays = useMemo(() => getWorkWeekDays(weekStart), [weekStart])
-  const branches = useMemo(
-    () => Array.from(new Set(employees.map((employee) => employee.branch))).sort(),
-    [employees]
-  )
+  const branches = useMemo(() => {
+    const list = Array.from(new Set(employees.map((employee) => employee.branch)))
+    return list.sort((a, b) => {
+      if (a.includes('Chưa có đăng ký')) return 1
+      if (b.includes('Chưa có đăng ký')) return -1
+      return a.localeCompare(b)
+    })
+  }, [employees])
   const subjects = useMemo(
-    () => Array.from(new Set(employees.flatMap((employee) => employee.subjects ?? []))).sort(),
-    [employees]
+    () => ['Toán', 'Tiếng Anh'],
+    []
   )
   const currentEmployeeId = resolveCurrentEmployeeId(userRole)
   const activeEmployeeId = activeTab === 'staff' && delegateEmployeeId ? delegateEmployeeId : currentEmployeeId
@@ -116,6 +126,11 @@ export function WorkRegistrationScreen() {
   const staffGridRecords = delegateEmployeeId
     ? activeEmployeeRecords
     : weekRecords.filter((record) => visibleStaffIds.has(record.employeeId))
+
+  const centerSummaries = useMemo(
+    () => buildBranchSummaries(employees, records, weekStart, activeTab === 'center' ? 'all' : activeBranch, priorityRules),
+    [activeTab, activeBranch, employees, priorityRules, records, weekStart]
+  )
 
   const priorityMinutes = activeEmployeeRecords
     .filter((record) => isPriorityWorkSlot(record.date, record.slotId, priorityRules))
@@ -213,16 +228,21 @@ export function WorkRegistrationScreen() {
         activeBranch={activeBranch}
         subjectFilter={subjectFilter}
         search={search}
+        selectedShifts={selectedShifts}
         onTabChange={(tab) => {
           setActiveTab(tab)
           if (tab !== 'staff') setDelegateEmployeeId(undefined)
         }}
-        onBranchChange={(branch) => setActiveBranch(branch)}
+        onBranchChange={(branch) => {
+          setActiveBranch(branch)
+          setCenterPage(1)
+        }}
         onSubjectChange={(subject) => {
           setSubjectFilter(subject)
           setStaffPage(1)
         }}
         onSearchChange={setSearch}
+        onShiftFilterChange={setSelectedShifts}
         onOpenWarnings={() => setWarningsOpen(true)}
       />
 
@@ -252,9 +272,12 @@ export function WorkRegistrationScreen() {
         {activeTab === 'roster' ? (
           <WorkRegistrationMasterRosterPanel
             activeBranch={activeBranch === 'all' ? branches[0] || 'RinoEdu Nguyễn Tuân' : activeBranch}
+            subjectFilter={subjectFilter}
             searchQuery={search}
+            selectedShifts={selectedShifts}
             weekDays={weekDays}
             records={records}
+            employees={employees}
           />
         ) : null}
 
@@ -267,6 +290,10 @@ export function WorkRegistrationScreen() {
             records={staffGridRecords}
             employees={employees}
             todayKey={todayKey}
+            activeBranch={activeBranch === 'all' ? branches[0] || 'RinoEdu Nguyễn Tuân' : activeBranch}
+            selectedShifts={selectedShifts}
+            subjectFilter={subjectFilter}
+            searchQuery={search}
             page={staffPage}
             pageSize={staffPageSize}
             totalMinutes={sumRegistrationMinutes(activeEmployeeRecords)}
@@ -287,6 +314,18 @@ export function WorkRegistrationScreen() {
             onSetSlot={handleSetSlot}
             onOpenSlotDetail={(date, slotId, section) => setSlotDetail({ date, slotId, section })}
             onSubmit={submitActiveRegistration}
+          />
+        ) : null}
+
+        {activeTab === 'center' ? (
+          <WorkRegistrationCenterOverview
+            summaries={centerSummaries}
+            page={centerPage}
+            pageSize={centerPageSize}
+            onPageChange={setCenterPage}
+            onPageSizeChange={setCenterPageSize}
+            onOpenBranch={(branch) => setBranchDetail({ branch })}
+            onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })}
           />
         ) : null}
         </div>

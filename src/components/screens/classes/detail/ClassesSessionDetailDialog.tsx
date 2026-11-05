@@ -48,6 +48,7 @@ import { ClassesSessionAttendanceTab } from './ClassesSessionAttendanceTab'
 import { ClassesSemesterEvaluationDialog } from './ClassesSemesterEvaluationDialog'
 import type { SemesterStudentEval } from './ClassesSemesterEvaluationDialog'
 import { StudentDetailDialog } from '@/components/screens/students/detail/StudentDetailDialog'
+import { useCallStore } from '@/stores/useCallStore'
 import { StudentCareDetailDialog } from '@/components/screens/care/StudentCareDetailDialog'
 import { mockCareAlerts } from '@/mocks/careAlerts'
 import { ClassesDetailDialog } from './ClassesDetailDialog'
@@ -99,7 +100,7 @@ export function ClassesSessionDetailDialog({
   const [currentSessionId, setCurrentSessionId] = useState(initialSession.id)
   const [attendanceOverrides, setAttendanceOverrides] = useState<Record<string, AttendanceStatus>>({})
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({})
-  const [ratingMap] = useState<Record<string, number>>({})
+  const [ratingMap, setRatingMap] = useState<Record<string, number>>({})
   const [isBulkFeedbackOpen, setIsBulkFeedbackOpen] = useState(false)
   const [isLiveTeachingOpen, setIsLiveTeachingOpen] = useState(false)
   const [isSemesterEvalOpen, setIsSemesterEvalOpen] = useState(false)
@@ -254,15 +255,16 @@ export function ClassesSessionDetailDialog({
     const key = `${studentId}:${session.id}`
     if (attendanceOverrides[key]) return attendanceOverrides[key]
 
-    // Default to 'absent' (unmarked Plus button) for future/upcoming sessions
-    if (session.status === 'upcoming') return 'absent'
-
     return deriveAttendance(studentId, session.id)
-  }, [session.id, session.status, attendanceOverrides])
+  }, [session.id, attendanceOverrides])
 
   const setAttendance = (studentId: string, status: AttendanceStatus) => {
     const key = `${studentId}:${session.id}`
     setAttendanceOverrides((prev) => ({ ...prev, [key]: status }))
+    if (status === 'absent') {
+      setFeedbackMap((prev) => ({ ...prev, [studentId]: '' }))
+      setRatingMap((prev) => ({ ...prev, [studentId]: 0 }))
+    }
   }
 
   // ── Feedback helper ──
@@ -330,8 +332,31 @@ export function ClassesSessionDetailDialog({
   const [showUnitTestWarning, setShowUnitTestWarning] = useState(false)
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseAttempt()}>
-      <DialogContent showCloseButton={false} className="flex flex-col min-h-0 h-[86vh] max-h-[820px] overflow-hidden p-1.5 sm:p-2 gap-1.5 sm:max-w-[92vw] lg:max-w-[1140px] xl:max-w-[1180px] rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/95 dark:bg-zinc-950 shadow-2xl">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          // Never close class session detail dialog if a VoIP call is in progress
+          if (useCallStore.getState().status !== 'idle') {
+            return
+          }
+          handleCloseAttempt()
+        }
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        onPointerDownOutside={(e) => {
+          e.preventDefault()
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault()
+        }}
+        onFocusOutside={(e) => {
+          e.preventDefault()
+        }}
+        className="flex flex-col min-h-0 h-[86vh] max-h-[820px] overflow-hidden p-1.5 sm:p-2 gap-1.5 sm:max-w-[92vw] lg:max-w-[1140px] xl:max-w-[1180px] rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/95 dark:bg-zinc-950 shadow-2xl"
+      >
         {/* ── TOP HEADER BAR: BREADCRUMB (LEFT) + SESSION NAV & CLOSE BUTTON (RIGHT) (NO BORDER LINE) ── */}
         <div className="flex items-center justify-between w-full shrink-0">
           {/* Left: Icon trở lại + Tên lớp học / Chi tiết buổi học */}

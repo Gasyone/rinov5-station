@@ -67,11 +67,11 @@ function lintFile(filePath) {
 
     if (inCodeBlock) continue;
 
-    // Xác định Section hiện tại
+    // Xác định Section hiện tại linh hoạt (hỗ trợ cả chuẩn US Mới 5 phần và chuẩn Nâng cấp/Điều chỉnh 4 phần theo Confluence M4A_Cg)
     if (line.startsWith('## ')) {
-      inSection3 = line.includes('3. GIAO DIỆN') || line.includes('3. CẤU TRÚC');
-      inSection4 = line.includes('4. KHỐI CHỨC NĂNG');
-      inSection5 = line.includes('5. CÁC TRƯỜNG HỢP') || line.includes('5. Các trường hợp');
+      inSection3 = line.includes('GIAO DIỆN') || line.includes('CẤU TRÚC');
+      inSection4 = line.includes('KHỐI CHỨC NĂNG');
+      inSection5 = line.includes('CÁC TRƯỜNG HỢP') || line.includes('Các trường hợp') || line.includes('CORNER CASES');
     }
 
     // 1. Kiểm tra Từ cấm (Jargon & Forbidden Words Validation)
@@ -106,7 +106,7 @@ function lintFile(filePath) {
           tableHeaderCols = cols;
           // Xác định bảng này có phải là bảng mô tả trường thông tin / UI không
           const headerStr = cols.join(' ');
-          isFieldTable = /mobile|di\s+động|co\s+giãn/i.test(headerStr);
+          isFieldTable = /mobile|di\s+động|co\s+giãn|điều\s+chỉnh|nội\s+dung\s+điều\s+chỉnh/i.test(headerStr);
         } else {
           // Dòng phân cách |---|---|
           if (line.includes('---')) continue;
@@ -114,12 +114,13 @@ function lintFile(filePath) {
           // Nếu là bảng mô tả UI, kiểm tra số lượng cột tương ứng
           if (isFieldTable) {
             const hasRequiredField = tableHeaderCols.some(h => /bắt\s+buộc/i.test(h));
-            const expectedCols = hasRequiredField ? 6 : 5;
+            const isUpgradeTable = tableHeaderCols.some(h => /điều\s+chỉnh/i.test(h));
+            const expectedCols = isUpgradeTable ? 5 : (hasRequiredField ? 6 : 5);
 
             if (cols.length !== expectedCols) {
               errors.push({
                 line: lineNum,
-                message: `Bảng dữ liệu mô tả giao diện tĩnh phải có đúng ${expectedCols} cột (Hiện tại có ${cols.length} cột). Tiêu đề bảng phát hiện: [${tableHeaderCols.join(' | ')}]`
+                message: `Bảng dữ liệu mô tả giao diện phải có đúng ${expectedCols} cột (Hiện tại có ${cols.length} cột). Tiêu đề bảng phát hiện: [${tableHeaderCols.join(' | ')}]`
               });
             }
           }
@@ -132,7 +133,7 @@ function lintFile(filePath) {
       }
     }
 
-    // 3. Thu thập dữ liệu AC trong Section 4 (US-*)
+    // 3. Thu thập dữ liệu AC trong Section Hành động (US-*)
     if (isUS && inSection4) {
       const acMatch = line.match(/(?:AC-\d+|Tiêu chí nghiệm thu \d+)/i);
       if (acMatch) {
@@ -145,12 +146,12 @@ function lintFile(filePath) {
           text: []
         };
       } else if (currentAc) {
-        // Thu thập các dòng tiếp theo cho đến khi gặp AC mới hoặc hết Section 4
+        // Thu thập các dòng tiếp theo cho đến khi gặp AC mới hoặc hết Section
         currentAc.text.push(line);
       }
     }
 
-    // 4. Thu thập nội dung Section 5 (US-*)
+    // 4. Thu thập nội dung Section Corner Cases (US-*)
     if (isUS && inSection5) {
       if (line.startsWith('-') || line.startsWith('*')) {
         section5Content.push({
@@ -186,12 +187,12 @@ function lintFile(filePath) {
       }
     });
 
-    // Kiểm tra Corner Cases (US-*)
-    const hasSection5Header = lines.some(l => l.trim().startsWith('## 5. CÁC TRƯỜNG HỢP') || l.trim().startsWith('## 5. Các trường hợp'));
-    if (!hasSection5Header) {
+    // Kiểm tra Corner Cases (US-*) hỗ trợ cả Section 4 hoặc Section 5
+    const hasCornerCasesHeader = lines.some(l => l.trim().match(/^##\s*\d+\.\s*(?:CÁC TRƯỜNG HỢP|Các trường hợp|CORNER CASES)/i));
+    if (!hasCornerCasesHeader) {
       errors.push({
         line: 1,
-        message: `Thiếu mục "## 5. CÁC TRƯỜNG HỢP GÓC CẠNH (CORNER CASES)" ở cấu trúc User Story.`
+        message: `Thiếu mục "CÁC TRƯỜNG HỢP GÓC CẠNH (CORNER CASES)" ở cấu trúc User Story.`
       });
     } else if (section5Content.length < 5) {
       errors.push({

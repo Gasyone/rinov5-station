@@ -43,6 +43,7 @@ import { HeaderBrand } from './HeaderBrand'
 import { NotificationDropdown } from './NotificationDropdown'
 import { FeedbackPopover } from './FeedbackPopover'
 import { HeaderWorkdayDatePicker } from './HeaderWorkdayDatePicker'
+import { TutorialVideoButton } from '@/components/tutorial'
 
 const UI_LOCALE_OPTIONS = [
   { code: 'vi', label: 'Tiếng Việt', shortLabel: 'VI' },
@@ -208,6 +209,9 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
             className="data-[state=checked]:bg-amber-500"
           />
         </div>
+
+        {/* Video Hướng dẫn Sử dụng (Contextual Tutorials) */}
+        <TutorialVideoButton />
 
         {/* Feedback Popover Button */}
         <FeedbackPopover />

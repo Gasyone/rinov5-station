@@ -3,13 +3,14 @@
 import React, { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { Image as ImageIcon, ExternalLink } from 'lucide-react'
+import { Image as ImageIcon, ExternalLink, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QcIncident } from '@/mocks/qcChecks'
 import {
   QC_CRITERIA_LABELS,
   QC_ERROR_SEVERITY_LABELS,
   QC_ERROR_STATUS_LABELS,
+  QC_ACTION_LABELS,
 } from '@/mocks/qcChecks'
 import { getCriteriaTagMeta, getTagStyle, formatStaffName } from './qcPersonnelHelpers'
 import { formatDateTime, formatShortDate, isToday } from './qcCheckHelpers'
@@ -147,6 +148,16 @@ export function QcTagHoverCard({ incident, children, onViewDetail }: QcTagHoverC
             <Badge variant="outline" className={cn('text-xs px-1.5 py-0 h-4.5 font-normal', statusBadge)}>
               {QC_ERROR_STATUS_LABELS[incident.status]}
             </Badge>
+            {incident.actionTaken && (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 font-normal bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300">
+                {QC_ACTION_LABELS[incident.actionTaken]}
+              </Badge>
+            )}
+            {incident.repeatCount && incident.repeatCount > 1 && (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 font-normal bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+                Lần {incident.repeatCount}
+              </Badge>
+            )}
             {incident.className && (
               <span className="text-xs text-muted-foreground font-normal">
                 {incident.className}
@@ -154,12 +165,17 @@ export function QcTagHoverCard({ incident, children, onViewDetail }: QcTagHoverC
                 {incident.roomId ? ` • ${incident.roomId}` : ''}
               </span>
             )}
-            {(incident.evidenceImage || incident.evidenceLink) && (
+            {incident.evidence?.toLowerCase().endsWith('.mp4') ? (
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-normal inline-flex items-center gap-0.5">
+                <Video className="h-3 w-3" />
+                <span>Clip CCTV</span>
+              </span>
+            ) : (incident.evidenceImage || incident.evidence) ? (
               <span className="text-xs text-muted-foreground font-normal inline-flex items-center gap-0.5">
                 <ImageIcon className="h-3 w-3 text-muted-foreground/70" />
-                <span>Có ảnh</span>
+                <span>Có minh chứng</span>
               </span>
-            )}
+            ) : null}
           </div>
 
           {/* Violation Description (unbolded) */}
@@ -170,8 +186,23 @@ export function QcTagHoverCard({ incident, children, onViewDetail }: QcTagHoverC
             </p>
           </div>
 
-          {/* Evidence Image Thumbnail Preview */}
-          {incident.evidenceImage && (
+          {/* Evidence Video or Image Thumbnail Preview */}
+          {incident.evidence?.toLowerCase().endsWith('.mp4') ? (
+            <div className="pt-0.5">
+              <div
+                className="flex items-center gap-2 p-2 rounded-md bg-zinc-900 text-zinc-100 text-xs border border-zinc-800"
+                title={incident.evidence}
+              >
+                <Video className="h-4 w-4 text-amber-400 shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-mono text-[11px] truncate text-zinc-200">
+                    {incident.evidence}
+                  </p>
+                  <p className="text-[10px] text-zinc-400">Trích xuất video camera giám sát</p>
+                </div>
+              </div>
+            </div>
+          ) : incident.evidenceImage ? (
             <div className="pt-0.5">
               <div
                 className="relative h-24 w-full rounded-md overflow-hidden border border-border/70 cursor-pointer group bg-muted/30"
@@ -193,7 +224,14 @@ export function QcTagHoverCard({ incident, children, onViewDetail }: QcTagHoverC
                 </div>
               </div>
             </div>
-          )}
+          ) : incident.evidence ? (
+            <div className="pt-0.5">
+              <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-muted/50 text-xs border border-border/50 text-muted-foreground">
+                <ImageIcon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate text-[11px] font-mono">{incident.evidence}</span>
+              </div>
+            </div>
+          ) : null}
 
           {/* Footer: Reporter (clean without parentheses) & Created Date + Click prompt */}
           <div className="pt-1.5 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">

@@ -498,83 +498,85 @@ export function groupConsecutiveSlots(
   section: string
 ): SlotInterval[] {
   const sectionSlots = WORK_TIME_SLOTS.filter((s) => s.section === section)
-  const employeeSlotMap = new Map<string, WorkRegistrationRecord>()
-  for (const r of records) {
-    if (r.employeeId === employeeId && r.date === date && r.slotId.startsWith(section) && !r.assignedClass) {
-      employeeSlotMap.set(r.slotId, r)
-    }
-  }
+
+  const empSectionRecords = records.filter(
+    (r) => r.employeeId === employeeId && r.date === date && r.slotId.startsWith(section) && !r.assignedClass
+  )
+
+  const draftRecords = empSectionRecords.filter((r) => r.status === 'draft')
+  const registeredRecords = empSectionRecords.filter((r) => r.status !== 'draft')
+
+  const draftSlotIdSet = new Set(draftRecords.map((r) => r.slotId))
+  const registeredSlotIdSet = new Set(registeredRecords.map((r) => r.slotId))
 
   const intervals: SlotInterval[] = []
-  let currentInterval: {
-    start: string
-    end: string
-    slotIds: string[]
-    hasDraft: boolean
-    hasLocked: boolean
-  } | null = null
 
-  for (const slot of sectionSlots) {
-    const record = employeeSlotMap.get(slot.id)
-    if (record) {
-      const isDraft = record.status === 'draft'
-      const isLocked = record.status === 'locked'
+  const buildIntervalsFromSlots = (
+    availableSlots: typeof WORK_TIME_SLOTS,
+    status: WorkRegistrationStatus
+  ): SlotInterval[] => {
+    const res: SlotInterval[] = []
+    let current: { start: string; end: string; slotIds: string[] } | null = null
 
-      if (!currentInterval) {
-        currentInterval = {
-          start: slot.start,
-          end: slot.end,
-          slotIds: [slot.id],
-          hasDraft: isDraft,
-          hasLocked: isLocked,
+    for (const slot of sectionSlots) {
+      if (availableSlots.some((s) => s.id === slot.id)) {
+        if (!current) {
+          current = { start: slot.start, end: slot.end, slotIds: [slot.id] }
+        } else {
+          current.end = slot.end
+          current.slotIds.push(slot.id)
         }
       } else {
-        currentInterval.end = slot.end
-        currentInterval.slotIds.push(slot.id)
-        if (isDraft) currentInterval.hasDraft = true
-        if (isLocked) currentInterval.hasLocked = true
-      }
-    } else {
-      if (currentInterval) {
-        const status: WorkRegistrationStatus = currentInterval.hasDraft
-          ? 'draft'
-          : currentInterval.hasLocked
-          ? 'locked'
-          : 'registered'
-
-        intervals.push({
-          start: currentInterval.start,
-          end: currentInterval.end,
-          slotIds: currentInterval.slotIds,
-          status,
-          isDraft: status === 'draft',
-          isRegistered: status === 'registered',
-          isLocked: status === 'locked',
-        })
-        currentInterval = null
+        if (current) {
+          res.push({
+            start: current.start,
+            end: current.end,
+            slotIds: current.slotIds,
+            status,
+            isDraft: status === 'draft',
+            isRegistered: status === 'registered',
+            isLocked: status === 'locked',
+          })
+          current = null
+        }
       }
     }
+
+    if (current) {
+      res.push({
+        start: current.start,
+        end: current.end,
+        slotIds: current.slotIds,
+        status,
+        isDraft: status === 'draft',
+        isRegistered: status === 'registered',
+        isLocked: status === 'locked',
+      })
+    }
+    return res
   }
 
-  if (currentInterval) {
-    const status: WorkRegistrationStatus = currentInterval.hasDraft
-      ? 'draft'
-      : currentInterval.hasLocked
-      ? 'locked'
-      : 'registered'
+  // 1. Neu co ca draft (khung gio moi them dang cho luu):
+  // Xay dung interval cho draft doc lap -> giu dung khung nguoi dung chon, khong tu dong gop liem vao ca cu!
+  if (draftSlotIdSet.size > 0) {
+    const draftSlots = sectionSlots.filter((s) => draftSlotIdSet.has(s.id))
+    const draftIntervals = buildIntervalsFromSlots(draftSlots, 'draft')
+    intervals.push(...draftIntervals)
 
-    intervals.push({
-      start: currentInterval.start,
-      end: currentInterval.end,
-      slotIds: currentInterval.slotIds,
-      status,
-      isDraft: status === 'draft',
-      isRegistered: status === 'registered',
-      isLocked: status === 'locked',
-    })
+    // Cac slot da luu (registered) ma KHONG bi draft de len se tiep tuc hien thi doc lap
+    const remainingRegisteredSlots = sectionSlots.filter(
+      (s) => registeredSlotIdSet.has(s.id) && !draftSlotIdSet.has(s.id)
+    )
+    const registeredIntervals = buildIntervalsFromSlots(remainingRegisteredSlots, 'registered')
+    intervals.push(...registeredIntervals)
+  } else {
+    // 2. Khi khong co draft: gom cac slot registered thanh cac dai da luu
+    const registeredSlots = sectionSlots.filter((s) => registeredSlotIdSet.has(s.id))
+    const registeredIntervals = buildIntervalsFromSlots(registeredSlots, 'registered')
+    intervals.push(...registeredIntervals)
   }
 
-  return intervals
+  return intervals.sort((a, b) => a.start.localeCompare(b.start))
 }
 
 export function timeToMinutes(time: string): number {

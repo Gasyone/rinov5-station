@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from 'react'
 import { HeaderBar } from '@/components/layout/HeaderBar'
 import { TrialClassCreateScreen } from '@/components/screens/trial-class/TrialClassCreateScreen'
+import { BookingTrialPoOverlay } from '@/components/screens/trial-class/explain'
 import { UserProfileDialog } from '@/components/shared'
 import { useUIStore } from '@/stores/useUIStore'
 
@@ -35,6 +36,9 @@ export default function BookingTrialLandingPage() {
           <TrialClassCreateScreen />
         </Suspense>
       </main>
+
+      {/* Lớp phủ & Nút kích hoạt Thuyết minh PO */}
+      <BookingTrialPoOverlay />
 
       <UserProfileDialog />
     </div>

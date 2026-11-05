@@ -3,6 +3,7 @@ import {
   type QcTargetGroup,
   type QcEvaluationCriteria,
   type QcErrorSeverity,
+  type QcActionTaken,
 } from '@/mocks/qcChecks'
 import { BRANCH_OPTIONS } from './qcCheckHelpers'
 import { Info, AlertCircle, AlertTriangle, Flame } from 'lucide-react'
@@ -28,6 +29,9 @@ export interface CreateIncidentItem {
   assignee: string
   deadline?: string
   notes?: string
+  repeatCount?: number
+  actionTaken?: QcActionTaken
+  sourceDailyCheckId?: string
 }
 
 export interface CreateBatchIncidentForm {
@@ -43,17 +47,26 @@ export interface QcCreatePrefill {
   assignee?: string
   roomId?: string
   className?: string
+  repeatCount?: number
+  actionTaken?: QcActionTaken
+  sourceDailyCheckId?: string
+  description?: string
 }
 
 export const SAMPLE_CLASSES = [
-  'IELTS Intensive K24',
-  'Toán Tư Duy Bồi Dưỡng T5',
-  'Tiếng Anh Mầm Non K12',
-  'Tiếng Anh Giao Tiếp E3',
-  'Lập trình Scratch Nhí S2',
-  'IELTS-K24',
-  'MATH-T05',
-  'ENG-K12',
+  'LD_TOAN_00018',
+  'LD_TOAN_00031',
+  'LD_TOAN_00009',
+  'LD_TOAN_00001',
+  'TK_TOAN_00002',
+  'TK_TOAN_00013',
+  'TK_TA_00001',
+  'SA1_TA_00011',
+  'SA1_TA_00008',
+  'SA1_TA_00001',
+  'SA1_KINDIE_0003',
+  'SA1_KINDIE_0004',
+  'LD_TA_00019',
 ]
 
 export const SAMPLE_ROOMS = [
@@ -144,6 +157,8 @@ export function buildEmptyItem(defaultGroup: QcTargetGroup = 'teacher'): CreateI
     assignee,
     deadline: '',
     notes: '',
+    repeatCount: 1,
+    actionTaken: 'private_message',
   }
 }
 
@@ -171,6 +186,10 @@ export function buildInitialBatchForm(prefill?: QcCreatePrefill | null): CreateB
     }
     if (prefill.roomId) item.roomId = prefill.roomId
     if (prefill.className) item.className = prefill.className
+    if (prefill.repeatCount) item.repeatCount = prefill.repeatCount
+    if (prefill.actionTaken) item.actionTaken = prefill.actionTaken
+    if (prefill.sourceDailyCheckId) item.sourceDailyCheckId = prefill.sourceDailyCheckId
+    if (prefill.description) item.description = prefill.description
     return {
       branch: prefill.branch || BRANCH_OPTIONS[0],
       inspectorId: 'ins_01',

@@ -1,11 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { DataTableFrame } from '@/components/data-table'
-import {
-  DataTablePagination,
-  DEFAULT_PAGE_SIZE,
-} from '@/components/data-table'
+import { useMemo, useState } from 'react'
+import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel } from '@/components/filters'
 import {
   getBookingTests,
@@ -35,6 +31,7 @@ export function BookingTestScreen() {
   const [activeSubject, setActiveSubject] = useState<string>('english')
   const [activeSchool, setActiveSchool] = useState('all')
   const [activeStatus, setActiveStatus] = useState<StatusTileId>('all')
+  const [selectedAssignee, setSelectedAssignee] = useState<'all' | 'my'>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<FilterState>({
     schools: [],
@@ -77,9 +74,33 @@ export function BookingTestScreen() {
     userName: user?.name,
   })
 
-  const totalPages = Math.max(1, Math.ceil(filteredBookings.length / pageSize))
+  // Quick "Lịch của tôi" filter
+  const myBookingsCount = useMemo(() => {
+    return baseForStatus.filter(
+      (b) =>
+        b.teacher === authorName ||
+        b.tester === authorName ||
+        b.createdBy === authorName ||
+        b.ops === authorName
+    ).length
+  }, [baseForStatus, authorName])
+
+  const effectiveBookings = useMemo(() => {
+    if (selectedAssignee === 'my') {
+      return filteredBookings.filter(
+        (b) =>
+          b.teacher === authorName ||
+          b.tester === authorName ||
+          b.createdBy === authorName ||
+          b.ops === authorName
+      )
+    }
+    return filteredBookings
+  }, [filteredBookings, selectedAssignee, authorName])
+
+  const totalPages = Math.max(1, Math.ceil(effectiveBookings.length / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const pagedBookings = filteredBookings.slice(
+  const pagedBookings = effectiveBookings.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   )
@@ -125,48 +146,59 @@ export function BookingTestScreen() {
         schoolOptions={schoolOptions}
         baseForStatus={baseForStatus}
         activeFilterCount={activeFilterCount}
-        onSubjectChange={(subject) => { setActiveSubject(subject); setPage(1) }}
-        onSchoolChange={(school) => { setActiveSchool(school); setPage(1) }}
-        onStatusChange={(status) => { setActiveStatus(status); setPage(1) }}
-        onSearchChange={(value) => { setSearchTerm(value); setPage(1) }}
+        selectedAssignee={selectedAssignee}
+        onAssigneeChange={(assignee) => {
+          setSelectedAssignee(assignee)
+          setPage(1)
+        }}
+        myBookingsCount={myBookingsCount}
+        onSubjectChange={(subject) => {
+          setActiveSubject(subject)
+          setPage(1)
+        }}
+        onSchoolChange={(school) => {
+          setActiveSchool(school)
+          setPage(1)
+        }}
+        onStatusChange={(status) => {
+          setActiveStatus(status)
+          setPage(1)
+        }}
+        onSearchChange={(value) => {
+          setSearchTerm(value)
+          setPage(1)
+        }}
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-2.5 lg:px-3">
-        <div className="flex-1 min-w-0 h-full overflow-hidden">
-          <DataTableFrame
-            footer={
-              <DataTablePagination
-                page={currentPage}
-                total={filteredBookings.length}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
-                selectedCount={selectedIds.size}
-                onClearSelection={() => setSelectedIds(new Set())}
-                size="sm"
-              />
-            }
-          >
-            <BookingTestTable
-              bookings={pagedBookings}
-              selectedIds={selectedIds}
-              copiedKey={copiedKey}
-              onToggleAll={actions.toggleSelectAll}
-              onToggleOne={actions.toggleSelectOne}
-              onRowClick={setDetailBookingId}
-              onOpenAssessment={actions.openAssessmentDialog}
-              onUpdateBooking={actions.updateBooking}
-              onCopy={actions.copyToClipboard}
-              onCall={actions.triggerDeskCall}
-            />
-          </DataTableFrame>
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2.5 pt-0.5 pb-2 lg:px-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          <BookingTestTable
+            bookings={pagedBookings}
+            selectedIds={selectedIds}
+            copiedKey={copiedKey}
+            onToggleAll={actions.toggleSelectAll}
+            onToggleOne={actions.toggleSelectOne}
+            onRowClick={setDetailBookingId}
+            onOpenAssessment={actions.openAssessmentDialog}
+            onUpdateBooking={actions.updateBooking}
+            onCopy={actions.copyToClipboard}
+            onCall={actions.triggerDeskCall}
+            pagination={{
+              page: currentPage,
+              total: effectiveBookings.length,
+              pageSize: pageSize,
+              onPageChange: setPage,
+              onPageSizeChange: setPageSize,
+            }}
+          />
         </div>
 
-        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng / Chăm sóc) */}
         {isFilterOpen && (
           <FilterGroupAsidePanel
-            title="Bộ lọc lịch test"
+            title="Bộ lọc nâng cao"
+            activeCount={activeFilterCount}
             groups={filterGroups}
             onClose={() => setIsFilterOpen(false)}
             onToggle={(sectionId, value) => {
@@ -196,17 +228,20 @@ export function BookingTestScreen() {
               setFilters((prev) => ({ ...prev, [sectionId]: [] }))
               setPage(1)
             }}
+            showFooterActions={true}
+            onApply={() => setIsFilterOpen(false)}
           />
         )}
       </div>
-
 
       <BookingTestDetailDialog
         booking={detailBooking}
         bookings={bookings}
         detailNote={detailNote}
         copiedKey={copiedKey}
-        onOpenChange={(open) => { if (!open) setDetailBookingId('') }}
+        onOpenChange={(open) => {
+          if (!open) setDetailBookingId('')
+        }}
         onUpdateBooking={actions.updateBooking}
         onOpenAssessment={actions.openAssessmentDialog}
         onCall={actions.triggerDeskCall}
@@ -219,11 +254,12 @@ export function BookingTestScreen() {
       <BookingTestAssessmentDialog
         booking={assessmentBooking}
         draft={assessmentDraft}
-        onOpenChange={(open) => { if (!open) setAssessmentBookingId('') }}
+        onOpenChange={(open) => {
+          if (!open) setAssessmentBookingId('')
+        }}
         onDraftChange={setAssessmentDraft}
         onSave={actions.saveAssessment}
       />
     </div>
   )
 }
-

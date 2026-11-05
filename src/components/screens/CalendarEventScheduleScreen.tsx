@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Columns3, Grid } from 'lucide-react'
 
 import {
   BranchSelect,
@@ -22,6 +22,7 @@ import { BookingTestDetailDialog } from './booking-test/BookingTestDetailDialog'
 import { mockBookingTests } from '@/mocks/bookingTests'
 import { getAssociatedBookingTest } from './calendar/EventCard'
 import {
+  computeEventScheduleSlots,
   getMonday,
   getSessionPeriod,
   getWeekDays,
@@ -29,6 +30,8 @@ import {
 } from './calendar/calendarEventScheduleHelpers'
 import { CalendarEventWeekListView } from './calendar/CalendarEventWeekListView'
 import { CalendarEventDayListView } from './calendar/CalendarEventDayListView'
+import { CalendarEventWeekTimeline } from './calendar/CalendarEventWeekTimeline'
+import { CalendarEventDayTimeline } from './calendar/CalendarEventDayTimeline'
 
 const PERIOD_OPTIONS = [
   { value: 'morning', label: 'Sáng' },
@@ -46,6 +49,15 @@ export function CalendarEventScheduleScreen() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
+  }, [])
+
+  // Real-time clock for current time line (refreshes every 30s)
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date())
+    }, 30000)
+    return () => clearInterval(timer)
   }, [])
 
   const allSessions = useMemo(() => {
@@ -81,6 +93,7 @@ export function CalendarEventScheduleScreen() {
   }, [allSessions, initialBookingId, initialSearch])
 
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
+  const [displayFormat, setDisplayFormat] = useState<'timeline' | 'list'>('timeline')
   const [activeSubject, setActiveSubject] = useState('all')
   const [periodFilters, setPeriodFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
@@ -139,6 +152,11 @@ export function CalendarEventScheduleScreen() {
       )
     })
   }, [activeBranch, activeSubject, allSessions, periodFilters, search, statusFilters, subjectFilters, programFilters, saleFilters, teacherFilters, bookingStatusFilters])
+
+  const timelineSlots = useMemo(
+    () => computeEventScheduleSlots(filtered, viewMode === 'day' ? [selectedDate] : weekDays, today, now),
+    [filtered, viewMode, selectedDate, weekDays, today, now]
+  )
 
   const statuses = useMemo(() => [...new Map(allSessions.map((session) => [session.status, session.statusLabel])).entries()], [allSessions])
   const subjects = useMemo(() => [...new Set(allSessions.map((session) => session.subject).filter(Boolean) as string[])].sort(), [allSessions])
@@ -301,6 +319,30 @@ export function CalendarEventScheduleScreen() {
               }
             }}
           />
+          <SegmentedControl
+            value={displayFormat}
+            options={[
+              {
+                value: 'timeline',
+                label: (
+                  <span title="Lưới thời gian" aria-label="Lưới thời gian" className="flex items-center justify-center size-full">
+                    <Grid className="size-4" />
+                  </span>
+                ),
+              },
+              {
+                value: 'list',
+                label: (
+                  <span title="Danh sách phân ca" aria-label="Danh sách phân ca" className="flex items-center justify-center size-full">
+                    <Columns3 className="size-4" />
+                  </span>
+                ),
+              },
+            ]}
+            className="h-8 p-0.5"
+            itemClassName="h-7 w-7 p-0 flex items-center justify-center cursor-pointer"
+            onValueChange={(value) => setDisplayFormat(value as 'timeline' | 'list')}
+          />
           <ExpandableSearch
             value={search}
             onValueChange={setSearch}
@@ -315,29 +357,61 @@ export function CalendarEventScheduleScreen() {
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
           {viewMode === 'day' ? (
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <WeekHeader days={[selectedDate]} today={today} sessions={filtered} />
-              <CalendarEventDayListView
-                selectedDate={selectedDate}
-                today={today}
-                filteredSessions={filtered}
-                activeBranch={activeBranch}
-                branchesCount={branches.length}
-                onSelectEvent={handleSelectEvent}
-              />
-            </div>
+            displayFormat === 'timeline' ? (
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <WeekHeader days={[selectedDate]} today={today} hasSpacer sessions={filtered} />
+                <CalendarEventDayTimeline
+                  date={selectedDate}
+                  today={today}
+                  now={now}
+                  sessions={filtered}
+                  timelineSlots={timelineSlots}
+                  activeBranch={activeBranch}
+                  branchesCount={branches.length}
+                  onSelectEvent={handleSelectEvent}
+                />
+              </div>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <WeekHeader days={[selectedDate]} today={today} sessions={filtered} />
+                <CalendarEventDayListView
+                  selectedDate={selectedDate}
+                  today={today}
+                  filteredSessions={filtered}
+                  activeBranch={activeBranch}
+                  branchesCount={branches.length}
+                  onSelectEvent={handleSelectEvent}
+                />
+              </div>
+            )
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <WeekHeader days={weekDays} today={today} sessions={filtered} />
-              <CalendarEventWeekListView
-                weekDays={weekDays}
-                today={today}
-                filteredSessions={filtered}
-                activeBranch={activeBranch}
-                branchesCount={branches.length}
-                onSelectEvent={handleSelectEvent}
-              />
-            </div>
+            displayFormat === 'timeline' ? (
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <WeekHeader days={weekDays} today={today} hasSpacer sessions={filtered} />
+                <CalendarEventWeekTimeline
+                  days={weekDays}
+                  today={today}
+                  now={now}
+                  sessions={filtered}
+                  timelineSlots={timelineSlots}
+                  activeBranch={activeBranch}
+                  branchesCount={branches.length}
+                  onSelectEvent={handleSelectEvent}
+                />
+              </div>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <WeekHeader days={weekDays} today={today} sessions={filtered} />
+                <CalendarEventWeekListView
+                  weekDays={weekDays}
+                  today={today}
+                  filteredSessions={filtered}
+                  activeBranch={activeBranch}
+                  branchesCount={branches.length}
+                  onSelectEvent={handleSelectEvent}
+                />
+              </div>
+            )
           )}
         </div>
 
@@ -436,14 +510,17 @@ export function CalendarEventScheduleScreen() {
 function WeekHeader({
   days,
   today,
+  hasSpacer = false,
   sessions,
 }: {
   days: Date[]
   today: Date
+  hasSpacer?: boolean
   sessions: EventSession[]
 }) {
   return (
     <div className="flex bg-muted/30 border-b border-border/40">
+      {hasSpacer && <div className="w-16 shrink-0 border-r border-border/40 bg-muted/10" />}
       <div className={cn("grid flex-1", days.length === 1 ? "grid-cols-1" : "grid-cols-7")}>
         {days.map((day) => {
           const isToday =

@@ -1,6 +1,5 @@
 'use client'
 
-import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { ErrorState, ModuleLoadingSkeleton } from '@/components/shared'
 import type { TrialClass } from '@/mocks/trialClasses'
 import { TrialClassTable } from './TrialClassTable'
@@ -29,6 +28,7 @@ interface TrialClassTableFrameProps {
   onOpenAssignReschedule?: (id: string) => void
   onApprove?: (id: string) => void
   onReject?: (id: string) => void
+  onChangeBranch?: (trialId: string, newBranch: string) => void
   onClearSelection?: () => void
 }
 
@@ -51,15 +51,15 @@ export function TrialClassTableFrame({
   onToggleOne,
   onRowClick,
   onCopy,
-  onRequestReschedule,
   onOpenAssign,
   onOpenAssignReschedule,
   onApprove,
   onReject,
+  onChangeBranch,
   onClearSelection,
 }: TrialClassTableFrameProps) {
   if (loading) {
-    return <ModuleLoadingSkeleton rows={8} columns={10} showToolbar={false} className="h-full" />
+    return <ModuleLoadingSkeleton rows={8} columns={7} showToolbar={false} className="h-full" />
   }
 
   if (error) {
@@ -74,37 +74,30 @@ export function TrialClassTableFrame({
   }
 
   return (
-    <DataTableFrame
-      footer={
-        <DataTablePagination
-          page={currentPage}
-          total={total}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-          selectedCount={selectedIds.size}
-          onClearSelection={onClearSelection}
-          size="sm"
-        />
-      }
-    >
-      <TrialClassTable
-        trials={trials}
-        selectedIds={selectedIds}
-        copiedKey={copiedKey}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={onSort}
-        onToggleAll={onToggleAll}
-        onToggleOne={onToggleOne}
-        onRowClick={onRowClick}
-        onCopy={onCopy}
-        onRequestReschedule={onRequestReschedule}
-        onOpenAssign={onOpenAssign}
-        onOpenAssignReschedule={onOpenAssignReschedule}
-        onApprove={onApprove}
-        onReject={onReject}
-      />
-    </DataTableFrame>
+    <TrialClassTable
+      trials={trials}
+      selectedIds={selectedIds}
+      copiedKey={copiedKey}
+      sortField={sortField}
+      sortDirection={sortDirection}
+      onSort={onSort}
+      onToggleAll={onToggleAll}
+      onToggleOne={onToggleOne}
+      onRowClick={onRowClick}
+      onCopy={onCopy}
+      onOpenAssign={onOpenAssign}
+      onOpenAssignReschedule={onOpenAssignReschedule}
+      onApprove={onApprove}
+      onReject={onReject}
+      onChangeBranch={onChangeBranch}
+      onClearSelection={onClearSelection}
+      pagination={{
+        page: currentPage,
+        total,
+        pageSize,
+        onPageChange,
+        onPageSizeChange,
+      }}
+    />
   )
 }

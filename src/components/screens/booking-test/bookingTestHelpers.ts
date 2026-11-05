@@ -307,11 +307,20 @@ export function isTerminalBookingStatus(status: BookingStatus) {
 }
 
 export function isBookingCheckedIn(booking: BookingTest) {
-  return booking.attendance === 'confirmed'
+  return ['checkin', 'assessing', 'completed', 'tested', 'ipad_test_started'].includes(booking.status)
+}
+
+export function isBookingDeclined(booking: BookingTest) {
+  return booking.attendance === 'declined'
 }
 
 export function shouldShowCheckInAction(booking: BookingTest) {
-  return !isBookingCheckedIn(booking) && !isTerminalBookingStatus(booking.status) && booking.status !== 'ipad_test_booked' && booking.status !== 'ipad_test_started'
+  return (
+    !isBookingCheckedIn(booking) &&
+    !isTerminalBookingStatus(booking.status) &&
+    booking.status !== 'ipad_test_booked' &&
+    booking.status !== 'ipad_test_started'
+  )
 }
 
 export function applyBookingCheckIn(booking: BookingTest): BookingTest {
@@ -319,7 +328,7 @@ export function applyBookingCheckIn(booking: BookingTest): BookingTest {
     ...booking,
     attendance: 'confirmed',
     status:
-      booking.status === 'booked_assessment'
+      booking.status === 'booked_assessment' || booking.status === 'ipad_test_booked'
         ? 'checkin'
         : booking.status,
   }
@@ -332,7 +341,7 @@ export function matchesStatusTile(booking: BookingTest, status: StatusTileId) {
   if (status === 'tested')
     return booking.status === 'checkin' && Boolean(booking.isTested)
   if (status === 'unassigned_teacher') return !String(booking.teacher ?? '').trim()
-  if (status === 'checkin') return isBookingCheckedIn(booking)
+  if (status === 'checkin') return booking.status === 'checkin'
   return booking.status === status
 }
 
@@ -657,4 +666,29 @@ export function sortBookingTestsByOperationalPriority(bookings: BookingTest[]): 
     return b.id.localeCompare(a.id, undefined, { numeric: true })
   })
 }
+
+const stableHash = (str: string): number => {
+  let h = 0
+  for (let i = 0; i < str.length; i++) {
+    h = str.charCodeAt(i) + ((h << 5) - h)
+  }
+  return Math.abs(h)
+}
+
+export const AVATAR_COLORS = [
+  'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400',
+  'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
+  'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
+  'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+  'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400',
+  'bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:text-pink-400',
+  'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400',
+  'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400',
+  'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400',
+  'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-400',
+]
+
+export const getAvatarColor = (id: string): string =>
+  AVATAR_COLORS[stableHash(id) % AVATAR_COLORS.length]
+
 

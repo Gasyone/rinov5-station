@@ -14,7 +14,8 @@ import {
   type WorkRegistrationRecord,
   type WorkRegistrationStatus,
 } from '@/mocks/workRegistrations'
-import { formatMinutes, getEmployeeRoleLabel, getSlot } from './workRegistrationHelpers'
+import { formatMinutes, getSlot } from './workRegistrationHelpers'
+import { getEmployeeSubjectOrRoleLabel } from './workRegistrationShiftHelpers'
 
 interface WorkRegistrationSlotDetailDialogProps {
   open: boolean
@@ -67,7 +68,7 @@ export function WorkRegistrationSlotDetailDialog({
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{employee.name}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {getEmployeeRoleLabel(employee.id, employee.position, employee.department)} · {employee.branch}
+                        {getEmployeeSubjectOrRoleLabel(employee)} · {employee.branch}
                       </p>
                     </div>
                   </div>

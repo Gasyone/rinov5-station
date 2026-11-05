@@ -52,6 +52,44 @@ export function getDayOfWeekName(dateStr?: string): string {
   return days[dateObj.getDay()]
 }
 
+export function isSessionInFuture(dateStr?: string, status?: string): boolean {
+  if (status === 'completed' || status === 'ongoing') return false
+  if (status === 'cancelled' || status === 'absent') return true
+
+  if (!dateStr) return status === 'upcoming'
+
+  const trimmed = dateStr.trim()
+  let dateObj: Date | null = null
+
+  if (trimmed.includes('/')) {
+    const parts = trimmed.split('/')
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10)
+      const month = parseInt(parts[1], 10) - 1
+      const year = parseInt(parts[2], 10)
+      dateObj = new Date(year, month, day)
+    }
+  } else if (trimmed.includes('-')) {
+    const parts = trimmed.split('-')
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
+      } else {
+        dateObj = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10))
+      }
+    }
+  }
+
+  if (dateObj && !isNaN(dateObj.getTime())) {
+    dateObj.setHours(0, 0, 0, 0)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return dateObj.getTime() > today.getTime()
+  }
+
+  return status === 'upcoming'
+}
+
 export function formatDateWithDay(dateStr?: string): string {
   if (!dateStr) return ''
   const trimmed = dateStr.trim()

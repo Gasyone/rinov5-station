@@ -38,7 +38,7 @@ export function TrialClassParentSearchSelect({
 
   const displayLabel = useMemo(() => {
     if (selectedContact) {
-      return `${selectedContact.name} — ${maskPhone(selectedContact.phone)}`
+      return `${selectedContact.name} — ${selectedContact.phone}`
     }
     return ''
   }, [selectedContact])
@@ -206,7 +206,7 @@ export function TrialClassParentSearchSelect({
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="font-mono">{maskPhone(contact.phone)}</span>
+                        <span className="font-mono">{contact.phone}</span>
                         {childrenNames && (
                           <>
                             <span>&middot;</span>

@@ -93,7 +93,6 @@ const ALL_MENU_GROUPS: MenuModuleGroup[] = [
       { id: 'renewal', title: 'Tái phí học viên', path: '/app/renewal' },
       { id: 'support_tickets', title: 'Quản lý Ticket & Hỗ trợ', path: '/app/support_tickets' },
       { id: 'qc_check', title: 'Kiểm tra & Khắc phục chất lượng', path: '/app/qc_check' },
-      { id: 'session_feedback', title: 'Đánh giá buổi học', path: '/app/session_feedback' },
     ],
   },
   {
@@ -149,8 +148,6 @@ export function HomeMenuHubDialog({
       }
     }).filter((group) => group.items.length > 0)
   }, [searchTerm])
-
-  const totalItemCount = ALL_MENU_GROUPS.reduce((acc, g) => acc + g.items.length, 0)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

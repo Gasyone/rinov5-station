@@ -32,8 +32,10 @@ import { BookingTestCreateSummary } from './BookingTestCreateSummary'
 import { BookingTestSuccessSummaryView } from './BookingTestSuccessSummaryView'
 import { BookingTestAddChildDialog, type NewChildData } from './BookingTestAddChildDialog'
 import type { ContactPerson } from './ContactSearchableSelect'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 export function BookingTestCreateScreen() {
+  const user = useAuthStore((s) => s.user)
   const searchParams = useSearchParams()
   const paramLeadId = searchParams.get('leadId')
   const paramStudentName = searchParams.get('studentName')
@@ -363,6 +365,12 @@ export function BookingTestCreateScreen() {
         ? 'Bố'
         : 'Mẹ')
 
+    const resolvedCreator =
+      user?.name && user.name !== 'Người dùng hiện tại' && user.name !== 'Demo User'
+        ? user.name
+        : (paramLeadId ? mockLeads.find((l) => l.id === paramLeadId)?.assignedTo : undefined) ||
+          'Trần Thị Mai (Tư vấn tuyển sinh)'
+
     const newBooking: BookingTest = {
       id: `E${Math.floor(1000 + Math.random() * 9000)}`,
       childName: finalChildName,
@@ -391,17 +399,17 @@ export function BookingTestCreateScreen() {
       testResult: {
         level: level,
       },
-      createdBy: 'Người dùng hiện tại',
-      ops: 'Người dùng hiện tại',
+      createdBy: resolvedCreator,
+      ops: resolvedCreator,
       teacher: teacher || '',
       tester: teacher || '',
-      interviewer: 'Người dùng hiện tại',
+      interviewer: resolvedCreator,
       msg: notes.trim() || '-',
       notes: notes.trim()
         ? [
             {
               text: notes.trim(),
-              author: 'Người dùng hiện tại',
+              author: resolvedCreator,
               timestamp: new Date()
                 .toISOString()
                 .slice(0, 16)

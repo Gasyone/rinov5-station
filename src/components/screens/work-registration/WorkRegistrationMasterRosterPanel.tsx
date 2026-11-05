@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { WorkRegistrationAssignStaffDialog } from './WorkRegistrationAssignStaffDialog'
@@ -15,30 +15,83 @@ import {
   type ShiftSection,
 } from '@/mocks/shiftRoster'
 import {
-  WORK_TIME_SLOTS,
   toWorkDateKey,
+  type WorkRegistrationEmployee,
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import { checkDateHoliday } from '@/mocks/holidays'
-import { formatCompactTimeLabel } from './workRegistrationHelpers'
+import { getEmployeeSectionShiftInfo } from './workRegistrationShiftHelpers'
 
 interface WorkRegistrationMasterRosterPanelProps {
   activeBranch: string
+  subjectFilter?: string
   searchQuery?: string
+  selectedShifts?: ShiftSection[]
   weekDays?: Date[]
   records?: WorkRegistrationRecord[]
+  employees?: WorkRegistrationEmployee[]
   onRosterUpdated?: () => void
 }
 
 export function WorkRegistrationMasterRosterPanel({
   activeBranch,
+  subjectFilter = 'all',
   searchQuery = '',
+  selectedShifts,
   weekDays = [],
   records = [],
+  employees = [],
   onRosterUpdated,
 }: WorkRegistrationMasterRosterPanelProps) {
-  // Lấy danh sách phân bổ hiện tại cho chi nhánh
   const [refreshKey, setRefreshKey] = useState(0)
+
+  // Ref đo chiều cao tổng thể của ma trận để phân bổ đều chiều cao các ca trực
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerHeight, setContainerHeight] = useState<number>(460)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const updateHeight = () => {
+      const h = el.clientHeight
+      if (h > 0) setContainerHeight(h)
+    }
+
+    updateHeight()
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const h = entry.contentRect.height
+          if (h > 0) setContainerHeight(h)
+        }
+      })
+      ro.observe(el)
+      return () => ro.disconnect()
+    } else {
+      window.addEventListener('resize', updateHeight)
+      return () => window.removeEventListener('resize', updateHeight)
+    }
+  }, [])
+
+  // Các ca được hiển thị (chia đều toàn bộ chiều cao màn hình)
+  const displayedSections = useMemo(() => {
+    if (!selectedShifts || selectedShifts.length === 0) return DUTY_SECTIONS
+    return DUTY_SECTIONS.filter((s) => selectedShifts.includes(s.id))
+  }, [selectedShifts])
+
+  // Chiều cao thực tế khả dụng của mỗi ô ca trực sau khi chia đều cho các ca hiển thị
+  const cellHeight = useMemo(() => {
+    const numSections = displayedSections.length || 3
+    const WEEKDAY_HEADER_HEIGHT = 37
+    const SECTION_HEADER_HEIGHT = 31
+    const totalGridsHeight = Math.max(
+      numSections * 90,
+      containerHeight - WEEKDAY_HEADER_HEIGHT - numSections * SECTION_HEADER_HEIGHT
+    )
+    return Math.floor(totalGridsHeight / numSections)
+  }, [containerHeight, displayedSections.length])
 
   // Dialog chọn nhân viên cho 1 ca cụ thể
   const [editingSlot, setEditingSlot] = useState<{
@@ -48,15 +101,69 @@ export function WorkRegistrationMasterRosterPanel({
     sectionLabel: string
   } | null>(null)
 
-  const branchEmployees = getDutyEmployeesByBranch(activeBranch)
+  const branchEmployees = useMemo(() => {
+    const list = getDutyEmployeesByBranch(activeBranch)
+    if (list.length > 0) return list
+    return employees
+      .filter((e) => e.branch === activeBranch)
+      .map((e) => {
+        const isTeacher =
+          e.department === 'Teaching' ||
+          e.department === 'Phòng Đào tạo' ||
+          e.position.toLowerCase().includes('teacher') ||
+          e.position.toLowerCase().includes('giáo viên')
+        const isTA =
+          e.position.toLowerCase().includes('assistant') ||
+          e.position.toLowerCase().includes('trợ giảng')
+        const isCS =
+          e.department === 'Customer Care' || e.position.toLowerCase().includes('cs')
+        return {
+          id: e.id,
+          name: e.name,
+          shortName:
+            e.name
+              .split(' ')
+              .slice(-2)
+              .map((w) => w[0])
+              .join('')
+              .toUpperCase() || 'NV',
+          role: (isTeacher
+            ? 'Giáo viên'
+            : isTA
+            ? 'Trợ giảng'
+            : isCS
+            ? 'CS'
+            : 'Khác') as DutyEmployee['role'],
+          subject: (e.subjects?.includes('Toán')
+            ? 'math'
+            : e.subjects?.includes('Tiếng Anh')
+            ? 'english'
+            : 'all') as DutyEmployee['subject'],
+          colorClass: isTeacher
+            ? 'bg-indigo-600 text-white'
+            : isTA
+            ? 'bg-purple-700 text-white'
+            : isCS
+            ? 'bg-rose-600 text-white'
+            : 'bg-amber-600 text-white',
+          branch: e.branch,
+        }
+      })
+  }, [activeBranch, employees])
+
   const masterRoster = getMasterShiftRoster(activeBranch)
 
-  const getSlotAssignedStaff = (dayIndex: number, section: ShiftSection): DutyEmployee[] => {
-    const found = masterRoster.find(
-      (item) => item.branch === activeBranch && item.dayIndex === dayIndex && item.section === section
-    )
-    if (!found) return []
-    return found.assignedEmployeeIds.map(findDutyEmployeeById).filter(Boolean) as DutyEmployee[]
+  const hasSubject = Boolean(subjectFilter && subjectFilter !== 'all')
+  const hasSearch = Boolean(searchQuery.trim())
+
+  const isSubjectMatch = (staff: DutyEmployee) => {
+    if (!hasSubject) return true
+    if (staff.subject === 'all' || (staff.role !== 'Giáo viên' && staff.role !== 'Trợ giảng')) {
+      return true
+    }
+    if (staff.subject === 'math') return subjectFilter === 'Toán'
+    if (staff.subject === 'english') return subjectFilter === 'Tiếng Anh'
+    return false
   }
 
   // Tạo map dateKey cho từng dayIndex
@@ -68,26 +175,43 @@ export function WorkRegistrationMasterRosterPanel({
     return map
   }, [weekDays])
 
-  // Lấy thông tin đăng ký của nhân viên cho ngày + buổi (trả về "Full ca" nếu full hoặc mặc định, hoặc giờ lẻ e.g. "13:30 - 17:00")
-  const getStaffRegisteredTime = (employeeId: string, dayIndex: number, section: ShiftSection): string => {
-    const dateKey = dayDateKeys[dayIndex]
-    const secId = section === 'evening_digi' ? 'evening' : section
-    const sectionAllSlots = WORK_TIME_SLOTS.filter((s) => s.section === secId)
+  // Lấy thông tin đăng ký của nhân viên cho ngày + buổi (hỗ trợ cả Full ca hoặc nhiều khoảng giờ lẻ rời nhau e.g. "8-9h, 10-11h")
+  const getStaffShiftDisplay = (employeeId: string, dayIndex: number, section: ShiftSection) => {
+    const staff = branchEmployees.find((e) => e.id === employeeId)
+    const isTeaching = staff ? staff.role === 'Giáo viên' || staff.role === 'Trợ giảng' : false
+    const dateKey = dayDateKeys[dayIndex] || ''
+    const shiftInfo = getEmployeeSectionShiftInfo(records, employeeId, dateKey, section)
 
-    if (dateKey && sectionAllSlots.length > 0 && records && records.length > 0) {
-      const empSlots = records
-        .filter((r) => r.employeeId === employeeId && r.date === dateKey && r.slotId.startsWith(secId))
-        .map((r) => WORK_TIME_SLOTS.find((s) => s.id === r.slotId)!)
-        .filter(Boolean)
-        .sort((a, b) => a.start.localeCompare(b.start))
-
-      if (empSlots.length > 0) {
-        if (empSlots.length >= sectionAllSlots.length) return 'Full ca'
-        return `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
+    if (!isTeaching && shiftInfo.notRegistered) {
+      return {
+        isFull: true,
+        isPartial: false,
+        notRegistered: false,
+        intervals: [] as string[],
+        compactLabel: 'Full',
+        fullTooltipLabel: 'Full ca',
       }
     }
+    return shiftInfo
+  }
 
-    return 'Full ca'
+  const isStaffAvailableForShift = (staff: DutyEmployee, dayIndex: number, section: ShiftSection) => {
+    const isTeaching = staff.role === 'Giáo viên' || staff.role === 'Trợ giảng'
+    if (!isTeaching) return true
+    const shiftInfo = getStaffShiftDisplay(staff.id, dayIndex, section)
+    return !shiftInfo.notRegistered
+  }
+
+  const getSlotAssignedStaff = (dayIndex: number, section: ShiftSection): DutyEmployee[] => {
+    const found = masterRoster.find(
+      (item) => item.branch === activeBranch && item.dayIndex === dayIndex && item.section === section
+    )
+    if (!found) return []
+    const list = found.assignedEmployeeIds
+      .map((id) => branchEmployees.find((e) => e.id === id) || findDutyEmployeeById(id))
+      .filter(Boolean) as DutyEmployee[]
+    const availableList = list.filter((staff) => isStaffAvailableForShift(staff, dayIndex, section))
+    return hasSubject ? availableList.filter(isSubjectMatch) : availableList
   }
 
   const isStaffMatch = (staff: DutyEmployee) => {
@@ -100,24 +224,84 @@ export function WorkRegistrationMasterRosterPanel({
     )
   }
 
+  // Tính số lượng nhân sự hiển thị tối đa vừa vặn với chiều cao thực tế của ô ca trực (chỉ khi không đủ chỗ mới +N)
+  const getVisibleStaffInfo = (staffList: DutyEmployee[], availableCellHeight: number) => {
+    if (staffList.length === 0) {
+      return {
+        visibleStaff: [] as DutyEmployee[],
+        remainingStaff: [] as DutyEmployee[],
+        remainingCount: 0,
+        hasMoreStaff: false,
+      }
+    }
+
+    const ITEM_HEIGHT = 18 // Chiều cao 1 dòng nhân sự (px)
+    const ITEM_GAP = 2 // Khoảng cách giữa các dòng (px)
+    const MORE_BTN_HEIGHT = 19 // Chiều cao nút +N (px)
+    const MORE_BTN_GAP = 2 // Khoảng cách tới nút +N (px)
+    const FIXED_OVERHEAD = 34 // Padding ô (12px) + header ô (18px) + buffer (4px)
+
+    const availableForStaff = Math.max(0, availableCellHeight - FIXED_OVERHEAD)
+    const totalNeededForAll =
+      staffList.length * ITEM_HEIGHT + Math.max(0, staffList.length - 1) * ITEM_GAP
+
+    // 1. Kiểm tra xem chiều cao thực tế của ô có đủ chỗ hiển thị toàn bộ danh sách nhân sự hay không
+    const canFitAll = totalNeededForAll <= availableForStaff
+
+    if (canFitAll) {
+      return {
+        visibleStaff: staffList,
+        remainingStaff: [] as DutyEmployee[],
+        remainingCount: 0,
+        hasMoreStaff: false,
+      }
+    }
+
+    // 2. Khi số lượng nhân sự vượt quá sức chứa của ô (không đủ chỗ cho tất cả):
+    // Tự động kích hoạt cơ chế thu gọn: dành 1 dòng cuối cho nút "+N người khác | Chi tiết →"
+    // và điền đầy tối đa số lượng nhân sự có thể vừa trong khoảng trống còn lại của ô (bestK)
+    let bestK = 1
+    for (let k = staffList.length - 1; k >= 1; k--) {
+      const needed = k * ITEM_HEIGHT + (k - 1) * ITEM_GAP + MORE_BTN_GAP + MORE_BTN_HEIGHT
+      if (needed <= availableForStaff) {
+        bestK = k
+        break
+      }
+    }
+
+    // Đảm bảo khi đã gom về N+ thì luôn có ít nhất 1 người bị ẩn và hiện nút +N
+    if (bestK >= staffList.length) {
+      bestK = Math.max(1, staffList.length - 1)
+    }
+
+    const visibleStaff = staffList.slice(0, bestK)
+    const remainingStaff = staffList.slice(bestK)
+    const remainingCount = staffList.length - bestK
+
+    return {
+      visibleStaff,
+      remainingStaff,
+      remainingCount,
+      hasMoreStaff: remainingCount > 0,
+    }
+  }
+
   const handleSaveSlotStaff = (selectedIds: string[]) => {
     if (!editingSlot) return
     updateMasterShiftRosterSlot(activeBranch, editingSlot.dayIndex, editingSlot.section, selectedIds)
     setRefreshKey((k) => k + 1)
     onRosterUpdated?.()
     setEditingSlot(null)
-    toast.success(`Đã cập nhật ca ${editingSlot.sectionLabel} (${editingSlot.dayLabel})`)
+    toast.success(`Đã cập nhật ${editingSlot.sectionLabel} (${editingSlot.dayLabel})`)
   }
-
-  const hasSearch = Boolean(searchQuery.trim())
 
   return (
     <div key={refreshKey} className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       {/* MA TRẬN PHÂN BỔ CA TRỰC 7 NGÀY */}
       <div className="flex-1 min-h-0 overflow-auto rounded-xl border bg-card shadow-2xs flex flex-col">
-        <div className="flex flex-col flex-1 h-full min-w-[900px] divide-y">
+        <div ref={containerRef} className="flex flex-col min-w-[900px] divide-y flex-1 min-h-[460px]">
           {/* HEADER: 7 THỨ TRONG TUẦN */}
-          <div className="shrink-0 grid grid-cols-7 divide-x bg-muted/40 text-xs font-semibold text-foreground sticky top-0 z-10 border-b">
+          <div className="shrink-0 grid grid-cols-7 divide-x bg-muted/80 backdrop-blur-xs text-xs font-semibold text-foreground sticky top-0 z-20 border-b">
             {WEEKDAYS.map((day, idx) => {
               const dateObj = weekDays[idx]
               const dateKey = dateObj ? toWorkDateKey(dateObj) : ''
@@ -139,16 +323,14 @@ export function WorkRegistrationMasterRosterPanel({
             })}
           </div>
 
-          {/* 3 HÀNG BUỔI: SÁNG, CHIỀU, TỐI */}
-          {DUTY_SECTIONS.filter((sec) => sec.id !== 'evening_digi').map((sec) => {
-            const isDigi = sec.id === 'evening_digi'
-
+          {/* 3 HÀNG BUỔI: BUỔI SÁNG, BUỔI CHIỀU, BUỔI TỐI - CHIA ĐỀU CHIỀU CAO KHẢ DỤNG */}
+          {displayedSections.map((sec) => {
             return (
-              <div key={sec.id} className="flex-1 min-h-0 flex flex-col">
+              <div key={sec.id} className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 {/* TIÊU ĐỀ CA CÓ PHỦ NỀN ĐẸP (RIBBON HEADER) */}
                 <div
                   className={cn(
-                    'shrink-0 flex items-center justify-between px-3.5 py-1.5 border-y text-xs font-bold transition-colors',
+                    'shrink-0 flex items-center justify-between px-3.5 py-1.5 border-b text-xs font-bold transition-colors',
                     sec.id === 'morning'
                       ? 'bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/20 text-amber-900 dark:text-amber-200'
                       : sec.id === 'afternoon'
@@ -157,7 +339,7 @@ export function WorkRegistrationMasterRosterPanel({
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="uppercase tracking-wider font-bold text-xs">
+                    <span className="font-bold text-xs">
                       {sec.label}
                     </span>
                     <span
@@ -172,30 +354,21 @@ export function WorkRegistrationMasterRosterPanel({
                     >
                       ({sec.slots[0]} - {sec.slots[sec.slots.length - 1]})
                     </span>
-                    {isDigi && (
-                      <span className="inline-flex items-center rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 px-2 py-0.2 text-[9.5px] font-bold border border-purple-300 dark:border-purple-700">
-                        Phòng Tự Học Digital
-                      </span>
-                    )}
                   </div>
-                  {isDigi && (
-                    <span className="hidden md:inline-block text-xs font-normal text-purple-700 dark:text-purple-300/80">
-                      Gán giáo viên / Trợ giảng phụ trách
-                    </span>
-                  )}
                 </div>
 
                 {/* 7 CỘT THỨ (PHÂN CÁCH BẰNG ĐƯỜNG KẺ DỌC divide-x) */}
-                <div className="flex-1 min-h-0 grid grid-cols-7 divide-x divide-border/60">
+                <div
+                  className="grid grid-cols-7 divide-x divide-border/60 flex-1 min-h-0 overflow-hidden"
+                >
                   {WEEKDAYS.map((day) => {
                     const assignedStaff = getSlotAssignedStaff(day.index, sec.id)
                     const hasMatchingStaff = hasSearch && assignedStaff.some(isStaffMatch)
-                    const MAX_DISPLAY = 4
-                    const hasMoreThanMax = assignedStaff.length > MAX_DISPLAY
-                    const displayedStaff = hasMoreThanMax
-                      ? assignedStaff.slice(0, MAX_DISPLAY)
+                    const sortedStaff = hasSearch
+                      ? [...assignedStaff].sort((a, b) => (isStaffMatch(b) ? 1 : 0) - (isStaffMatch(a) ? 1 : 0))
                       : assignedStaff
-                    const remainingCount = assignedStaff.length - MAX_DISPLAY
+                    const { visibleStaff, remainingStaff, remainingCount, hasMoreStaff } =
+                      getVisibleStaffInfo(sortedStaff, cellHeight)
 
                     return (
                       <div
@@ -209,121 +382,122 @@ export function WorkRegistrationMasterRosterPanel({
                           })
                         }
                         className={cn(
-                          'flex flex-col justify-between p-1.5 h-full min-h-[92px] overflow-hidden cursor-pointer transition-all hover:bg-muted/20 group relative',
-                          isDigi && 'bg-purple-500/[0.02]',
+                          'flex flex-col justify-between px-2 py-1.5 h-full min-h-0 overflow-hidden cursor-pointer transition-all hover:bg-muted/20 group relative',
                           hasSearch && hasMatchingStaff
                             ? 'bg-primary/5 ring-1 ring-primary/40'
                             : hasSearch && !hasMatchingStaff
                             ? 'opacity-35 hover:opacity-100'
-                            : assignedStaff.length > 0
-                            ? isDigi ? 'bg-purple-50/20 dark:bg-purple-950/10' : 'bg-card'
-                            : 'bg-muted/5'
+                            : 'bg-card'
                         )}
                       >
-                        <div className="space-y-1 flex-1 min-h-0 flex flex-col">
-                          <div className="shrink-0 flex items-center justify-between text-xs">
+                        <div className="space-y-1 flex-1 min-h-0 flex flex-col overflow-hidden">
+                          {/* HEADER Ô: SỐ NGƯỜI TRỰC / TRỐNG + NÚT + SỬA */}
+                          <div className="shrink-0 flex items-center justify-between text-xs leading-none">
                             <span
                               className={cn(
-                                'text-xs',
+                                'text-[11.5px]',
                                 hasMatchingStaff
                                   ? 'text-primary font-bold'
                                   : assignedStaff.length > 0
-                                  ? isDigi
-                                    ? 'text-purple-700 dark:text-purple-400 font-semibold'
-                                    : 'text-amber-600 dark:text-amber-500 font-medium'
+                                  ? 'text-amber-600 dark:text-amber-500 font-medium'
                                   : 'text-muted-foreground/60 font-normal'
                               )}
                             >
                               {hasMatchingStaff
-                                ? `Khớp tìm kiếm`
+                                ? 'Khớp tìm kiếm'
                                 : assignedStaff.length > 0
                                 ? `${assignedStaff.length} người trực`
                                 : 'Trống'}
                             </span>
-                            <span
-                              className={cn(
-                                'transition-colors text-xs font-semibold',
-                                isDigi
-                                  ? 'text-purple-600 dark:text-purple-400 group-hover:underline'
-                                  : 'text-muted-foreground group-hover:text-primary'
-                              )}
-                            >
+                            <span className="inline-flex items-center rounded bg-sky-500/10 px-1.5 py-0.2 text-[10.5px] font-semibold text-sky-600 dark:text-sky-400 group-hover:bg-sky-500/20 transition-colors">
                               + Sửa
                             </span>
                           </div>
 
-                          {/* Danh sách nhân sự trong ca (tối đa 4 + dòng +N) */}
-                          <div className="space-y-0.5 pt-0.5 flex-1 min-h-0 overflow-hidden">
-                            {displayedStaff.map((staff) => {
-                              const isMatched = isStaffMatch(staff)
+                          {/* DANH SÁCH NHÂN SỰ TRONG CA */}
+                          {assignedStaff.length > 0 ? (
+                            <div className="space-y-0.5 pt-0.5 flex-1 min-h-0 overflow-hidden flex flex-col justify-start">
+                              {visibleStaff.map((staff) => {
+                                const isMatched = isStaffMatch(staff)
+                                const shiftDisplay = getStaffShiftDisplay(staff.id, day.index, sec.id)
+                                const isFull = !shiftDisplay.isPartial && !shiftDisplay.notRegistered
+                                const compactTime = shiftDisplay.compactLabel
 
-                              return (
-                                <div
-                                  key={staff.id}
-                                  title={`${staff.name}${getStaffRegisteredTime(staff.id, day.index, sec.id) ? ` • ${getStaffRegisteredTime(staff.id, day.index, sec.id)}` : ''}`}
-                                  className={cn(
-                                    'flex items-center justify-between gap-1 rounded hover:bg-muted/60 px-1 py-0.5 text-xs transition-colors',
-                                    isMatched
-                                      ? 'bg-primary text-primary-foreground shadow-2xs ring-1 ring-primary-foreground/20'
-                                      : 'text-foreground'
-                                  )}
-                                >
-                                  <span
+                                return (
+                                  <div
+                                    key={staff.id}
+                                    title={`${staff.name} • ${shiftDisplay.fullTooltipLabel}`}
                                     className={cn(
-                                      'truncate text-[11.5px] font-normal flex-1 min-w-0',
-                                      isMatched ? 'text-primary-foreground font-medium' : 'text-foreground'
+                                      'flex items-center justify-between gap-1 rounded hover:bg-muted/60 px-1 py-0.2 text-[11px] leading-tight transition-colors shrink-0 h-[18px]',
+                                      isMatched
+                                        ? 'bg-primary text-primary-foreground shadow-2xs ring-1 ring-primary-foreground/20'
+                                        : 'text-foreground'
                                     )}
-                                    title={staff.name}
                                   >
-                                    {staff.name}
-                                  </span>
-                                  {(() => {
-                                    const regTime = getStaffRegisteredTime(staff.id, day.index, sec.id)
-                                    const isFull = regTime === 'Full ca' || regTime === 'Full' || regTime === 'Cả ca'
-                                    const compactTime = formatCompactTimeLabel(regTime)
-                                    return compactTime ? (
+                                    <span
+                                      className={cn(
+                                        'truncate text-[11px] font-normal flex-1 min-w-0',
+                                        isMatched ? 'text-primary-foreground font-medium' : 'text-foreground'
+                                      )}
+                                      title={staff.name}
+                                    >
+                                      {staff.name}
+                                    </span>
+                                    {compactTime ? (
                                       <span
                                         className={cn(
                                           'shrink-0 tabular-nums leading-tight',
                                           isMatched
-                                            ? 'text-primary-foreground font-medium text-xs'
+                                            ? 'text-primary-foreground font-medium text-[11px]'
                                             : isFull
-                                            ? 'text-xs font-medium text-emerald-600 dark:text-emerald-400'
-                                            : 'text-[9.5px] font-normal text-muted-foreground'
+                                            ? 'text-[11px] font-medium text-emerald-600 dark:text-emerald-400'
+                                            : 'text-[10px] font-normal text-muted-foreground'
                                         )}
                                       >
                                         {compactTime}
                                       </span>
-                                    ) : null
-                                  })()}
+                                    ) : null}
+                                  </div>
+                                )
+                              })}
+
+                              {/* CHỈ BÁO +N KHI KHÔNG ĐỦ CHỖ HIỂN THỊ */}
+                              {hasMoreStaff && (
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setEditingSlot({
+                                      dayIndex: day.index,
+                                      dayLabel: day.label,
+                                      section: sec.id,
+                                      sectionLabel: sec.label,
+                                    })
+                                  }}
+                                  className="flex items-center justify-between rounded bg-sky-500/10 hover:bg-sky-500/20 px-1.5 py-0.2 text-[11px] font-semibold text-sky-700 dark:text-sky-300 border border-sky-500/20 transition-colors mt-0.5 cursor-pointer group/more shrink-0 h-[19px]"
+                                  title={`Còn lại (${remainingCount} người trực):\n${remainingStaff
+                                    .map(
+                                      (s) =>
+                                        `• ${s.name} (${getStaffShiftDisplay(s.id, day.index, sec.id).compactLabel || 'Full'})`
+                                    )
+                                    .join('\n')}`}
+                                >
+                                  <span className="font-semibold text-xs tabular-nums">
+                                    +{remainingCount} người khác
+                                  </span>
+                                  <span className="text-[10px] font-normal text-sky-600/80 dark:text-sky-400/80 group-hover/more:underline">
+                                    Chi tiết →
+                                  </span>
                                 </div>
-                              )
-                            })}
-
-                            {hasMoreThanMax && (
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setEditingSlot({
-                                    dayIndex: day.index,
-                                    dayLabel: day.label,
-                                    section: sec.id,
-                                    sectionLabel: sec.label,
-                                  })
-                                }}
-                                className="text-xs font-semibold text-primary hover:underline px-1 py-0.5 cursor-pointer flex items-center justify-between transition-colors pt-0.5 border-t border-border/30 mt-0.5"
-                              >
-                                <span>+{remainingCount} khác...</span>
-                                <span className="text-xs font-normal text-muted-foreground">Chi tiết →</span>
-                              </div>
-                            )}
-
-                            {assignedStaff.length === 0 && (
-                              <div className="py-3 text-center text-xs text-muted-foreground italic">
-                                {isDigi ? 'Chưa gán trợ giảng / GV' : 'Chưa có người trực'}
-                              </div>
-                            )}
-                          </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center py-4 text-center select-none">
+                              <p className="text-xs text-muted-foreground/60">Chưa có người trực</p>
+                              <p className="text-[11px] text-muted-foreground/40 mt-0.5">
+                                Nhấp hoặc bấm &quot;+ Sửa&quot;
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )
@@ -335,7 +509,7 @@ export function WorkRegistrationMasterRosterPanel({
         </div>
       </div>
 
-      {/* DIALOG CHỈNH SỬA PHÂN BỔ NHÂN SỰ CHO 1 CA (2 PANELS: DANH SÁCH + LỊCH CHI TIẾT) */}
+      {/* DIALOG CHỈNH SỬA PHÂN BỔ NHÂN SỰ CHO 1 CA */}
       {editingSlot && (
         <WorkRegistrationAssignStaffDialog
           open={Boolean(editingSlot)}
@@ -348,13 +522,10 @@ export function WorkRegistrationMasterRosterPanel({
           masterRoster={masterRoster}
           records={records}
           weekDays={weekDays}
+          subjectFilter={subjectFilter}
+          employees={employees}
           currentAssignedIds={
-            masterRoster.find(
-              (item) =>
-                item.branch === activeBranch &&
-                item.dayIndex === editingSlot.dayIndex &&
-                item.section === editingSlot.section
-            )?.assignedEmployeeIds || []
+            getSlotAssignedStaff(editingSlot.dayIndex, editingSlot.section).map((e) => e.id)
           }
           onClose={() => setEditingSlot(null)}
           onSave={handleSaveSlotStaff}

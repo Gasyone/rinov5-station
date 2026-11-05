@@ -4,33 +4,51 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { ModuleLoadingSkeleton, ErrorState, ConfirmDialog } from '@/components/shared'
 import type { TrialClass } from '@/mocks/trialClasses'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { TrialClassToolbar } from './TrialClassToolbar'
-import { TrialClassTableFrame } from './TrialClassTableFrame'
+import { TrialClassTable } from './TrialClassTable'
 import { TrialClassDetailDialog } from './TrialClassDetailDialog'
 import { TrialClassAssignDialog } from './TrialClassAssignDialog'
 import {
   filterTrialClasses,
   readTrialClasses,
   sortTrialClasses,
+  isMyTrial,
   type TrialClassUpdater,
   getWeekdayLabel,
 } from './trialClassHelpers'
 import { SYSTEM_BRANCHES } from '@/components/controls'
 import { STATUS_CONFIG } from './trialClassConstants'
-import type { AssignDialogMode, StatusTileId, TrialSessionSelection, TrialClassFilterState, TrialResultFilterId, TrialSortField, SortDirection } from './trialClassTypes'
+import type {
+  AssignDialogMode,
+  StatusTileId,
+  TrialSessionSelection,
+  TrialClassFilterState,
+  TrialResultFilterId,
+  TrialSortField,
+  SortDirection,
+} from './trialClassTypes'
 
-function getUniqueStringValues(trials: TrialClass[], key: 'branch' | 'program' | 'creator' | 'subject' | 'owner' | 'school'): string[] {
+function getUniqueStringValues(
+  trials: TrialClass[],
+  key: 'branch' | 'program' | 'creator' | 'subject' | 'owner' | 'school'
+): string[] {
   return [...new Set(trials.map((t) => t[key]).filter(Boolean))] as string[]
 }
 
 export function TrialClassScreen() {
+  const user = useAuthStore((state) => state.user)
+  const authorName = user?.name ?? 'Người dùng hiện tại'
+
   const [trialState, setTrialState] = useState(readTrialClasses)
   const [isLoading, setIsLoading] = useState(false)
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeSubject, setActiveSubject] = useState('all')
   const [activeStatus, setActiveStatus] = useState<StatusTileId>('all')
   const [activeResultFilter, setActiveResultFilter] = useState<TrialResultFilterId>('all')
+  const [selectedAssignee, setSelectedAssignee] = useState<'all' | 'my'>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<TrialClassFilterState>({
     programs: [],
@@ -51,6 +69,11 @@ export function TrialClassScreen() {
 
   const [detailTrialId, setDetailTrialId] = useState('')
   const [assignMode, setAssignMode] = useState<AssignDialogMode>({ mode: 'closed' })
+  const [pendingBranchChange, setPendingBranchChange] = useState<{
+    trialId: string
+    newBranch: string
+    hasSession: boolean
+  } | null>(null)
 
   // Đồng bộ lại danh sách khi quay lại màn hình hoặc có tạo mới từ page /booking-trial
   useEffect(() => {
@@ -106,14 +129,38 @@ export function TrialClassScreen() {
     }))
   }, [trials, filters.weekdays])
 
+  // Status tiles count updates automatically according to current filters (Rule 5)
+  const baseForStatus = useMemo(() => {
+    return filterTrialClasses(
+      trials,
+      searchTerm,
+      activeBranch,
+      'all',
+      filters,
+      activeSubject,
+      activeResultFilter
+    )
+  }, [trials, searchTerm, activeBranch, filters, activeSubject, activeResultFilter])
+
+  const myTrialsCount = useMemo(() => {
+    return baseForStatus.filter((t) => isMyTrial(t, authorName)).length
+  }, [baseForStatus, authorName])
+
   const filtered = useMemo(
     () => filterTrialClasses(trials, searchTerm, activeBranch, activeStatus, filters, activeSubject, activeResultFilter),
     [trials, searchTerm, activeBranch, activeStatus, filters, activeSubject, activeResultFilter]
   )
 
+  const effectiveTrials = useMemo(() => {
+    if (selectedAssignee === 'my') {
+      return filtered.filter((t) => isMyTrial(t, authorName))
+    }
+    return filtered
+  }, [filtered, selectedAssignee, authorName])
+
   const sorted = useMemo(
-    () => sortTrialClasses(filtered, sortField, sortDirection),
-    [filtered, sortField, sortDirection]
+    () => sortTrialClasses(effectiveTrials, sortField, sortDirection),
+    [effectiveTrials, sortField, sortDirection]
   )
 
   const reloadTrials = () => {
@@ -218,7 +265,7 @@ export function TrialClassScreen() {
           status: 'confirmed',
           auditLog: [
             ...t.auditLog,
-            { timestamp: now, author: 'Người dùng hiện tại', action: 'Chấp thuận ghép lớp' },
+            { timestamp: now, author: authorName, action: 'Chấp thuận ghép lớp' },
           ],
         }
       })
@@ -237,12 +284,54 @@ export function TrialClassScreen() {
           status: 'rejected',
           auditLog: [
             ...t.auditLog,
-            { timestamp: now, author: 'Người dùng hiện tại', action: 'Từ chối ghép lớp', detail: 'Giải phóng lớp đã chọn' },
+            { timestamp: now, author: authorName, action: 'Từ chối ghép lớp', detail: 'Giải phóng lớp đã chọn' },
           ],
         }
       })
     )
     toast.success('Đã từ chối ghép lớp và giải phóng lịch học')
+  }
+
+  const applyBranchChange = (trialId: string, newBranch: string, hadSession: boolean) => {
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+    setTrials((current) =>
+      current.map((t) => {
+        if (t.id !== trialId) return t
+        const oldBranch = t.branch || t.school
+        return {
+          ...t,
+          branch: newBranch,
+          school: newBranch,
+          sessions: hadSession ? [] : t.sessions,
+          status: hadSession ? ('pending_approval' as const) : t.status,
+          auditLog: [
+            ...t.auditLog,
+            {
+              timestamp: now,
+              author: authorName,
+              action: `Chuyển cơ sở tiếp nhận sang ${newBranch}`,
+              detail: hadSession ? `Giải phóng lớp cũ tại ${oldBranch} để xếp lại cơ sở mới` : undefined,
+            },
+          ],
+        }
+      })
+    )
+    toast.success(`Đã chuyển cơ sở tiếp nhận sang ${newBranch}`)
+    setPendingBranchChange(null)
+  }
+
+  const handleChangeBranch = (trialId: string, newBranch: string) => {
+    const target = trials.find((t) => t.id === trialId)
+    if (!target) return
+    const currentBranch = target.branch || target.school
+    if (currentBranch === newBranch) return
+
+    if (target.sessions.length > 0) {
+      setPendingBranchChange({ trialId, newBranch, hasSession: true })
+      return
+    }
+
+    applyBranchChange(trialId, newBranch, false)
   }
 
   const handleCopy = (text: string, key: string) => {
@@ -286,7 +375,7 @@ export function TrialClassScreen() {
             ...t.auditLog,
             {
               timestamp: now,
-              author: 'Người dùng hiện tại',
+              author: authorName,
               action: rescheduleReason ? `Đổi buổi học (${rescheduleReason})` : 'Ghép lớp học thử',
               detail: notes || undefined,
             },
@@ -306,8 +395,14 @@ export function TrialClassScreen() {
         activeResultFilter={activeResultFilter}
         searchTerm={searchTerm}
         branchOptions={branchOptions}
-        baseForStatus={trials}
+        baseForStatus={baseForStatus}
         activeFilterCount={activeFilterCount}
+        selectedAssignee={selectedAssignee}
+        onAssigneeChange={(assignee) => {
+          setSelectedAssignee(assignee)
+          setPage(1)
+        }}
+        myTrialsCount={myTrialsCount}
         onBranchChange={(branch) => { setActiveBranch(branch); setPage(1) }}
         onSubjectChange={(subject) => { setActiveSubject(subject); setPage(1) }}
         onStatusChange={(status) => { setActiveStatus(status); setActiveResultFilter('all'); setPage(1) }}
@@ -316,55 +411,67 @@ export function TrialClassScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-2.5 lg:px-3">
-        <div className="flex-1 min-w-0 h-full overflow-hidden">
-          <TrialClassTableFrame
-            loading={isLoading}
-            error={error?.message ?? null}
-            trials={paged}
-            selectedIds={selectedIds}
-            copiedKey={copiedKey}
-            currentPage={currentPage}
-            total={sorted.length}
-            pageSize={pageSize}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            onRetry={reloadTrials}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
-            onToggleAll={(checked, ids) => {
-              setSelectedIds(checked ? new Set(ids) : new Set())
-            }}
-            onToggleOne={(id, checked) => {
-              setSelectedIds((current) => {
-                const next = new Set(current)
-                if (checked) {
-                  next.add(id)
-                } else {
-                  next.delete(id)
-                }
-                return next
-              })
-            }}
-            onClearSelection={() => setSelectedIds(new Set())}
-            onRowClick={setDetailTrialId}
-            onCopy={handleCopy}
-            onOpenAssign={(id) => {
-              setAssignMode({ mode: 'assign', trialId: id })
-            }}
-            onOpenAssignReschedule={(id) => {
-              setAssignMode({ mode: 'reschedule', trialId: id })
-            }}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2.5 pt-0.5 pb-2 lg:px-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          {isLoading ? (
+            <ModuleLoadingSkeleton rows={8} columns={7} showToolbar={false} className="h-full" />
+          ) : error ? (
+            <ErrorState
+              title="Không thể tải booking học thử"
+              description={error.message}
+              onRetry={reloadTrials}
+              className="h-full"
+            />
+          ) : (
+            <TrialClassTable
+              trials={paged}
+              selectedIds={selectedIds}
+              copiedKey={copiedKey}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              onToggleAll={(checked, ids) => {
+                setSelectedIds(checked ? new Set(ids) : new Set())
+              }}
+              onToggleOne={(id, checked) => {
+                setSelectedIds((current) => {
+                  const next = new Set(current)
+                  if (checked) {
+                    next.add(id)
+                  } else {
+                    next.delete(id)
+                  }
+                  return next
+                })
+              }}
+              onClearSelection={() => setSelectedIds(new Set())}
+              onRowClick={setDetailTrialId}
+              onCopy={handleCopy}
+              onOpenAssign={(id) => {
+                setAssignMode({ mode: 'assign', trialId: id })
+              }}
+              onOpenAssignReschedule={(id) => {
+                setAssignMode({ mode: 'reschedule', trialId: id })
+              }}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onChangeBranch={handleChangeBranch}
+              pagination={{
+                page: currentPage,
+                total: sorted.length,
+                pageSize: pageSize,
+                onPageChange: setPage,
+                onPageSizeChange: setPageSize,
+              }}
+            />
+          )}
         </div>
 
-        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Chăm sóc / Đơn hàng) */}
         {isFilterOpen && (
           <FilterGroupAsidePanel
-            title="Bộ lọc lớp học thử"
+            title="Bộ lọc nâng cao"
+            activeCount={activeFilterCount}
             groups={filterGroups}
             onClose={() => setIsFilterOpen(false)}
             onToggle={(sectionId, value) => {
@@ -386,6 +493,8 @@ export function TrialClassScreen() {
               setFilters((prev) => ({ ...prev, [sectionId]: [] }))
               setPage(1)
             }}
+            showFooterActions={true}
+            onApply={() => setIsFilterOpen(false)}
           />
         )}
       </div>
@@ -409,6 +518,38 @@ export function TrialClassScreen() {
         onAssign={handleAssign}
       />
 
+      <ConfirmDialog
+        open={Boolean(pendingBranchChange)}
+        onOpenChange={(open) => {
+          if (!open) setPendingBranchChange(null)
+        }}
+        title="Xác nhận chuyển cơ sở tiếp nhận"
+        description={
+          pendingBranchChange?.hasSession ? (
+            <span>
+              Học viên đang có ca học thử đã xếp tại cơ sở hiện tại. Việc chuyển sang{' '}
+              <strong className="text-foreground">{pendingBranchChange.newBranch}</strong> sẽ{' '}
+              <strong className="text-rose-600 dark:text-rose-400">giải phóng ca học hiện tại</strong> để bạn ghép lớp mới tại cơ sở mới. Bạn có chắc chắn muốn chuyển?
+            </span>
+          ) : (
+            <span>
+              Chuyển cơ sở tiếp nhận sang{' '}
+              <strong className="text-foreground">{pendingBranchChange?.newBranch}</strong>?
+            </span>
+          )
+        }
+        confirmLabel="Chuyển cơ sở"
+        variant={pendingBranchChange?.hasSession ? 'destructive' : 'default'}
+        onConfirm={() => {
+          if (pendingBranchChange) {
+            applyBranchChange(
+              pendingBranchChange.trialId,
+              pendingBranchChange.newBranch,
+              pendingBranchChange.hasSession
+            )
+          }
+        }}
+      />
     </div>
   )
 }

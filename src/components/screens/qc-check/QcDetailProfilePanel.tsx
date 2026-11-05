@@ -107,25 +107,38 @@ export function QcDetailProfilePanel({
     return Array.from(list)
   }, [profile.branches, personnelGroup, activeIncident.branch, incidents])
 
-  // Error statistics
+  // Error statistics: Thống kê vi phạm trong tháng & so sánh với tháng trước
   const errorStats = useMemo(() => {
-    if (personnelGroup?.errorStats) return personnelGroup.errorStats
-    const current30DaysCount = incidents.length
-    const currentOpenCount = incidents.filter(
+    // Lấy thông tin tháng từ sự cố đang chọn hoặc thời điểm hiện tại
+    const refDate = activeIncident?.createdAt ? new Date(activeIncident.createdAt) : new Date()
+    const targetMonth = refDate.getMonth()
+    const targetYear = refDate.getFullYear()
+
+    // Lọc các sự cố phát sinh trong tháng
+    const thisMonthIncidents = incidents.filter((i) => {
+      if (!i.createdAt) return true
+      const d = new Date(i.createdAt)
+      return d.getMonth() === targetMonth && d.getFullYear() === targetYear
+    })
+
+    const currentMonthCount = thisMonthIncidents.length > 0 ? thisMonthIncidents.length : incidents.length
+    const currentOpenCount = thisMonthIncidents.filter(
       (i) => i.status !== 'closed' && i.status !== 'cancelled'
     ).length
-    return {
-      current30DaysCount,
-      currentOpenCount,
-      previousMonthCount: 1,
-      previousMonthOpenCount: 0,
-    }
-  }, [personnelGroup, incidents])
 
-  const closedCount = errorStats.current30DaysCount - errorStats.currentOpenCount
+    return {
+      currentMonthCount,
+      current30DaysCount: currentMonthCount,
+      currentOpenCount,
+      previousMonthCount: personnelGroup?.errorStats?.previousMonthCount ?? 1,
+      previousMonthOpenCount: personnelGroup?.errorStats?.previousMonthOpenCount ?? 0,
+    }
+  }, [personnelGroup, incidents, activeIncident])
+
+  const closedCount = errorStats.currentMonthCount - errorStats.currentOpenCount
   const resolutionRate =
-    errorStats.current30DaysCount > 0
-      ? Math.round((closedCount / errorStats.current30DaysCount) * 100)
+    errorStats.currentMonthCount > 0
+      ? Math.round((closedCount / errorStats.currentMonthCount) * 100)
       : 100
 
   // Danh sách sự cố đang xử lý (hiển thị mặc định ở trên)
@@ -294,18 +307,18 @@ export function QcDetailProfilePanel({
             Thống kê vi phạm
           </span>
           <span className="text-[11px] text-muted-foreground font-normal">
-            Chu kỳ 30 ngày
+            Trong tháng
           </span>
         </div>
 
         {/* 3 Ô ĐÓNG KHUNG GỌN GÀNG - CHỈ 2 DÒNG */}
         <div className="grid grid-cols-3 gap-2">
-          {/* Ô 1: 30 ngày qua */}
+          {/* Ô 1: Tháng này */}
           <div className="rounded-lg border border-border/70 bg-background/80 p-2 space-y-0.5 text-left">
-            <span className="text-[11px] text-muted-foreground block truncate">30 ngày qua</span>
+            <span className="text-[11px] text-muted-foreground block truncate">Tháng này</span>
             <div className="flex items-baseline gap-1">
               <span className="text-base font-bold text-foreground">
-                {errorStats.current30DaysCount}
+                {errorStats.currentMonthCount}
               </span>
               <span className="text-[10px] text-muted-foreground">lỗi</span>
               {errorStats.currentOpenCount > 0 && (

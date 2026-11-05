@@ -514,17 +514,18 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
                       })()}
                     </div>
 
-                    {/* Bên phải: Icon Tải ảnh & Thêm link (không viền, không nền, có màu, highlight) */}
-                    <div className="flex items-center gap-1 shrink-0 ml-auto pl-1">
-                      {/* Icon Tải ảnh / Video */}
+                    {/* Bên phải: Upload ảnh & Thêm link có text và icon */}
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto pl-1">
+                      {/* Upload ảnh / Video */}
                       <label
                         title="Tải lên ảnh hoặc video minh chứng"
                         className={cn(
-                          'p-1 rounded cursor-pointer transition-all flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 hover:bg-sky-500/15',
-                          item.evidenceImage && 'bg-sky-500/15 ring-1 ring-sky-500/30'
+                          'h-6 px-2 rounded cursor-pointer transition-all inline-flex items-center gap-1 text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 hover:bg-sky-500/15 border border-sky-500/30 bg-sky-500/5 select-none',
+                          item.evidenceImage && 'bg-sky-500/15 border-sky-500 font-semibold ring-1 ring-sky-500/30'
                         )}
                       >
-                        <ImageIcon className="h-4 w-4" />
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        <span>Upload ảnh</span>
                         <input
                           type="file"
                           accept="image/*,video/*"
@@ -546,18 +547,19 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
                         />
                       </label>
 
-                      {/* Icon Thêm link */}
+                      {/* Thêm link */}
                       <button
                         type="button"
                         onClick={() => setEditingLinkIdx(editingLinkIdx === idx ? null : idx)}
                         title="Thêm liên kết ảnh, video hoặc tài liệu"
                         className={cn(
-                          'p-1 rounded cursor-pointer transition-all flex items-center justify-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 hover:bg-indigo-500/15',
+                          'h-6 px-2 rounded cursor-pointer transition-all inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 hover:bg-indigo-500/15 border border-indigo-500/30 bg-indigo-500/5 select-none',
                           (editingLinkIdx === idx || item.evidenceLink) &&
-                            'bg-indigo-500/15 ring-1 ring-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-semibold'
+                            'bg-indigo-500/15 border-indigo-500 font-semibold ring-1 ring-indigo-500/30 text-indigo-700 dark:text-indigo-300'
                         )}
                       >
-                        <LinkIcon className="h-4 w-4" />
+                        <LinkIcon className="h-3.5 w-3.5" />
+                        <span>Thêm link</span>
                       </button>
                     </div>
                   </div>

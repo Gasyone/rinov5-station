@@ -125,6 +125,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   resigned: 'neutral',
   setup: 'info',
   board: 'purple',
+  not_registered: 'error',
   block: 'info',
   region: 'success',
   branch: 'info',
@@ -134,8 +135,11 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   lab: 'purple',
   vip: 'warning',
 
-  // Booking Test
+  // Booking Test & Assessment
   booked_assessment: 'success',
+  end_term: 'purple',
+  end_term_report: 'purple',
+  bao_cao_cuoi_ky: 'purple',
   unassigned_teacher: 'warning',
   interviewed: 'purple',
   ranh: 'success',
@@ -367,6 +371,17 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   qc_error_cancelled: 'neutral',
   qc_error_overdue: 'purple',
   qc_error_not_met: 'error',
+
+  // Daily Checklist Statuses
+  daily_pass: 'success',
+  daily_fail: 'error',
+  daily_done: 'success',
+  daily_not_done: 'warning',
+  daily_on_time: 'success',
+  daily_late: 'warning',
+  daily_missing: 'error',
+  daily_dau_ca: 'info',
+  daily_cuoi_ca: 'purple',
 
   // Make-up Class Request Statuses
   cho_duyet: 'warning',

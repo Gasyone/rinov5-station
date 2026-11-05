@@ -56,3 +56,54 @@ graph TD
 2. **Pha 2: Phân tích Dữ liệu Gốc:** Bóc tách chính xác các trường, nhãn, mặt nạ hiển thị mà không tự ý chuẩn hóa sai lệch.
 3. **Pha 3: Mô hình hóa Nghiệp vụ:** Xây dựng sơ đồ State Diagram phi tuyến tính với Global Terminal States và bảng danh mục Atomic Capabilities tại BF.
 4. **Pha 4: Xuất bản Tệp Markdown:** Sinh trọn bộ tài liệu (`BF`, `US List`, `US Form`, `US Detail`) lưu trực tiếp vào thư mục `docs/business-functions/<domain>/`.
+
+---
+
+## 3. Quy chuẩn Mẫu Đặc tả Nâng cấp & Điều chỉnh Nghiệp vụ (Upgrade & Adjustment US)
+
+> **Căn cứ tham chiếu:** Chuẩn hóa theo mẫu tài liệu Confluence chính thức tại: [https://rinoeduai.atlassian.net/wiki/x/M4A_Cg](https://rinoeduai.atlassian.net/wiki/x/M4A_Cg) (Màn hình Nâng cấp Giao diện Lịch học Trung tâm).  
+> **Tệp mẫu vàng (Golden Template):** `docs/templates/TEMPLATE-US-UPGRADE.md`
+
+### 3.1. Khi nào áp dụng mẫu Nâng cấp / Điều chỉnh?
+* Áp dụng khi cần:
+  - Nâng cấp, tinh giản hoặc cải tiến bố cục màn hình hiện có theo thiết kế Figma mới.
+  - Đồng bộ giao diện theo thực tế vận hành tại trung tâm (loại bỏ trường thừa, khôi phục hoặc bổ sung tính năng thiếu).
+  - Điều chỉnh cơ chế lọc, thẻ hiển thị, phân nhóm ca làm việc hoặc bảng nổi (hover popup).
+
+### 3.2. Cấu trúc 4 phần chuẩn hóa của tài liệu Nâng cấp
+
+Tài liệu User Story Nâng cấp/Điều chỉnh được tinh giản tối đa thành **4 phần chính mạch lạc**:
+
+#### Phần 1: NHẬT KÝ THAY ĐỔI & BỐI CẢNH (CHANGELOG & CONTEXT)
+* **Bảng lịch sử cập nhật (Changelog):** Gồm 3 cột `Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật`.
+* **Ràng buộc nghiệp vụ toàn cục (Global Rules):** Nêu rõ các nguyên tắc cốt lõi:
+  - `[RULE-XXX-01] Bảo toàn dữ liệu & Không thay đổi xử lý hệ thống:` Chỉ điều chỉnh hiển thị/tương tác, không thay đổi logic xử lý hệ thống cũ.
+  - `[RULE-XXX-02] Che số điện thoại bảo mật chống sao chép hàng loạt:` Luôn che số ở giữa dạng `091****111`.
+  - `[RULE-XXX-03] Số đếm đi theo toàn bộ bộ lọc:` Số lượng trên thẻ trạng thái/tiêu đề tự động cập nhật theo tổ hợp bộ lọc.
+  - `[RULE-XXX-04] Cơ chế lọc nháp đa tầng trên Bảng điều khiển:` Người dùng chọn nháp và chỉ kích hoạt khi bấm "Áp dụng".
+
+#### Phần 2: MÔ TẢ GIAO DIỆN (UI DESCRIPTION & ADJUSTMENT MATRIX)
+* Đính kèm đường dẫn Figma: `Giao diện: [https://www.figma.com/design/...](https://www.figma.com/design/...)`.
+* Phân rã theo từng cụm thành phần giao diện (Tiểu mục `2.1`, `2.2`, `2.3`, `2.4`...).
+* **Bảng 5 cột chuẩn bắt buộc:**
+  `| Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Nội dung điều chỉnh |`
+* **Quy tắc phân loại cột "Nội dung điều chỉnh":**
+  - **Bổ sung / Thêm mới:** Thêm nút, ô chọn nhanh, nhóm lọc mới hoặc bảng nổi xem nhanh.
+  - **Điều chỉnh:** Di dời vị trí, thay đổi kích thước, gộp dòng, đổi màu nhận diện, giới hạn độ dài kèm dấu `...`.
+  - **Lược bỏ:** Gỡ bỏ các trường, nút hoặc icon thừa không còn dùng trong thực tế. **Bắt buộc bôi chữ đỏ nổi bật:** `<span style="color: rgb(255,86,48);">Lược bỏ...</span>` ở cả Cột 1 và Cột 5.
+
+#### Phần 3: KHỐI CHỨC NĂNG CHI TIẾT: ACTION & LUỒNG KÍCH HOẠT (ACTIONS & EVENTS)
+* Phân nhóm theo các Khối chức năng tương tác (Khối chức năng 1, Khối chức năng 2...).
+* Mỗi hành động (Action X.Y) bắt buộc có:
+  - **Luồng kích hoạt:** Hành vi người dùng thực hiện (nhấp, chọn, rê chuột 200 phần nghìn giây, gõ từ khóa...).
+  - **Tiêu chí nghiệm thu (Acceptance Criteria):** Đầy đủ các trường hợp Happy Path, Alternate Path, Reset Path theo cấu trúc logic:
+    - **Giả sử:** [Trạng thái và điều kiện tiên quyết của người dùng / hệ thống]
+    - **Khi:** [Hành vi cụ thể của người dùng]
+    - **Thì:** [Kết quả phản hồi của giao diện và hệ thống]
+
+#### Phần 4: CÁC TRƯỜNG HỢP GÓC CẠNH & LUỒNG NGOẠI LỆ (CORNER CASES & EXCEPTION FLOWS)
+* **Phân nhóm theo cụm chức năng:** Không để danh sách phẳng mà phân theo từng cụm (`Nhóm 1: Khung hiển thị & Điều hướng`, `Nhóm 2: Thẻ hiển thị & Nội dung đặc biệt`, `Nhóm 3: Bộ lọc nâng cao & Tìm kiếm`...).
+* Tối thiểu $\ge 5$ trường hợp cụ thể (`[CASE-01]`, `[CASE-02]`,...).
+* Cấu trúc từng trường hợp:
+  - **Tình huống:** Mô tả hoàn cảnh phát sinh cụ thể (dữ liệu rỗng, tên quá dài, mất mạng, chưa phân công nhân sự, lớp có người dạy thay...).
+  - **Xử lý:** Quy định cách giao diện và hệ thống hiển thị và phản hồi thân thiện.

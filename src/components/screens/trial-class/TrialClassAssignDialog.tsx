@@ -35,7 +35,6 @@ import {
 import { getSubjectForProgram } from './trialClassCreateHelpers'
 import {
   PROGRAM_OPTIONS,
-  SUBJECT_MAP,
   CENTER_DATA,
 } from './trialClassConstants'
 import { TrialClassCreateProgramSection } from './TrialClassCreateProgramSection'
@@ -211,17 +210,6 @@ function TrialClassAssignDialogContent({
     []
   )
 
-  // Options môn học
-  const subjectOptions = useMemo(() => {
-    const uniqueSubjects = Array.from(new Set(Object.values(SUBJECT_MAP)))
-    return uniqueSubjects.map((s) => ({
-      value: s,
-      textValue: s,
-      label: s,
-      selectedLabel: s,
-    }))
-  }, [])
-
   // Options cơ sở
   const schoolSelectOptions = useMemo(
     () => [
@@ -349,16 +337,13 @@ function TrialClassAssignDialogContent({
         <div className="flex flex-col lg:flex-row gap-3 items-start">
           {/* ==================== PANEL TRÁI (FLEX-1): QUY TRÌNH CHỌN LỊCH ==================== */}
           <div className="flex-1 min-w-0 flex flex-col space-y-2 w-full">
-            {/* 1. Phần chọn Chương trình, Môn học, Cơ sở & Gợi ý cơ sở gần nhất */}
+            {/* 1. Phần chọn Chương trình, Cơ sở & Gợi ý cơ sở gần nhất */}
             <TrialClassCreateProgramSection
               program={selectedProgram}
               onProgramChange={handleProgramChange}
-              subject={selectedSubject}
-              onSubjectChange={setSelectedSubject}
               school={selectedBranch}
               onSchoolChange={setSelectedBranch}
               programOptions={programOptions}
-              subjectOptions={subjectOptions}
               schoolSelectOptions={schoolSelectOptions}
               centerData={CENTER_DATA}
             />
@@ -602,7 +587,7 @@ function TrialClassAssignDialogContent({
                     <span className="font-semibold text-foreground">
                       {trial.studentName}{' '}
                       <span className="font-normal text-muted-foreground">
-                        ({primaryMember.name} - {formatPhoneMask(primaryMember.phone)})
+                        ({primaryMember.name} - {primaryMember.phone})
                       </span>
                     </span>
                   </div>

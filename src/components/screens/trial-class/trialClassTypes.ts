@@ -58,5 +58,5 @@ export interface RescheduleRequestData {
   notes: string
 }
 
-export type TrialSortField = 'trialDate' | 'createdAt' | 'studentName' | 'status'
+export type TrialSortField = 'trialDate' | 'createdAt' | 'studentName' | 'status' | 'program' | 'school'
 export type SortDirection = 'asc' | 'desc'

@@ -765,6 +765,11 @@ export const isToday = (item: StudentCareAlert): boolean => {
   return !isRescheduled(item) && !isOverdue(item) && hash % 3 === 1
 }
 
+export const isUpcoming = (item: StudentCareAlert): boolean => {
+  if (isCared(item) || isRescheduled(item)) return false
+  return !isOverdue(item) && !isToday(item)
+}
+
 export const isHomeworkAlert = (item: StudentCareAlert): boolean => {
   const active = getStudentActiveTags(item)
   if (active.length === 0) return false

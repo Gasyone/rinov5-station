@@ -1,0 +1,136 @@
+import fs from 'fs';
+import path from 'path';
+
+function formatInline(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/&lt;br\s*\/?&gt;/gi, '<br/>');
+}
+
+function convertMarkdownToStorageFormat(mdContent) {
+  const lines = mdContent.split('\n');
+
+  let html = '';
+  let inCode = false;
+  let codeLang = '';
+  let codeBuffer = '';
+  let inTable = false;
+  let tableHeader = true;
+  let listStack = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    if (i === 0 && line.trim() === '---') {
+      while (i + 1 < lines.length && lines[++i].trim() !== '---') {}
+      continue;
+    }
+
+    if (line.trim().startsWith('```')) {
+      if (!inCode) {
+        while (listStack.length > 0) html += listStack.pop();
+        if (inTable) { html += '</tbody></table>'; inTable = false; }
+        inCode = true;
+        codeLang = line.trim().slice(3).trim();
+        codeBuffer = '';
+      } else {
+        inCode = false;
+        html += '<ac:structured-macro ac:name="code">';
+        if (codeLang) {
+          html += '<ac:parameter ac:name="language">' + codeLang + '</ac:parameter>';
+        }
+        html += '<ac:plain-text-body><![CDATA[' + codeBuffer.trim() + ']]></ac:plain-text-body></ac:structured-macro>';
+      }
+      continue;
+    }
+
+    if (inCode) {
+      codeBuffer += line + '\n';
+      continue;
+    }
+
+    const isListItem = line.trim().startsWith('- ') || line.trim().startsWith('* ') || /^\s*\d+\.\s/.test(line);
+    const isIndentedList = /^\s{2,}(?:[-*]|\d+\.)\s/.test(line);
+    const isIndentedText = /^\s{2,}\S/.test(line);
+
+    if (!isListItem && !isIndentedText && listStack.length > 0 && line.trim() !== '') {
+      while (listStack.length > 0) {
+        html += listStack.pop();
+      }
+    }
+
+    if (line.trim().startsWith('|')) {
+      while (listStack.length > 0) html += listStack.pop();
+      if (line.includes('---')) continue;
+      const cells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+      if (!inTable) {
+        inTable = true;
+        tableHeader = true;
+        html += '<table data-layout="center" data-table-width="1400"><tbody>';
+      }
+      html += '<tr>';
+      cells.forEach(cell => {
+        let tag = tableHeader ? 'th' : 'td';
+        let bg = tableHeader ? ' data-highlight-colour="color(srgb 0.917882 0.917882 0.917882)"' : '';
+        let formatted = formatInline(cell);
+        html += '<' + tag + bg + '><p>' + formatted + '</p></' + tag + '>';
+      });
+      html += '</tr>';
+      tableHeader = false;
+      continue;
+    } else if (inTable) {
+      inTable = false;
+      html += '</tbody></table>';
+    }
+
+    if (isListItem) {
+      const match = line.match(/^(\s*)([-*]|\d+\.)\s+(.*)$/);
+      if (match) {
+        const bullet = match[2];
+        const content = match[3];
+        const tag = /^\d+\./.test(bullet) ? 'ol' : 'ul';
+
+        if (listStack.length === 0) {
+          html += '<' + tag + '>';
+          listStack.push('</' + tag + '>');
+        }
+        html += '<li><p>' + formatInline(content) + '</p></li>';
+        continue;
+      }
+    }
+
+    if (isIndentedText && listStack.length > 0) {
+      html += '<p style="margin-left: 20px;">' + formatInline(line.trim()) + '</p>';
+      continue;
+    }
+
+    if (line.startsWith('# ')) { html += '<h1>' + formatInline(line.slice(2).trim()) + '</h1>'; continue; }
+    if (line.startsWith('## ')) { html += '<h2>' + formatInline(line.slice(3).trim()) + '</h2>'; continue; }
+    if (line.startsWith('### ')) { html += '<h3>' + formatInline(line.slice(4).trim()) + '</h3>'; continue; }
+    if (line.startsWith('#### ')) { html += '<h4>' + formatInline(line.slice(5).trim()) + '</h4>'; continue; }
+    if (line.trim().startsWith('>')) { html += '<p><em>' + formatInline(line.trim().slice(1).trim()) + '</em></p>'; continue; }
+    if (line.trim() === '---') { html += '<hr />'; continue; }
+    if (line.trim() !== '') { html += '<p>' + formatInline(line.trim()) + '</p>'; }
+  }
+
+  if (inTable) html += '</tbody></table>';
+  while (listStack.length > 0) html += listStack.pop();
+
+  return html;
+}
+
+const f1 = fs.readFileSync('docs/00-business/US-HR-02-08-danh-sach-lich-truc-test.md', 'utf8');
+const h1 = convertMarkdownToStorageFormat(f1);
+fs.writeFileSync('temp_163414026.html', h1, 'utf8');
+console.log('Generated temp_163414026.html, length:', h1.length);
+
+const f2 = fs.readFileSync('docs/00-business/US-HR-02-09-hop-thoai-phan-bo-nhan-su-truc.md', 'utf8');
+const h2 = convertMarkdownToStorageFormat(f2);
+fs.writeFileSync('temp_172064778.html', h2, 'utf8');
+console.log('Generated temp_172064778.html, length:', h2.length);

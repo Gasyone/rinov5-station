@@ -1,17 +1,19 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   MessageSquarePlus,
   ExternalLink,
   Star,
   Check,
   PenSquare,
+  PhoneCall,
+  ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { StatusBadge } from '@/components/shared'
+import { StatusBadge, ConfirmDialog } from '@/components/shared'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -25,12 +27,15 @@ import {
   deriveHomeworkLink,
   AttendanceStatus,
   stableHash,
+  isSessionInFuture,
 } from './classesSessionDetailHelpers'
-import { getStudentNameParts } from './classesDetailHelpers'
+import { getStudentNameParts, maskPhone } from './classesDetailHelpers'
+import { useCallStore } from '@/stores/useCallStore'
 
 interface ClassesSessionAttendanceRowProps {
   student: RosterStudent
   sessionId: string
+  sessionDate?: string
   isTestSession: boolean
   isMath: boolean
   isProjectSession?: boolean
@@ -55,11 +60,12 @@ interface ClassesSessionAttendanceRowProps {
 export function ClassesSessionAttendanceRow({
   student,
   sessionId,
+  sessionDate,
   isTestSession,
   isMath,
   isProjectSession = false,
   projectUrl,
-  isAttendanceDisabled,
+  isAttendanceDisabled: _isAttendanceDisabled,
   isScoreDisabled,
   att,
   fb,
@@ -69,13 +75,89 @@ export function ClassesSessionAttendanceRow({
   testScores = {},
   onAttendanceChange,
   onOpenTestScoreDialog,
+  onOpenCareDetail: _onOpenCareDetail,
   setIsBulkFeedbackOpen,
   handleOpenLeaveDialog,
   isSessionInactive = false,
   sessionStatus = '',
 }: ClassesSessionAttendanceRowProps) {
+  const [isAttendanceMenuOpen, setIsAttendanceMenuOpen] = useState(false)
+  const [confirmAbsentOpen, setConfirmAbsentOpen] = useState(false)
   const hwLink = deriveHomeworkLink(student.id, sessionId)
   const nameParts = getStudentNameParts(student)
+
+  const callStatus = useCallStore((s) => s.status)
+  const callStudentId = useCallStore((s) => s.studentId)
+  const isCurrentCalling = callStatus !== 'idle' && callStudentId === student.id
+  const studentLogs = useCallStore((s) => s.callLogs[student.id])
+  const latestCallLog = studentLogs && studentLogs.length > 0 ? studentLogs[0] : null
+  const hasCallLog = Boolean(latestCallLog)
+
+  const handleOpenStudentCareTab = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.open(`/app/renewal?studentId=${student.id}`, '_blank')
+    toast.info(`Đang mở chi tiết chăm sóc của học viên ${nameParts.englishName || student.name} trên Tab mới...`)
+  }
+
+  const handleStartCall = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const targetPhone = student.parentPhone || '090161294'
+    const targetParent = student.parentName || 'Phụ huynh'
+    const studentStatusLabel = student.status === 'trial' ? 'Học thử' : student.status === 'new' ? 'Học viên mới' : 'Chính thức'
+    const attLabel = att === 'present' ? 'Có mặt' : att === 'late' ? 'Đi muộn' : att === 'excused' ? 'Nghỉ phép' : att === 'absent' ? 'Vắng không phép' : 'Chưa điểm danh'
+
+    useCallStore.getState().startCall({
+      studentId: student.id,
+      studentName: nameParts.englishName ? `${nameParts.englishName} (${nameParts.vietnameseName})` : student.name,
+      parentPhone: targetPhone,
+      parentName: targetParent,
+      studentCode: student.code,
+      studentStatus: studentStatusLabel,
+      attendanceStatus: attLabel,
+      className: 'Kindle SA1 Pre-K',
+    })
+
+    toast.info(`Đang kết nối cuộc gọi tới ${targetParent} (${nameParts.englishName || student.name})...`)
+  }
+
+  const isFutureSession = useMemo(
+    () => isSessionInFuture(sessionDate, sessionStatus),
+    [sessionDate, sessionStatus]
+  )
+
+  const handleOpenMenuChange = (nextOpen: boolean) => {
+    if (nextOpen && isFutureSession) {
+      toast.info('Lớp học chưa diễn ra. Chỉ các lớp diễn ra trong ngày mới được điểm danh.')
+      setIsAttendanceMenuOpen(false)
+      return
+    }
+    setIsAttendanceMenuOpen(nextOpen)
+  }
+
+  const handleStatusSelect = (status: AttendanceStatus) => {
+    onAttendanceChange(student.id, status)
+    const statusLabels: Record<string, string> = {
+      present: 'Đã đến',
+      late: 'Đến muộn',
+      absent: 'Vắng',
+    }
+    if (status === 'absent' && hasExistingFeedback) {
+      toast.success(`Đã chuyển học viên ${nameParts.englishName || student.name} sang Vắng và xóa nhận xét, đánh giá`)
+    } else {
+      toast.success(`Đã cập nhật điểm danh học viên ${nameParts.englishName || student.name}: ${statusLabels[status] || status}`)
+    }
+  }
+
+  const hasExistingFeedback = Boolean((fb && fb.trim().length > 0) || (rating && rating > 0))
+
+  const handleSelectAbsent = () => {
+    setIsAttendanceMenuOpen(false)
+    if (hasExistingFeedback) {
+      setConfirmAbsentOpen(true)
+    } else {
+      handleStatusSelect('absent')
+    }
+  }
 
   return (
     <tr
@@ -87,27 +169,43 @@ export function ClassesSessionAttendanceRow({
       {/* Avatar + Name + Level */}
       <td className={cn(
         "py-1.5 px-2",
-        (isTestSession && !isMath) ? "w-[180px]" : "w-[28%] min-w-[220px]",
+        (isTestSession && !isMath) ? "w-[190px]" : "w-[35%] min-w-[240px]",
         hasLeave && "border-l-4 border-l-amber-500 pl-1.5"
       )}>
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full gap-1.5">
           <div className="flex items-center gap-2 min-w-0">
             <div className="relative shrink-0">
-              <div className={cn(
-                "h-7 w-7 rounded-full flex items-center justify-center text-[10.5px] font-bold shrink-0",
-                getAvatarColor(student.id)
-              )}>
+              <button
+                type="button"
+                onClick={handleOpenStudentCareTab}
+                className={cn(
+                  "h-7 w-7 rounded-full flex items-center justify-center text-[10.5px] font-bold shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95",
+                  getAvatarColor(student.id)
+                )}
+                title="Nhấn để mở Tab mới chi tiết chăm sóc học viên"
+              >
                 {getInitials(nameParts.hasEnglishName ? nameParts.englishName! : student.name)}
-              </div>
+              </button>
             </div>
             <div className="min-w-0 flex flex-col justify-center leading-tight">
-              {/* Dòng 1: Tên tiếng Anh */}
+              {/* Dòng 1: Tên tiếng Anh / Tên tiếng Việt - click mở Tab mới */}
               <div className="flex items-center gap-1.5 min-w-0 leading-tight">
-                <span className="font-bold text-foreground text-xs truncate">
+                <button
+                  type="button"
+                  onClick={handleOpenStudentCareTab}
+                  className="font-bold text-foreground text-xs truncate hover:underline hover:text-primary text-left cursor-pointer transition-colors"
+                  title="Nhấn để mở Tab mới chi tiết chăm sóc học viên"
+                >
                   {nameParts.hasEnglishName ? nameParts.englishName : nameParts.vietnameseName}
-                </span>
+                </button>
                 {isExcused && (
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
+                )}
+                {isCurrentCalling && (
+                  <span className="flex h-2 w-2 relative shrink-0" title="Đang trong cuộc gọi">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
                 )}
               </div>
 
@@ -148,97 +246,195 @@ export function ClassesSessionAttendanceRow({
               )}
             </div>
           </div>
+
+          {/* Action icon: Calling only */}
+          <div
+            className={cn(
+              "shrink-0 transition-opacity duration-150 flex items-center gap-0.5",
+              isCurrentCalling || hasCallLog
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto"
+            )}
+          >
+            {/* Nút Calling (Click-to-Call) */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleStartCall}
+              className={cn(
+                "h-6 w-6 rounded-md transition-all shrink-0 cursor-pointer relative",
+                isCurrentCalling
+                  ? "text-emerald-600 bg-emerald-100/80 dark:bg-emerald-950/40 ring-1 ring-emerald-500 animate-pulse"
+                  : hasCallLog
+                  ? "text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200/80"
+                  : "text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+              )}
+              title={
+                isCurrentCalling
+                  ? `Đang trong cuộc gọi: ${maskPhone(student.parentPhone || '090161294')}`
+                  : latestCallLog
+                  ? `Lịch sử cuộc gọi (${latestCallLog.timestamp}):\n${latestCallLog.note}`
+                  : `Gọi điện cho phụ huynh (${student.parentName || 'Phụ huynh'}: ${maskPhone(student.parentPhone || '090161294')})`
+              }
+            >
+              <PhoneCall className={cn("h-3.5 w-3.5", (isCurrentCalling || hasCallLog) && "text-emerald-600 fill-emerald-600/20")} />
+              {hasCallLog && !isCurrentCalling && (
+                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-1 ring-white" />
+              )}
+            </Button>
+          </div>
         </div>
       </td>
 
       {/* Attendance buttons column */}
       <td className={cn(
         "py-1.5 px-2",
-        (isTestSession && !isMath) ? "w-[85px] text-center" : "w-[14%] min-w-[100px]"
+        (isTestSession && !isMath) ? "w-[85px] text-center" : "w-[15%] min-w-[100px]"
       )}>
         <div className="flex flex-col items-center justify-center">
-          <div className="inline-flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+          {/* Click trực tiếp vào badge điểm danh để sửa */}
+          <DropdownMenu open={isAttendanceMenuOpen} onOpenChange={handleOpenMenuChange}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                disabled={isSessionInactive}
+                onClick={(e) => {
+                  if (isFutureSession) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    toast.info('Lớp học chưa diễn ra. Chỉ các lớp diễn ra trong ngày mới được điểm danh.')
+                  }
+                }}
+                className={cn(
+                  "inline-flex items-center rounded-md bg-transparent border-none p-0 transition-all",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  isFutureSession
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer hover:ring-2 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                  isAttendanceMenuOpen && "ring-2 ring-primary/40"
+                )}
+                title={
+                  isSessionInactive
+                    ? "Buổi học không hoạt động"
+                    : isFutureSession
+                    ? "Lớp học chưa diễn ra (Chỉ điểm danh các lớp trong ngày)"
+                    : "Nhấn để sửa điểm danh"
+                }
+              >
                 {(() => {
                   if (att === 'present') {
                     return (
-                      <Button
-                        type="button"
-                        size="xs"
-                        disabled={isAttendanceDisabled}
-                        className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 dark:border-emerald-900 dark:text-emerald-400 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
+                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900 dark:text-emerald-400 font-semibold text-xs h-5.5 px-2 rounded-md shadow-2xs flex items-center gap-1 select-none">
                         <Check className="h-2.5 w-2.5 stroke-[3px]" />
                         <span>Đã đến</span>
-                      </Button>
+                        <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+                      </span>
                     )
                   }
                   if (att === 'late') {
                     return (
-                      <Button
-                        type="button"
-                        size="xs"
-                        disabled={isAttendanceDisabled}
-                        className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
+                      <span className="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-900 dark:text-amber-400 font-semibold text-xs h-5.5 px-2 rounded-md shadow-2xs flex items-center gap-1 select-none">
                         <span>Đến muộn</span>
-                      </Button>
+                        <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+                      </span>
                     )
                   }
                   if (att === 'absent' || att === 'excused') {
                     return (
-                      <Button
-                        type="button"
-                        size="xs"
-                        disabled={isAttendanceDisabled}
-                        className="bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900 dark:text-rose-400 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
+                      <span className="bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/20 dark:border-rose-900 dark:text-rose-400 font-semibold text-xs h-5.5 px-2 rounded-md shadow-2xs flex items-center gap-1 select-none">
                         <span>Vắng</span>
-                      </Button>
+                        <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+                      </span>
                     )
                   }
                   return (
-                    <Button
-                      type="button"
-                      size="xs"
-                      disabled={isAttendanceDisabled}
-                      className="bg-zinc-50 border border-zinc-200 text-zinc-400 hover:bg-zinc-100 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <span className="bg-zinc-50 border border-zinc-200 text-zinc-400 font-semibold text-xs h-5.5 px-2 rounded-md shadow-2xs flex items-center gap-1 select-none">
                       <span>+ Điểm danh</span>
-                    </Button>
+                    </span>
                   )
                 })()}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-[120px] rounded-lg shadow-xl">
-                <DropdownMenuItem
-                  onClick={() => onAttendanceChange(student.id, 'present')}
-                  className="flex items-center gap-2 text-xs font-semibold text-emerald-600 focus:bg-emerald-50 dark:focus:bg-emerald-950/20 focus:text-emerald-700 dark:focus:text-emerald-400 cursor-pointer"
-                >
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-[125px] rounded-lg shadow-xl p-1">
+              <DropdownMenuItem
+                disabled={att === 'present'}
+                onClick={() => handleStatusSelect('present')}
+                className={cn(
+                  "flex items-center justify-between text-xs font-semibold cursor-pointer",
+                  att === 'present'
+                    ? "text-emerald-700/60 dark:text-emerald-400/60 bg-emerald-50/50 dark:bg-emerald-950/20 cursor-not-allowed pointer-events-none"
+                    : "text-emerald-600 focus:bg-emerald-50 dark:focus:bg-emerald-950/20 focus:text-emerald-700 dark:focus:text-emerald-400"
+                )}
+              >
+                <div className="flex items-center gap-2">
                   <Check className="h-3 w-3 stroke-[3px]" />
                   <span>Đã đến</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onAttendanceChange(student.id, 'late')}
-                  className="flex items-center gap-2 text-xs font-semibold text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950/20 focus:text-amber-700 dark:focus:text-amber-400 cursor-pointer"
-                >
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={att === 'late'}
+                onClick={() => handleStatusSelect('late')}
+                className={cn(
+                  "flex items-center justify-between text-xs font-semibold cursor-pointer",
+                  att === 'late'
+                    ? "text-amber-700/60 dark:text-amber-400/60 bg-amber-50/50 dark:bg-amber-950/20 cursor-not-allowed pointer-events-none"
+                    : "text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950/20 focus:text-amber-700 dark:focus:text-amber-400"
+                )}
+              >
+                <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                   <span>Đến muộn</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onAttendanceChange(student.id, 'absent')}
-                  className="flex items-center gap-2 text-xs font-semibold text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/20 focus:text-rose-700 dark:focus:text-rose-400 cursor-pointer"
-                >
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={att === 'absent'}
+                onClick={handleSelectAbsent}
+                className={cn(
+                  "flex items-center justify-between text-xs font-semibold cursor-pointer",
+                  att === 'absent'
+                    ? "text-rose-700/60 dark:text-rose-400/60 bg-rose-50/50 dark:bg-rose-950/20 cursor-not-allowed pointer-events-none"
+                    : "text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/20 focus:text-rose-700 dark:focus:text-rose-400"
+                )}
+              >
+                <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                   <span>Vắng</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Hộp thoại xác nhận xóa nhận xét & rating khi chuyển sang Vắng */}
+          <ConfirmDialog
+            open={confirmAbsentOpen}
+            onOpenChange={setConfirmAbsentOpen}
+            title="Xác nhận chuyển trạng thái Vắng"
+            description={
+              <div className="space-y-1.5 text-xs text-muted-foreground">
+                <p>
+                  Học viên <strong className="text-foreground">{nameParts.englishName || student.name}</strong> hiện đã có nhận xét và đánh giá thái độ.
+                </p>
+                <p>
+                  Khi chuyển sang trạng thái <strong className="text-rose-600 font-semibold">Vắng</strong>, toàn bộ nhận xét và điểm đánh giá của học viên này trong buổi học sẽ bị xóa để tránh gửi nhầm thông tin đến phụ huynh.
+                </p>
+                <p className="font-medium text-foreground pt-1">
+                  Bạn có chắc chắn muốn tiếp tục?
+                </p>
+              </div>
+            }
+            confirmLabel="Xác nhận xóa & chuyển Vắng"
+            cancelLabel="Giữ lại"
+            variant="destructive"
+            onConfirm={() => {
+              handleStatusSelect('absent')
+            }}
+          />
 
           {/* Leave indicator */}
           {isExcused && (
             <button
+              type="button"
               onClick={() => handleOpenLeaveDialog(student)}
               className="text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
             >
@@ -353,7 +549,7 @@ export function ClassesSessionAttendanceRow({
       ) : (
         <>
           {/* Homework link / KTĐK score / Mini project link */}
-          <td className="py-1.5 px-2 w-[13%] min-w-[90px]">
+          <td className="py-1.5 px-2 w-[14%] min-w-[90px]">
             {isProjectSession ? (
               <a
                 href={projectUrl || 'https://scratch.mit.edu/projects/612048882'}
@@ -404,7 +600,7 @@ export function ClassesSessionAttendanceRow({
           </td>
 
           {/* Feedback column (always show comments) */}
-          <td className="py-1.5 px-2 w-[45%] min-w-[280px]">
+          <td className="py-1.5 px-2 w-[36%] min-w-[220px]">
             {(() => {
               const isCommentDisabled = isSessionInactive || sessionStatus === 'upcoming'
               

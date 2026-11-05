@@ -49,7 +49,7 @@ export const STUDENT_OPERATIONS_ALERT_TOUR: ScreenTourConfig = {
       badgeLabel: 'Trạng thái & SLA',
       targetSelector: '[data-slot="status-tiles"], div:has(> button:has(span:contains("Chưa chăm sóc")))',
       placement: 'bottom',
-      what: 'Hệ thống thẻ phân loại trạng thái vòng đời chăm sóc (Tất cả, Chưa chăm sóc, Đang xử lý, Đã chăm sóc) kết hợp ô chọn Hạn xử lý cam kết (Quá hạn, Đến hạn, Hẹn gọi lại).',
+      what: 'Hệ thống thẻ phân loại trạng thái vòng đời chăm sóc (Tất cả, Chưa chăm sóc, Đang xử lý, Đã chăm sóc) kết hợp ô chọn Hạn xử lý cam kết (Quá hạn, Đến hạn, Chưa đến hạn, Hẹn gọi lại).',
       why: 'Tách bạch giữa "Tiến độ công việc" (đã làm hay chưa) và "Thời hạn cam kết" (gấp hay chưa gấp), giúp nhân viên không bị nhầm lẫn giữa việc đang làm dở với việc đã trễ hạn với khách hàng.',
       who: 'Chuyên viên chăm sóc khách hàng (CSM), Quản lý cơ sở.',
       rules: [

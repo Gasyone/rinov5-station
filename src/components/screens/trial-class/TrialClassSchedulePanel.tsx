@@ -22,6 +22,7 @@ import { ClassCodeHoverCell } from '../care/ClassCodeHoverCell'
 import { MOCK_CLASS_OPTIONS } from './trialClassConstants'
 import type { TrialSessionSelection } from './trialClassTypes'
 import { cn } from '@/lib/utils'
+import { PoExplainSectionWrapper } from './explain'
 
 interface TrialClassSchedulePanelProps {
   school?: string
@@ -77,6 +78,21 @@ const ROOM_POOL = [
 ]
 
 const LESSON_TOPICS_BY_PROGRAM: Record<string, { topic: string; words: string; sentences: string; phonics: string }[]> = {
+  'Chương trình Station': [
+    { topic: 'Unit 1: Hello & Colors', words: 'Red, Blue, Green, Yellow, Orange', sentences: 'Hello, what is your name? - My name is...', phonics: 'Letter /a/ as in Apple, Ant' },
+    { topic: 'Unit 2: Family & Feelings', words: 'Mom, Dad, Brother, Sister, Happy, Sad', sentences: 'This is my mom. I am happy.', phonics: 'Letter /b/ as in Ball, Boy' },
+    { topic: 'Unit 3: School & Animals', words: 'Dog, Cat, Bird, Book, Pencil, Desk', sentences: 'I have a red book. Look at the cat.', phonics: 'Letter /c/ as in Cat, Cup' },
+    { topic: 'Unit 4: Numbers & Shapes', words: 'One, Two, Three, Circle, Square', sentences: 'How many circles? - Three circles.', phonics: 'Letter /d/ as in Duck, Dog' },
+    { topic: 'Unit 5: Toys & Playground', words: 'Ball, Car, Doll, Robot, Slide, Swing', sentences: 'I like playing with my robot.', phonics: 'Letter /e/ as in Elephant, Egg' },
+  ],
+  'Chương trình Toán tư duy': [
+    { topic: 'Chuyên đề 1: Tư duy logic & Quy luật hình khối', words: 'Pattern, Sequence, Geometry', sentences: 'Phát hiện quy luật dãy số và hình học trực quan.', phonics: 'Thực hành tư duy logic 5 cấp độ' },
+    { topic: 'Chuyên đề 2: Tính nhanh & Ứng dụng thực tế', words: 'Mental Math, Addition, Subtraction', sentences: 'Áp dụng phương pháp tính nhanh qua sơ đồ tư duy.', phonics: 'Thử thách phản xạ toán học' },
+  ],
+  'Chương trình Station Grammar': [
+    { topic: 'Lesson 1: Parts of Speech & Sentence Structures', words: 'Noun, Verb, Adjective, Subject, Object', sentences: 'Forming accurate basic sentences with confidence.', phonics: 'Phân tích cấu trúc ngữ pháp trực quan' },
+    { topic: 'Lesson 2: Tenses & Common Mistakes Mastery', words: 'Present Simple, Continuous, Past Form', sentences: 'Applying grammar rules in speaking and writing.', phonics: 'Thực hành chữa lỗi sai ngữ pháp thường gặp' },
+  ],
   'Cambridge Starter': [
     { topic: 'Unit 1: Hello & Colors', words: 'Red, Blue, Green, Yellow, Orange', sentences: 'Hello, what is your name? - My name is...', phonics: 'Letter /a/ as in Apple, Ant' },
     { topic: 'Unit 2: Family & Feelings', words: 'Mom, Dad, Brother, Sister, Happy, Sad', sentences: 'This is my mom. I am happy.', phonics: 'Letter /b/ as in Ball, Boy' },
@@ -245,10 +261,39 @@ export function TrialClassSchedulePanel({
 }: TrialClassSchedulePanelProps) {
   const isReadyToLoad = Boolean(school && program)
 
-  const matchingClasses = React.useMemo(
-    () => (isReadyToLoad ? MOCK_CLASS_OPTIONS.filter((c) => c.program === program) : []),
-    [isReadyToLoad, program]
-  )
+  const matchingClasses = React.useMemo(() => {
+    if (!isReadyToLoad) return []
+    return MOCK_CLASS_OPTIONS.filter((c) => {
+      if (c.program === program) return true
+      if (program === 'Chương trình Station') {
+        return (
+          c.program === 'Chương trình Station' ||
+          c.program === 'Cambridge Flyers' ||
+          c.program === 'Cambridge Starter' ||
+          c.program === 'Cambridge Movers' ||
+          c.program === 'English Foundation' ||
+          c.program === 'Communication Kids' ||
+          c.program === 'Communication Junior'
+        )
+      }
+      if (program === 'Chương trình Toán tư duy') {
+        return (
+          c.program === 'Chương trình Toán tư duy' ||
+          c.program === 'Math Thinking' ||
+          c.program.includes('Toán')
+        )
+      }
+      if (program === 'Chương trình Station Grammar') {
+        return (
+          c.program === 'Chương trình Station Grammar' ||
+          c.program === 'IELTS Junior' ||
+          c.program === 'IELTS Prep' ||
+          c.program.includes('Grammar')
+        )
+      }
+      return false
+    })
+  }, [isReadyToLoad, program])
 
   // Khoảng thời gian mặc định: 7 ngày tới
   const [datePreset, setDatePreset] = React.useState<DatePreset>('7days')
@@ -299,98 +344,101 @@ export function TrialClassSchedulePanel({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {isReadyToLoad && (
-            <>
-              {/* Nút chọn nhanh: 7 ngày tới */}
-              <Button
-                type="button"
-                size="sm"
-                variant={datePreset === '7days' ? 'default' : 'outline'}
-                onClick={() => {
-                  setDatePreset('7days')
-                  setDateRange(getDateRangeForPreset('7days'))
-                }}
-                className={cn(
-                  "h-8 text-xs px-2.5 cursor-pointer font-medium",
-                  datePreset === '7days' ? "bg-primary text-primary-foreground font-semibold shadow-2xs" : "bg-card text-foreground shadow-2xs"
-                )}
-              >
-                7 ngày tới
-              </Button>
+        <PoExplainSectionWrapper sectionId="schedule-date-filter" side="bottom" align="end">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {isReadyToLoad && (
+              <>
+                {/* Nút chọn nhanh: 7 ngày tới */}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={datePreset === '7days' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setDatePreset('7days')
+                    setDateRange(getDateRangeForPreset('7days'))
+                  }}
+                  className={cn(
+                    "h-8 text-xs px-2.5 cursor-pointer font-medium",
+                    datePreset === '7days' ? "bg-primary text-primary-foreground font-semibold shadow-2xs" : "bg-card text-foreground shadow-2xs"
+                  )}
+                >
+                  7 ngày tới
+                </Button>
 
-              {/* Nút chọn nhanh: 14 ngày tới */}
-              <Button
-                type="button"
-                size="sm"
-                variant={datePreset === '14days' ? 'default' : 'outline'}
-                onClick={() => {
-                  setDatePreset('14days')
-                  setDateRange(getDateRangeForPreset('14days'))
-                }}
-                className={cn(
-                  "h-8 text-xs px-2.5 cursor-pointer font-medium",
-                  datePreset === '14days' ? "bg-primary text-primary-foreground font-semibold shadow-2xs" : "bg-card text-foreground shadow-2xs"
-                )}
-              >
-                14 ngày tới
-              </Button>
+                {/* Nút chọn nhanh: 14 ngày tới */}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={datePreset === '14days' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setDatePreset('14days')
+                    setDateRange(getDateRangeForPreset('14days'))
+                  }}
+                  className={cn(
+                    "h-8 text-xs px-2.5 cursor-pointer font-medium",
+                    datePreset === '14days' ? "bg-primary text-primary-foreground font-semibold shadow-2xs" : "bg-card text-foreground shadow-2xs"
+                  )}
+                >
+                  14 ngày tới
+                </Button>
 
-              {/* Popover Calendar chọn khoảng ngày (Không có text 'Thời gian:') */}
-              <Popover open={isDatePopoverOpen} onOpenChange={setIsDatePopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal h-8 text-xs px-2.5 bg-card shadow-2xs gap-1.5",
-                      datePreset === 'custom' && "border-primary text-primary font-semibold ring-1 ring-primary/20"
-                    )}
-                  >
-                    <CalendarIcon className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <strong className="text-foreground font-medium">
-                      {dateRange?.from ? formatRangeDate(dateRange.from) : ''} - {dateRange?.to ? formatRangeDate(dateRange.to) : ''}
-                    </strong>
-                    <ChevronDown className="h-3 w-3 opacity-60 ml-0.5 shrink-0" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-3 space-y-2 z-50 bg-popover rounded-xl shadow-xl border" align="end">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Chọn khoảng ngày
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const today = new Date(BASE_DATE)
-                        setCalendarMonth(today)
-                        setDateRange({ from: today, to: today })
+                {/* Popover Calendar chọn khoảng ngày (Không có text 'Thời gian:') */}
+                <Popover open={isDatePopoverOpen} onOpenChange={setIsDatePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal h-8 text-xs px-2.5 bg-card shadow-2xs gap-1.5",
+                        datePreset === 'custom' && "border-primary text-primary font-semibold ring-1 ring-primary/20"
+                      )}
+                    >
+                      <CalendarIcon className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <strong className="text-foreground font-medium">
+                        {dateRange?.from ? formatRangeDate(dateRange.from) : ''} - {dateRange?.to ? formatRangeDate(dateRange.to) : ''}
+                      </strong>
+                      <ChevronDown className="h-3 w-3 opacity-60 ml-0.5 shrink-0" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3 space-y-2 z-50 bg-popover rounded-xl shadow-xl border" align="end">
+                    <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Chọn khoảng ngày
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const today = new Date(BASE_DATE)
+                          setCalendarMonth(today)
+                          setDateRange({ from: today, to: today })
+                          setDatePreset('custom')
+                        }}
+                        className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                      >
+                        Hôm nay
+                      </button>
+                    </div>
+                    <Calendar
+                      mode="range"
+                      month={calendarMonth}
+                      onMonthChange={setCalendarMonth}
+                      selected={dateRange}
+                      onSelect={(range) => {
+                        setDateRange(range)
                         setDatePreset('custom')
                       }}
-                      className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-                    >
-                      Hôm nay
-                    </button>
-                  </div>
-                  <Calendar
-                    mode="range"
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    selected={dateRange}
-                    onSelect={(range) => {
-                      setDateRange(range)
-                      setDatePreset('custom')
-                    }}
-                    numberOfMonths={1}
-                  />
-                </PopoverContent>
-              </Popover>
-            </>
-          )}
-        </div>
+                      numberOfMonths={1}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </>
+            )}
+          </div>
+        </PoExplainSectionWrapper>
       </div>
 
       {/* Flat List: Mỗi lớp học là 1 Section riêng biệt dạng thẻ trắng phẳng */}
-      <div className="space-y-3">
+      <PoExplainSectionWrapper sectionId="schedule-session-list" side="top" align="start">
+        <div className="space-y-3">
         {!isReadyToLoad ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center text-muted-foreground bg-card shadow-2xs">
             <Clock className="mb-2 h-8 w-8 opacity-20" />
@@ -697,6 +745,7 @@ export function TrialClassSchedulePanel({
           })
         )}
       </div>
+      </PoExplainSectionWrapper>
     </div>
   )
 }

@@ -52,7 +52,7 @@ export function WorkRegistrationCenterOverview({
         <MetricTile compact label="Nhân viên chưa đăng ký" value={missingEmployees} icon={Users} />
       </div>
 
-      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card">
+      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border/80 shadow-2xs bg-card">
         <div className="min-h-0 flex-1 overflow-auto">
           {paged.length > 0 ? (
             <Table>

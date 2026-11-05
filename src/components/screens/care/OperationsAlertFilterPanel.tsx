@@ -24,8 +24,7 @@ export interface FilterState {
   selectedMonths: Set<string>
   fromDate: string
   toDate: string
-  selectedCSStaff: Set<string>
-  selectedTeachers: Set<string>
+  selectedCaregivers: Set<string>
 }
 
 export interface FilterActions {
@@ -46,8 +45,7 @@ export interface FilterActions {
   setSelectedMonths: React.Dispatch<React.SetStateAction<Set<string>>>
   setFromDate: (v: string) => void
   setToDate: (v: string) => void
-  setSelectedCSStaff: React.Dispatch<React.SetStateAction<Set<string>>>
-  setSelectedTeachers: React.Dispatch<React.SetStateAction<Set<string>>>
+  setSelectedCaregivers: React.Dispatch<React.SetStateAction<Set<string>>>
   resetPagination: () => void
 }
 
@@ -56,8 +54,7 @@ interface OperationsAlertFilterPanelProps {
   onOpenChange: (open: boolean) => void
   branchOptions: string[]
   classList: string[]
-  csStaffOptions: string[]
-  teacherOptions: string[]
+  caregiverOptions: Array<{ value: string; label: string }>
   searchQuery: string
   onSearchQueryChange: (q: string) => void
   state: FilterState
@@ -71,8 +68,7 @@ export function OperationsAlertFilterPanel({
   onOpenChange,
   branchOptions,
   classList,
-  csStaffOptions,
-  teacherOptions,
+  caregiverOptions,
   searchQuery,
   onSearchQueryChange,
   state,
@@ -93,8 +89,7 @@ export function OperationsAlertFilterPanel({
     }
     
     if (groupId === 'branches') actions.setSelectedBranches(updateSet)
-    else if (groupId === 'csStaff') actions.setSelectedCSStaff(updateSet)
-    else if (groupId === 'teachers') actions.setSelectedTeachers(updateSet)
+    else if (groupId === 'caregivers') actions.setSelectedCaregivers(updateSet)
     else if (groupId === 'statuses') actions.setSelectedStatuses(updateSet)
     else if (groupId === 'careStatuses') actions.setSelectedCareStatuses(updateSet)
     else if (groupId === 'careAlerts') actions.setSelectedAlerts(updateSet)
@@ -107,8 +102,7 @@ export function OperationsAlertFilterPanel({
 
   const handleClearAllFilters = () => {
     actions.setSelectedBranches(new Set())
-    actions.setSelectedCSStaff(new Set())
-    actions.setSelectedTeachers(new Set())
+    actions.setSelectedCaregivers(new Set())
     actions.setSelectedStatuses(new Set())
     actions.setSelectedCareStatuses(new Set())
     actions.setSelectedAlerts(new Set())
@@ -130,8 +124,7 @@ export function OperationsAlertFilterPanel({
 
   const handleClearSection = (groupId: string) => {
     if (groupId === 'branches') actions.setSelectedBranches(new Set())
-    else if (groupId === 'csStaff') actions.setSelectedCSStaff(new Set())
-    else if (groupId === 'teachers') actions.setSelectedTeachers(new Set())
+    else if (groupId === 'caregivers') actions.setSelectedCaregivers(new Set())
     else if (groupId === 'timeFilter') {
       actions.setSelectedMonths(new Set())
       actions.setFromDate('')
@@ -170,22 +163,14 @@ export function OperationsAlertFilterPanel({
         defaultOpen: true,
       }),
       createFilterGroup({
-        id: 'csStaff',
-        title: 'Chuyên viên CS phụ trách',
-        options: csStaffOptions,
-        selectedValues: state.selectedCSStaff,
+        id: 'caregivers',
+        title: 'Người chăm sóc',
+        options: caregiverOptions,
+        selectedValues: state.selectedCaregivers,
         defaultOpen: false,
         searchable: true,
         scrollable: true,
-      }),
-      createFilterGroup({
-        id: 'teachers',
-        title: 'Giáo viên phụ trách',
-        options: teacherOptions,
-        selectedValues: state.selectedTeachers,
-        defaultOpen: false,
-        searchable: true,
-        scrollable: true,
+        emptyMessage: 'Không tìm thấy người chăm sóc phù hợp',
       }),
       createFilterGroup({
         id: 'timeFilter',
@@ -587,11 +572,9 @@ export function OperationsAlertFilterPanel({
     ]
   }, [
     branchOptions,
-    csStaffOptions,
-    teacherOptions,
+    caregiverOptions,
     state.selectedBranches,
-    state.selectedCSStaff,
-    state.selectedTeachers,
+    state.selectedCaregivers,
     state.selectedStatuses,
     state.selectedCareStatuses,
     state.selectedAlerts,

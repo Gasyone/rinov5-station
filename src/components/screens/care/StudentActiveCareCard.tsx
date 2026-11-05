@@ -168,7 +168,7 @@ export function StudentActiveCareCard({
   const effectiveRecipient = parsedRec || chatRecipient || 'Phụ huynh'
   const latestLogDate = activeLog?.date || (student?.interactionLogs && student.interactionLogs.length > 0
     ? student.interactionLogs[student.interactionLogs.length - 1].date
-    : new Date().toISOString())
+    : (student?.startDate || '2026-07-06T08:00:00.000Z'))
   const timeInfo = formatCareHistoryTime(latestLogDate)
   const effectiveCSStaffName = formatFullStaffName(activeLog?.staffName || csStaffName)
 
@@ -252,6 +252,7 @@ export function StudentActiveCareCard({
             <span
               className="text-xs text-muted-foreground font-normal shrink-0"
               title={latestLogDate}
+              suppressHydrationWarning
             >
               • {timeInfo.display}
             </span>

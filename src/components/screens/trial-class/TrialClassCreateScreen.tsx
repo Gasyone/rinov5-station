@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
+import { PoExplainSectionWrapper } from './explain'
 import {
   addTrialClass,
   getTrialClasses,
@@ -21,7 +22,6 @@ import {
 } from './trialClassCreateHelpers'
 import {
   PROGRAM_OPTIONS,
-  SUBJECT_MAP,
   CENTER_DATA,
 } from './trialClassConstants'
 import type { TrialContactPerson } from './trialClassCreateTypes'
@@ -427,16 +427,6 @@ export function TrialClassCreateScreen() {
     []
   )
 
-  const subjectOptions = useMemo(() => {
-    const uniqueSubjects = Array.from(new Set(Object.values(SUBJECT_MAP)))
-    return uniqueSubjects.map((s) => ({
-      value: s,
-      textValue: s,
-      label: s,
-      selectedLabel: s,
-    }))
-  }, [])
-
   const schoolSelectOptions = useMemo(
     () => [
       {
@@ -487,18 +477,20 @@ export function TrialClassCreateScreen() {
   if (createdTrial) {
     return (
       <div className="flex h-full min-h-0 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <TrialClassSuccessSummaryView
-            trial={createdTrial}
-            session={createdSession}
-            leadId={paramLeadId}
-            schoolAddress={CENTER_DATA.find((c) => c.name === createdTrial.school)?.address}
-            onCreateAnother={() => {
-              setCreatedTrial(null)
-              setCreatedSession(null)
-              setSelectedSessions([])
-            }}
-          />
+        <div className="min-h-0 flex-1 overflow-y-auto" id="po-sec-success-view">
+          <PoExplainSectionWrapper sectionId="success-view" side="bottom" align="center">
+            <TrialClassSuccessSummaryView
+              trial={createdTrial}
+              session={createdSession}
+              leadId={paramLeadId}
+              schoolAddress={CENTER_DATA.find((c) => c.name === createdTrial.school)?.address}
+              onCreateAnother={() => {
+                setCreatedTrial(null)
+                setCreatedSession(null)
+                setSelectedSessions([])
+              }}
+            />
+          </PoExplainSectionWrapper>
         </div>
       </div>
     )
@@ -513,70 +505,115 @@ export function TrialClassCreateScreen() {
           onSubmit={handleSubmit}
           className="mx-auto max-w-5xl space-y-2.5"
         >
+          {/* SEC-BT-01: Ngữ cảnh Lead CRM & Tiếp nhận khách hàng */}
+          {leadInfo && (
+            <PoExplainSectionWrapper sectionId="lead-banner" side="bottom" align="start">
+              <div
+                id="po-sec-lead-context"
+                className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-semibold text-foreground">
+                    Học viên: {leadInfo.childName} ({leadInfo.age} tuổi)
+                  </span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    Phụ huynh: {leadInfo.parentName} ({leadInfo.phone})
+                  </span>
+                  {leadRecord?.branch && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">Cơ sở Lead: {leadRecord.branch}</span>
+                    </>
+                  )}
+                  {leadRecord?.targetSubject && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">Môn: {leadRecord.targetSubject}</span>
+                    </>
+                  )}
+                </div>
+                <span className="font-mono text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border">
+                  Lead: {paramLeadId}
+                </span>
+              </div>
+            </PoExplainSectionWrapper>
+          )}
+
           <div className="flex flex-col lg:flex-row gap-2.5 items-start">
             {/* CỘT TRÁI (FLEX-1): TOÀN BỘ QUY TRÌNH CHỌN LỊCH VÀ LỚP HỌC THỬ */}
             <div className="flex-1 min-w-0 flex flex-col space-y-2.5">
-              {/* 1. HÀNG ĐẦU TIÊN: CHƯƠNG TRÌNH, MÔN HỌC, CƠ SỞ & GỢI Ý CƠ SỞ GẦN NHẤT */}
-              <TrialClassCreateProgramSection
-                program={program}
-                onProgramChange={handleProgramChange}
-                subject={subject}
-                onSubjectChange={setSubject}
-                school={school}
-                onSchoolChange={setSchool}
-                programOptions={programOptions}
-                subjectOptions={subjectOptions}
-                schoolSelectOptions={schoolSelectOptions}
-                centerData={CENTER_DATA}
-              />
+              {/* 1. HÀNG ĐẦU TIÊN: CHƯƠNG TRÌNH, CƠ SỞ & GỢI Ý CƠ SỞ GẦN NHẤT */}
+              <div id="po-sec-program-school">
+                <TrialClassCreateProgramSection
+                  program={program}
+                  onProgramChange={handleProgramChange}
+                  school={school}
+                  onSchoolChange={setSchool}
+                  programOptions={programOptions}
+                  schoolSelectOptions={schoolSelectOptions}
+                  centerData={CENTER_DATA}
+                />
+              </div>
 
               {/* 2. SECTION LỊCH VÀ LỚP HỌC THỬ KHẢ DỤNG */}
-              <TrialClassSchedulePanel
-                school={school}
-                program={program}
-                selectedSessions={selectedSessions}
-                onSelectSession={handleSelectSession}
-              />
+              <div id="po-sec-schedule-session">
+                <TrialClassSchedulePanel
+                  school={school}
+                  program={program}
+                  selectedSessions={selectedSessions}
+                  onSelectSession={handleSelectSession}
+                />
+              </div>
 
-              {/* 3. GHI CHÚ ĐƯA XUỐNG DƯỚI CÙNG PANEL TRÁI (CHỈ Ô NHẬP VÀ PLACEHOLDER) */}
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Nhập ghi chú cho ca học thử (yêu cầu của phụ huynh, tính cách của bé, lưu ý cho giáo viên...)"
-                rows={2}
-                className="w-full rounded-xl border border-input bg-card px-3 py-2 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[52px] resize-y shadow-2xs transition-colors"
-              />
+              {/* 3. GHI CHÚ ĐƯA XUỐNG DƯỚI CÙNG PANEL TRÁI */}
+              <PoExplainSectionWrapper sectionId="notes" side="top" align="start">
+                <div id="po-sec-notes">
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Nhập ghi chú cho ca học thử (yêu cầu của phụ huynh, tính cách của bé, lưu ý cho giáo viên...)"
+                    rows={2}
+                    className="w-full rounded-xl border border-input bg-card px-3 py-2 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[52px] resize-y shadow-2xs transition-colors"
+                  />
+                </div>
+              </PoExplainSectionWrapper>
             </div>
 
             {/* CỘT PHẢI (STICKY ~300px): CONTACT & HỌC VIÊN + STICKY TRIAL SUMMARY CARD */}
             <div className="w-full lg:w-[290px] xl:w-[315px] shrink-0 space-y-2.5 lg:sticky lg:top-0 self-start">
               {/* KHỐI 1: CONTACT & HỌC VIÊN */}
-              <TrialClassCreateContactSection
-                leadInfo={leadInfo}
-                contactId={contactId}
-                onContactChange={handleContactChange}
-                contactsList={contactsList}
-                selectedContactObj={selectedContactObj}
-                childId={childId}
-                onChildChange={handleChildChange}
-                childSelectOptions={childSelectOptions}
-                onAddNewContact={() => setIsAddContactModalOpen(true)}
-                onAddNewChild={() => setIsAddChildModalOpen(true)}
-              />
+              <div id="po-sec-contact-student">
+                <TrialClassCreateContactSection
+                  leadInfo={leadInfo}
+                  contactId={contactId}
+                  onContactChange={handleContactChange}
+                  contactsList={contactsList}
+                  selectedContactObj={selectedContactObj}
+                  childId={childId}
+                  onChildChange={handleChildChange}
+                  childSelectOptions={childSelectOptions}
+                  onAddNewContact={() => setIsAddContactModalOpen(true)}
+                  onAddNewChild={() => setIsAddChildModalOpen(true)}
+                />
+              </div>
 
               {/* KHỐI 2: STICKY TRIAL SUMMARY CARD Ở DƯỚI CONTACT BÊN PHẢI */}
-              <TrialClassCreateSummary
-                selectedSession={selectedSessions[0] || null}
-                school={school}
-                schoolAddress={CENTER_DATA.find((c) => c.name === school)?.address}
-                program={program}
-                subject={subject}
-                studentName={currentChildName}
-                parentName={currentParentName}
-                phone={currentPhone}
-                isSubmitting={isSubmitting}
-                onCancel={handleCancel}
-              />
+              <div id="po-sec-summary-submit">
+                <TrialClassCreateSummary
+                  selectedSession={selectedSessions[0] || null}
+                  school={school}
+                  schoolAddress={CENTER_DATA.find((c) => c.name === school)?.address}
+                  program={program}
+                  subject={subject}
+                  studentName={currentChildName}
+                  parentName={currentParentName}
+                  phone={currentPhone}
+                  isSubmitting={isSubmitting}
+                  onCancel={handleCancel}
+                />
+              </div>
             </div>
           </div>
         </form>

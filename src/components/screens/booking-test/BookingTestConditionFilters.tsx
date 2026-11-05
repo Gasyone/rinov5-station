@@ -1,6 +1,5 @@
 'use client'
 
-import { ListFilter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   getStatusColors,
@@ -40,13 +39,9 @@ export function BookingTestConditionFilters({
   const effectiveShowDot = hideDot ? false : showDot
 
   return (
-    <div className={cn('flex items-center gap-1.5 min-w-0', className)}>
-      <span
-        title="Lọc nhanh"
-        aria-label="Lọc nhanh"
-        className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
-      >
-        <ListFilter className="h-3.5 w-3.5" />
+    <div className={cn('flex items-center gap-1.5 select-none shrink-0 min-w-0', className)}>
+      <span className="text-xs font-normal text-muted-foreground shrink-0 mr-0.5">
+        Điều kiện:
       </span>
 
       <div className="flex items-center gap-1 min-w-0 overflow-x-auto custom-scrollbar">
@@ -61,9 +56,9 @@ export function BookingTestConditionFilters({
               type="button"
               onClick={() => onSelect(item.id)}
               className={cn(
-                'inline-flex items-center h-6 rounded-md px-2 text-xs font-medium transition-colors cursor-pointer border select-none shrink-0 gap-1',
+                'inline-flex items-center h-6 rounded-md px-2 text-xs font-normal transition-colors cursor-pointer border select-none shrink-0 gap-1',
                 isActive
-                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold border-solid'
+                  ? 'border-primary/50 bg-primary/10 text-primary font-normal border-solid'
                   : 'border-border/70 border-dashed bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground'
               )}
             >
@@ -74,7 +69,7 @@ export function BookingTestConditionFilters({
               {showCount && item.count !== undefined && (
                 <span
                   className={cn(
-                    'rounded px-1 py-0 text-xs font-bold font-mono transition-colors',
+                    'rounded px-1 py-0 text-xs font-normal font-mono transition-colors',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : coloredCount

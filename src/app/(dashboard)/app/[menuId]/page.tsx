@@ -177,9 +177,9 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     return { default: PaymentReceiptsScreen }
   }),
 
-  session_feedback: safeLazy(async () => {
-    const { SessionFeedbackScreen } = await import('@/components/screens/session-feedback/SessionFeedbackScreen')
-    return { default: SessionFeedbackScreen }
+  daily_check: safeLazy(async () => {
+    const { DailyCheckScreen } = await import('@/components/screens/daily-check/DailyCheckScreen')
+    return { default: DailyCheckScreen }
   }),
   qc_check: safeLazy(async () => {
     const { QcCheckScreen } = await import('@/components/screens/qc-check/QcCheckScreen')

@@ -1,111 +1,155 @@
 'use client'
 
-import { Plus, RotateCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import React from 'react'
+import { Plus, RotateCw, ListFilter } from 'lucide-react'
+import {
+  FilterIconButton,
+  IconActionButton,
+  ExpandableSearch,
+  SegmentedControl,
+  BranchSelect,
+  ToolbarSelect,
+} from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
-import { ToolbarSelect, ExpandableSearch, IconActionButton } from '@/components/controls'
-import type { SupportTicketFilterState, TicketStatusFilter } from './supportTicketsTypes'
-import { CATEGORY_LABELS, PRIORITY_LABELS, TYPE_LABELS } from './supportTicketsTypes'
+import { Button } from '@/components/ui/button'
+import {
+  BRANCH_OPTIONS,
+  CATEGORY_SELECT_OPTIONS,
+  STATUS_TILE_CONFIG,
+  TYPE_SEGMENT_OPTIONS,
+  type TicketStatusFilter,
+} from './supportTicketsTypes'
 
-interface SupportTicketsToolbarProps {
-  filters: SupportTicketFilterState
-  statusTiles: Array<{ id: TicketStatusFilter; label: string; count: number }>
-  onFilterChange: <K extends keyof SupportTicketFilterState>(key: K, value: SupportTicketFilterState[K]) => void
+export interface SupportTicketsToolbarProps {
+  activeBranch: string
+  activeCategory: string
+  activeStatus: TicketStatusFilter
+  activeType: string
+  statusTileTotals: Record<string, number>
+  searchTerm: string
+  activeFilterCount: number
+  onBranchChange: (branch: string) => void
+  onCategoryChange: (category: string) => void
+  onStatusChange: (status: TicketStatusFilter) => void
+  onTypeChange: (type: string) => void
+  onSearchChange: (value: string) => void
+  onOpenFilters: () => void
   onResetFilters: () => void
-  onCreateTicket: () => void
+  onCreate: () => void
 }
 
-const CATEGORY_OPTIONS = [
-  { value: 'all', label: 'Tất cả phân loại' },
-  ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
-]
-
-const PRIORITY_OPTIONS = [
-  { value: 'all', label: 'Tất cả mức ưu tiên' },
-  ...Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label })),
-]
-
-const TYPE_OPTIONS = [
-  { value: 'all', label: 'Tất cả loại ticket' },
-  ...Object.entries(TYPE_LABELS).map(([value, label]) => ({ value, label })),
-]
-
 export function SupportTicketsToolbar({
-  filters,
-  statusTiles,
-  onFilterChange,
+  activeBranch,
+  activeCategory,
+  activeStatus,
+  activeType,
+  statusTileTotals = {},
+  searchTerm,
+  activeFilterCount,
+  onBranchChange,
+  onCategoryChange,
+  onStatusChange,
+  onTypeChange,
+  onSearchChange,
+  onOpenFilters,
   onResetFilters,
-  onCreateTicket,
+  onCreate,
 }: SupportTicketsToolbarProps) {
-  const tiles: StatusTile<TicketStatusFilter>[] = statusTiles.map((tile) => ({
-    id: tile.id,
-    label: tile.label,
-    count: tile.count,
-    status: tile.id === 'all' ? undefined : tile.id,
+  const tiles: StatusTile<TicketStatusFilter>[] = STATUS_TILE_CONFIG.map((cfg) => ({
+    id: cfg.id,
+    label: cfg.label,
+    count: statusTileTotals[cfg.id] ?? 0,
+    semantic: cfg.semantic,
   }))
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Top action row */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+    <div className="flex shrink-0 flex-col gap-1 bg-background px-2.5 pt-1.5 pb-1 lg:px-3">
+      {/* Row 1: Branch, Category, Search, Filter Icon, Refresh, Create Button */}
+      <div className="flex flex-wrap items-center justify-between gap-1 sm:gap-1.5 min-w-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap min-w-0">
+          {/* 1. Branch Selector */}
+          <BranchSelect
+            value={activeBranch}
+            branches={BRANCH_OPTIONS}
+            onValueChange={onBranchChange}
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
+            ariaLabel="Cơ sở"
+            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
+          />
+
+          <div className="h-3.5 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+
+          {/* 2. Category Selector */}
+          <ToolbarSelect
+            value={activeCategory}
+            options={CATEGORY_SELECT_OPTIONS}
+            onValueChange={onCategoryChange}
+            className="h-8 text-xs min-w-[135px] sm:min-w-[150px]"
+            ariaLabel="Lọc theo phân loại yêu cầu"
+            placeholder="Phân loại yêu cầu"
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <ExpandableSearch
-            placeholder="Tìm theo mã, học viên, tiêu đề, nội dung..."
-            value={filters.search}
-            onValueChange={(val: string) => onFilterChange('search', val)}
-            className="w-full sm:w-64"
+            value={searchTerm}
+            onValueChange={onSearchChange}
+            placeholder="Tìm mã ticket, học viên, tiêu đề..."
+            inputClassName="w-32 sm:w-36 lg:w-44 xl:w-52 2xl:w-60 text-xs h-8"
           />
 
-          <ToolbarSelect
-            value={filters.type}
-            onValueChange={(val) => onFilterChange('type', val)}
-            options={TYPE_OPTIONS}
-            ariaLabel="Lọc theo loại ticket"
-            className="w-[160px]"
-          />
-
-          <ToolbarSelect
-            value={filters.category}
-            onValueChange={(val) => onFilterChange('category', val)}
-            options={CATEGORY_OPTIONS}
-            ariaLabel="Lọc theo phân loại"
-            className="w-[170px]"
-          />
-
-          <ToolbarSelect
-            value={filters.priority}
-            onValueChange={(val) => onFilterChange('priority', val)}
-            options={PRIORITY_OPTIONS}
-            ariaLabel="Lọc theo độ ưu tiên"
-            className="w-[160px]"
-          />
+          <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
 
           <IconActionButton
             icon={RotateCw}
             label="Làm mới bộ lọc"
             onClick={onResetFilters}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground border border-border/60 hover:border-border"
           />
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0">
           <Button
             size="sm"
-            onClick={onCreateTicket}
-            className="h-8 gap-1.5 px-3 text-xs font-semibold shadow-xs"
+            onClick={onCreate}
+            className="h-8 px-2.5 font-medium text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
-            <Plus className="h-4 w-4" />
-            Tạo Ticket mới
+            <Plus className="h-3.5 w-3.5" />
+            <span>Tạo ticket mới</span>
           </Button>
         </div>
       </div>
 
-      {/* Status tiles bar */}
-      <StatusTiles
-        tiles={tiles}
-        activeId={filters.status}
-        onSelect={(id) => onFilterChange('status', id)}
-        compact
-      />
+      {/* Row 2: Status Tiles (Left) + Quick Type Segment (Right Edge) */}
+      <div className="flex flex-wrap items-center justify-between gap-1.5 min-w-0 pt-0">
+        {/* Bên trái: Status Tiles */}
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <StatusTiles
+            tiles={tiles}
+            activeId={activeStatus}
+            onSelect={onStatusChange}
+            compact={true}
+            noOverflowCollapse={true}
+            coloredCount={true}
+            fontNormal={true}
+          />
+        </div>
+
+        {/* Cạnh phải: Lọc nhanh theo Loại ticket */}
+        <div className="flex items-center gap-1.5 select-none shrink-0 min-w-0">
+          <span
+            title="Lọc nhanh theo loại ticket"
+            aria-label="Lọc nhanh theo loại ticket"
+            className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
+          >
+            <ListFilter className="h-3.5 w-3.5" />
+          </span>
+          <SegmentedControl
+            options={TYPE_SEGMENT_OPTIONS}
+            value={activeType}
+            onValueChange={onTypeChange}
+          />
+        </div>
+      </div>
     </div>
   )
 }

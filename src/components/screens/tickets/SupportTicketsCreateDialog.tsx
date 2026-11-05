@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,12 @@ import { ToolbarSelect } from '@/components/controls'
 import { mockStudents } from '@/mocks/students'
 import { toast } from 'sonner'
 import type { SupportTicket } from '@/mocks/tickets'
-import { CATEGORY_LABELS, PRIORITY_LABELS, TYPE_LABELS } from './supportTicketsTypes'
+import {
+  CATEGORY_LABELS,
+  PRIORITY_LABELS,
+  TYPE_LABELS,
+  BRANCH_OPTIONS,
+} from './supportTicketsTypes'
 
 interface SupportTicketsCreateDialogProps {
   open: boolean
@@ -38,6 +43,11 @@ const TYPE_OPTIONS = Object.entries(TYPE_LABELS).map(([value, label]) => ({
   label,
 }))
 
+const BRANCH_SELECT_OPTIONS = BRANCH_OPTIONS.map((b) => ({
+  value: b,
+  label: b,
+}))
+
 const ASSIGNEE_OPTIONS = [
   { value: 'AnhNTN33', label: 'AnhNTN33 (CSM Trưởng)' },
   { value: 'CSM Minh Phương', label: 'CSM Minh Phương' },
@@ -52,6 +62,7 @@ export function SupportTicketsCreateDialog({
   onTicketCreated,
 }: SupportTicketsCreateDialogProps) {
   const [selectedStudentId, setSelectedStudentId] = useState(mockStudents[0]?.id ?? 's1')
+  const [branch, setBranch] = useState(BRANCH_OPTIONS[0])
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<SupportTicket['category']>('academic')
   const [priority, setPriority] = useState<SupportTicket['priority']>('medium')
@@ -81,6 +92,8 @@ export function SupportTicketsCreateDialog({
       studentId: student.id,
       studentName: student.name,
       studentCode,
+      studentPhone: student.phone ?? '0912345678',
+      branch: branch || student.branch || BRANCH_OPTIONS[0],
       title: title.trim(),
       category,
       priority,
@@ -104,120 +117,131 @@ export function SupportTicketsCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg bg-card">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto bg-card">
         <DialogHeader>
           <DialogTitle className="text-base font-bold text-foreground">
-            Khởi tạo Ticket & Phiếu hỗ trợ mới
+            Tạo Ticket Hỗ trợ & Chăm sóc Mới
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Ghi nhận thông tin khiếu nại, phản ánh chất lượng hoặc phiếu chăm sóc đặc biệt cho học viên.
+            Ghi nhận yêu cầu phản ánh, khiếu nại hoặc lịch chăm sóc chủ động dành cho học viên / phụ huynh.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 py-1 text-left">
-          {/* Học viên */}
-          <FieldLabel label="Học viên liên quan" required>
-            <ToolbarSelect
-              value={selectedStudentId}
-              onValueChange={setSelectedStudentId}
-              options={studentOptions}
-              ariaLabel="Chọn học viên"
-              className="w-full h-8 text-xs"
-            />
-          </FieldLabel>
+        <form onSubmit={handleSubmit} className="space-y-3.5 py-1">
+          {/* Học viên & Cơ sở */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FieldLabel label="Học viên liên quan" required>
+              <ToolbarSelect
+                value={selectedStudentId}
+                onValueChange={setSelectedStudentId}
+                options={studentOptions}
+                ariaLabel="Chọn học viên"
+                className="w-full h-8 text-xs"
+              />
+            </FieldLabel>
 
-          {/* Tiêu đề */}
-          <FieldLabel label="Tiêu đề yêu cầu / Vụ việc" required>
+            <FieldLabel label="Cơ sở tiếp nhận" required>
+              <ToolbarSelect
+                value={branch}
+                onValueChange={setBranch}
+                options={BRANCH_SELECT_OPTIONS}
+                ariaLabel="Chọn cơ sở"
+                className="w-full h-8 text-xs"
+              />
+            </FieldLabel>
+          </div>
+
+          {/* Tiêu đề ticket */}
+          <FieldLabel label="Tiêu đề yêu cầu / Ticket" required>
             <input
               type="text"
-              placeholder="VD: Phụ huynh phàn nàn ca học, đề nghị bảo lưu, cảnh báo BTVN..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full h-8 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="VD: Yêu cầu chuyển ca học tối thứ 4 sang thứ 6..."
+              className="h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               required
             />
           </FieldLabel>
 
-          {/* Grid 2 cột: Loại ticket & Phân loại */}
-          <div className="grid grid-cols-2 gap-3">
-            <FieldLabel label="Nhóm ticket" required>
+          {/* Phân loại & Loại ticket */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FieldLabel label="Loại ticket" required>
               <ToolbarSelect
                 value={type}
                 onValueChange={(val) => setType(val as SupportTicket['type'])}
                 options={TYPE_OPTIONS}
-                ariaLabel="Nhóm ticket"
+                ariaLabel="Loại ticket"
                 className="w-full h-8 text-xs"
               />
             </FieldLabel>
 
-            <FieldLabel label="Phân loại nội dung" required>
+            <FieldLabel label="Phân loại nghiệp vụ" required>
               <ToolbarSelect
                 value={category}
                 onValueChange={(val) => setCategory(val as SupportTicket['category'])}
                 options={CATEGORY_OPTIONS}
-                ariaLabel="Phân loại nội dung"
+                ariaLabel="Phân loại"
                 className="w-full h-8 text-xs"
               />
             </FieldLabel>
           </div>
 
-          {/* Grid 2 cột: Độ ưu tiên & Phụ trách */}
-          <div className="grid grid-cols-2 gap-3">
-            <FieldLabel label="Mức độ ưu tiên" required>
+          {/* Độ ưu tiên & Người phụ trách & Mã cảnh báo */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <FieldLabel label="Độ ưu tiên" required>
               <ToolbarSelect
                 value={priority}
                 onValueChange={(val) => setPriority(val as SupportTicket['priority'])}
                 options={PRIORITY_OPTIONS}
-                ariaLabel="Mức độ ưu tiên"
+                ariaLabel="Độ ưu tiên"
                 className="w-full h-8 text-xs"
               />
             </FieldLabel>
 
-            <FieldLabel label="Nhân sự phụ trách" required>
+            <FieldLabel label="Người phụ trách" required>
               <ToolbarSelect
                 value={assignee}
                 onValueChange={setAssignee}
                 options={ASSIGNEE_OPTIONS}
-                ariaLabel="Nhân sự phụ trách"
+                ariaLabel="Người phụ trách"
                 className="w-full h-8 text-xs"
+              />
+            </FieldLabel>
+
+            <FieldLabel label="Mã cảnh báo (nếu có)">
+              <input
+                type="text"
+                value={alertCode}
+                onChange={(e) => setAlertCode(e.target.value)}
+                placeholder="VD: C90B, C100..."
+                className="h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </FieldLabel>
           </div>
 
-          {/* Mã cảnh báo liên kết (tùy chọn) */}
-          <FieldLabel label="Mã cảnh báo liên kết (nếu có)">
-            <input
-              type="text"
-              placeholder="VD: C90B, C100, Vắng 3 buổi, Điểm giảm..."
-              value={alertCode}
-              onChange={(e) => setAlertCode(e.target.value)}
-              className="w-full h-8 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
-          </FieldLabel>
-
-          {/* Mô tả chi tiết */}
-          <FieldLabel label="Mô tả chi tiết nội dung sự việc" required>
+          {/* Nội dung chi tiết */}
+          <FieldLabel label="Mô tả chi tiết nội dung sự việc / yêu cầu" required>
             <textarea
-              rows={3}
-              placeholder="Ghi nhận rõ nguyên nhân, chi tiết phản hồi từ phụ huynh và phương án đề xuất..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-md border border-input bg-background p-2.5 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="Ghi rõ chi tiết yêu cầu của phụ huynh, bối cảnh lớp học hoặc vấn đề phát sinh..."
+              rows={3}
+              className="w-full rounded-md border border-input bg-background p-2.5 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring leading-relaxed"
               required
             />
           </FieldLabel>
 
-          <DialogFooter className="pt-2 border-t gap-2">
+          <DialogFooter className="pt-2 border-t">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="h-8 text-xs"
+              className="h-8 text-xs cursor-pointer"
             >
               Hủy bỏ
             </Button>
-            <Button type="submit" size="sm" className="h-8 text-xs font-semibold">
+            <Button type="submit" size="sm" className="h-8 text-xs cursor-pointer font-medium">
               Tạo Ticket
             </Button>
           </DialogFooter>

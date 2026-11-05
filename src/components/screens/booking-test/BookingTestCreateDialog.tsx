@@ -38,6 +38,7 @@ import {
   TIME_GROUPS,
   MOCK_TEACHERS,
 } from './bookingTestCreateTypes'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { BookingTestCreateStudentForm } from './BookingTestCreateStudentForm'
 import type { ContactPerson } from './ContactSearchableSelect'
 
@@ -101,6 +102,7 @@ export function BookingTestCreateDialog({
   onSubmit,
   initialData,
 }: BookingTestCreateDialogProps) {
+  const user = useAuthStore((s) => s.user)
   // 1. 3 Ngày đầu tiên (Hôm nay, Ngày mai, Ngày kia) + Min date cho Ngày khác
   const dateOptions = useMemo(() => {
     const today = new Date()
@@ -343,6 +345,11 @@ export function BookingTestCreateDialog({
       PROGRAM_CONFIG[program] || PROGRAM_CONFIG['Chương trình Station']
     const subject = currentProgramConfig.subject
 
+    const resolvedCreator =
+      user?.name && user.name !== 'Người dùng hiện tại' && user.name !== 'Demo User'
+        ? user.name
+        : 'Trần Thị Mai (Tư vấn tuyển sinh)'
+
     const newBooking: BookingTest = {
       id: `E${Math.floor(1000 + Math.random() * 9000)}`,
       childName: currentChildName,
@@ -367,17 +374,17 @@ export function BookingTestCreateDialog({
       testResult: {
         level: level,
       },
-      createdBy: 'Người dùng hiện tại',
-      ops: 'Người dùng hiện tại',
+      createdBy: resolvedCreator,
+      ops: resolvedCreator,
       teacher: teacher || '',
       tester: teacher || '',
-      interviewer: 'Người dùng hiện tại',
+      interviewer: resolvedCreator,
       msg: notes.trim() || '-',
       notes: notes.trim()
         ? [
             {
               text: notes.trim(),
-              author: 'Người dùng hiện tại',
+              author: resolvedCreator,
               timestamp: new Date()
                 .toISOString()
                 .slice(0, 16)

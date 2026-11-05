@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatMinutesShort, getEmployeeRoleLabel } from './workRegistrationHelpers'
+import { formatMinutesShort } from './workRegistrationHelpers'
+import { getEmployeeSubjectOrRoleLabel } from './workRegistrationShiftHelpers'
 import type { EmployeeWeekSummary } from './workRegistrationTypes'
 
 interface WorkRegistrationStaffTableProps {
@@ -99,7 +100,7 @@ export function WorkRegistrationStaffTable({
                       {summary.employee.name}
                     </p>
                     <p className="truncate text-[10.5px] text-muted-foreground leading-tight">
-                      {summary.employee.code} · {getEmployeeRoleLabel(summary.employee.id, summary.employee.position, summary.employee.department)}
+                      {summary.employee.code} · {getEmployeeSubjectOrRoleLabel(summary.employee)}
                     </p>
                   </div>
                 </td>

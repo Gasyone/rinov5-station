@@ -75,10 +75,10 @@ export function WorkRegistrationStaffSectionGrid({
   }, [records, editableEmployeeId, dayDateKeys])
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-card overflow-hidden">
-      {/* VÙNG CUỘN NỘI DUNG LỊCH (PHẲNG FULL KHÔNG KHUNG VIỀN NGOÀI) */}
-      <div className="flex-1 min-h-0 overflow-auto">
-        <div className="flex flex-col flex-1 min-w-[860px]">
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-card rounded-xl border border-border/80 shadow-2xs overflow-hidden">
+      {/* VÙNG CUỘN NỘI DUNG LỊCH */}
+      <div className="flex-1 min-h-0 overflow-auto flex flex-col">
+        <div className="flex flex-col flex-1 min-h-full min-w-[860px]">
           {/* HEADER: 7 THỨ TRONG TUẦN - 1 DÒNG DUY NHẤT: THỨ + GIỜ (KHÔNG CẦN NGÀY VÌ ĐÂY LÀ LỊCH TUẦN ĐỊNH DANH) */}
           <div className="shrink-0 grid grid-cols-7 divide-x bg-card text-xs font-semibold text-foreground sticky top-0 z-20 border-b">
             {WEEKDAYS.map((day, idx) => {
@@ -121,11 +121,12 @@ export function WorkRegistrationStaffSectionGrid({
               : null
 
             return (
-            <div key={sec.id} className="flex-1 min-h-[110px] flex flex-col">
+            <div key={sec.id} className="flex-1 min-h-[140px] flex flex-col">
               {/* TIÊU ĐỀ CA CÓ PHỦ NỀN ĐẸP (RIBBON HEADER) + THỐNG KÊ TỔNG CA TUẦN */}
               <div
                 className={cn(
-                  'shrink-0 flex items-center justify-between px-3 py-1 border-y text-xs font-bold transition-colors',
+                  'shrink-0 flex items-center justify-between px-3 py-1 border-b text-xs font-bold transition-colors',
+                  sec.id !== 'morning' && 'border-t',
                   sec.id === 'morning'
                     ? 'bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/20 text-amber-900 dark:text-amber-200'
                     : sec.id === 'afternoon'
@@ -161,7 +162,7 @@ export function WorkRegistrationStaffSectionGrid({
               </div>
 
               {/* 7 CỘT THỨ (PHÂN CÁCH BẰNG ĐƯỜNG KẺ DỌC divide-x) */}
-              <div className="flex-1 grid grid-cols-7 divide-x divide-border/60 min-h-[92px]">
+              <div className="flex-1 grid grid-cols-7 divide-x divide-border/60 min-h-[105px]">
               {dayDateKeys.map((dateKey, dayIndex) => {
                 
                 // Lấy tất cả các records thuộc ngày và ca này
@@ -185,7 +186,7 @@ export function WorkRegistrationStaffSectionGrid({
                       (r) =>
                         (!activeEmp?.branch || r.branch === activeEmp.branch) &&
                         r.dayIndex === dayIndex &&
-                        (r.section === sec.id || (sec.id === 'evening' && r.section === 'evening_digi')) &&
+                        r.section === sec.id &&
                         r.assignedEmployeeIds.includes(editableEmployeeId)
                     )
                   )
@@ -221,7 +222,7 @@ export function WorkRegistrationStaffSectionGrid({
                     <div
                       key={dateKey}
                       className={cn(
-                        'relative h-full min-h-[92px] overflow-hidden transition-colors',
+                        'relative h-full min-h-[105px] overflow-hidden transition-colors',
                         hasContent ? 'bg-card' : 'bg-muted/5 hover:bg-muted/15'
                       )}
                     >
@@ -450,7 +451,7 @@ export function WorkRegistrationStaffSectionGrid({
                 // TRƯỜNG HỢP 2: XEM TỔNG QUAN TOÀN BỘ CƠ SỞ (AGGREGATE OVERVIEW)
                 // -------------------------------------------------------------
                 const sectionAllSlots = WORK_TIME_SLOTS.filter((s) => s.section === sec.id)
-                const MAX_DISPLAY = 4
+                const MAX_DISPLAY = 7
                 const hasMoreThanMax = registeredEmployees.length > MAX_DISPLAY
                 const displayedEmployees = hasMoreThanMax
                   ? registeredEmployees.slice(0, MAX_DISPLAY)
@@ -466,7 +467,7 @@ export function WorkRegistrationStaffSectionGrid({
                       }
                     }}
                     className={cn(
-                      'relative flex flex-col justify-start p-1.5 h-full min-h-[92px] overflow-hidden transition-colors',
+                      'relative flex flex-col justify-start p-1.5 h-full min-h-[105px] overflow-hidden transition-colors',
                       hasMoreThanMax
                         ? 'cursor-pointer hover:bg-muted/15'
                         : sectionRecords.length > 0
@@ -490,8 +491,8 @@ export function WorkRegistrationStaffSectionGrid({
                         </span>
                       </div>
 
-                      {/* Danh sách nhân sự đăng ký trong ca (tối đa 4 + dòng +N) */}
-                      <div className="space-y-0.5 pt-0.5 flex-1 min-h-0 overflow-hidden">
+                      {/* Danh sách nhân sự đăng ký trong ca (để phẳng khi còn chỗ, chỉ +N khi vượt quá 7) */}
+                      <div className="space-y-0.5 pt-0.5 flex-1 min-h-0 overflow-y-auto pr-0.5">
                         {displayedEmployees.map((emp) => {
                           const empSectionRecords = sectionRecords.filter((r) => r.employeeId === emp.id)
                           const empSlotIdSet = new Set(empSectionRecords.map((r) => r.slotId))
@@ -513,7 +514,7 @@ export function WorkRegistrationStaffSectionGrid({
                               className="flex items-center justify-between gap-1 rounded hover:bg-muted/60 px-1 py-0.5 text-xs transition-colors"
                             >
                               <span
-                                className="truncate text-[11.5px] font-normal text-foreground flex-1 min-w-0"
+                                className="truncate text-xs font-normal text-foreground flex-1 min-w-0"
                                 title={emp.name}
                               >
                                 {emp.name}
@@ -524,7 +525,7 @@ export function WorkRegistrationStaffSectionGrid({
                                     'shrink-0 tabular-nums leading-tight',
                                     isFullSection
                                       ? 'text-xs font-medium text-emerald-600 dark:text-emerald-400'
-                                      : 'text-[9.5px] font-normal text-muted-foreground'
+                                      : 'text-[10px] font-normal text-muted-foreground'
                                   )}
                                 >
                                   {compactTime}

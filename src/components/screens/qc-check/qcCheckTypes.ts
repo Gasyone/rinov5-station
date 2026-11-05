@@ -5,7 +5,16 @@ import type {
   QcSourceType,
   QcEvaluationCriteria,
   QcErrorSeverity,
+  QcActionTaken,
+  QcCmConfirmation,
+  QcFinalStatus,
 } from '@/mocks/qcChecks'
+import {
+  QC_ACTION_LABELS,
+  QC_CM_CONFIRM_LABELS,
+  QC_FINAL_STATUS_LABELS,
+} from '@/mocks/qcChecks'
+import type { StatusSemantic } from '@/lib/statusColors'
 import { Flame, AlertTriangle, AlertCircle, Info } from 'lucide-react'
 import type React from 'react'
 
@@ -48,27 +57,35 @@ export interface FilterState {
   statuses: QcErrorStatus[]
 }
 
+export const INITIAL_FILTER_STATE: FilterState = {
+  branches: [],
+  targetGroups: [],
+  sources: [],
+  criteriaList: [],
+  severities: [],
+  statuses: [],
+}
+
 export const BRANCH_OPTIONS = [
-  'RinoEdu Nguyễn Tuân',
-  'RinoEdu Linh Đàm',
-  'RinoEdu Smart City',
+  '170 Nguyễn Tuân',
+  'Linh Đàm',
+  'Vin SA1',
+  'Tonkin',
+  'KDV',
 ]
 
 export const SUBJECT_OPTIONS = [
   { value: 'all', label: 'Tất cả các môn', selectedLabel: 'Tất cả các môn' },
   { value: 'Tiếng Anh', label: 'Tiếng Anh', selectedLabel: 'Tiếng Anh' },
   { value: 'Toán tư duy', label: 'Toán tư duy', selectedLabel: 'Toán tư duy' },
-  { value: 'STEAM', label: 'STEAM', selectedLabel: 'STEAM' },
+  { value: 'Kindie', label: 'Kindie', selectedLabel: 'Kindie' },
 ]
 
 export const CRITERIA_FILTER_OPTIONS = [
   { value: 'all', label: 'Tất cả loại lỗi', selectedLabel: 'Tất cả loại lỗi' },
-  { value: 'attendance', label: 'Điểm danh', selectedLabel: 'Điểm danh' },
-  { value: 'student_care', label: 'Chăm sóc học viên', selectedLabel: 'Chăm sóc học viên' },
-  { value: 'facility_quality', label: 'Chất lượng CSVC', selectedLabel: 'Chất lượng CSVC' },
-  { value: 'feedback', label: 'Nhận xét học viên', selectedLabel: 'Nhận xét học viên' },
-  { value: 'pedagogy', label: 'Tác phong giảng dạy', selectedLabel: 'Tác phong giảng dạy' },
-  { value: 'safety_hygiene', label: 'An toàn & Vệ sinh', selectedLabel: 'An toàn & Vệ sinh' },
+  { value: 'class_operations', label: 'Vận hành lớp học', selectedLabel: 'Vận hành lớp học' },
+  { value: 'staff_conduct', label: 'Tác phong nhân sự', selectedLabel: 'Tác phong nhân sự' },
+  { value: 'five_star_service', label: 'Dịch vụ 5 sao', selectedLabel: 'Dịch vụ 5 sao' },
 ]
 
 export const DEADLINE_FILTER_OPTIONS: Array<{
@@ -97,6 +114,17 @@ export const STATUS_TILE_CONFIG: Array<{ id: IncidentStatusFilter; label: string
   { id: 'correcting', label: 'Đang khắc phục', status: 'qc_error_correcting' },
   { id: 'corrected', label: 'Chờ duyệt', status: 'qc_error_corrected' },
   { id: 'closed', label: 'Đã đóng', status: 'qc_error_closed' },
+]
+
+export const CRITERIA_TILE_CONFIG: Array<{
+  id: string
+  label: string
+  semantic?: StatusSemantic
+}> = [
+  { id: 'all', label: 'Tất cả', semantic: 'neutral' },
+  { id: 'class_operations', label: 'Vận hành lớp học', semantic: 'error' },
+  { id: 'staff_conduct', label: 'Tác phong nhân sự', semantic: 'purple' },
+  { id: 'five_star_service', label: 'Dịch vụ 5 sao', semantic: 'warning' },
 ]
 
 export function isIncidentOverdue(incident: QcIncident): boolean {
@@ -173,6 +201,24 @@ export function computeIncidentStatusTotal(
   return incidents.filter((inc) => inc.status === tileId).length
 }
 
+export const TARGET_GROUP_FILTER_OPTIONS = [
+  { value: 'teacher', label: 'Giáo viên' },
+  { value: 'facility', label: 'Cơ sở vật chất' },
+  { value: 'operations', label: 'Vận hành (CS)' },
+]
+
+export const SOURCE_FILTER_OPTIONS = [
+  { value: 'manual', label: 'Thủ công' },
+  { value: 'system', label: 'Hệ thống tự tạo' },
+]
+
+export const SEVERITY_FILTER_OPTIONS = [
+  { value: 'low', label: 'Thấp' },
+  { value: 'medium', label: 'Trung bình' },
+  { value: 'high', label: 'Cao' },
+  { value: 'critical', label: 'Nghiêm trọng' },
+]
+
 // Backwards compatibility aliases
 export type StatusTileId = IncidentStatusFilter
 export const isErrorOverdue = isIncidentOverdue
@@ -180,3 +226,6 @@ export const getErrorBadgeSemantic = getIncidentBadgeSemantic
 export function STATUS_TILE_CONFIG_EXPORT() {
   return STATUS_TILE_CONFIG
 }
+
+export type { QcActionTaken, QcCmConfirmation, QcFinalStatus }
+export { QC_ACTION_LABELS, QC_CM_CONFIRM_LABELS, QC_FINAL_STATUS_LABELS }

@@ -22,8 +22,7 @@ import {
   filterMyScheduleSlots,
 } from './my-schedule/myScheduleHelpers'
 import { MyScheduleToolbar } from './my-schedule/MyScheduleToolbar'
-import type { ScheduleLayoutType, UnifiedSlot } from './my-schedule/myScheduleTypes'
-import { MyScheduleMatrixView } from './my-schedule/MyScheduleMatrixView'
+import type { UnifiedSlot } from './my-schedule/myScheduleTypes'
 import { MySchedule1DView } from './my-schedule/MySchedule1DView'
 
 
@@ -49,10 +48,6 @@ const STATUS_OPTIONS = [
   { value: 'rescheduled', label: 'Đổi ngày' },
 ]
 
-const TYPE_OPTIONS = [
-  { value: 'placement_test', label: 'Lịch Trải nghiệm' },
-  { value: 'class_session', label: 'Lịch học' },
-]
 
 const SOURCE_FILTERS = [
   { value: 'class', label: 'Lớp học' },
@@ -79,7 +74,6 @@ export function MyScheduleScreen({
   const allClass = useMemo(() => getMockClassSessions().filter((session) => session.type !== 'digi_session'), [])
   const allEvent = useMemo(() => getMockEventSessions().filter((session) => session.type === 'placement_test'), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
-  const [layoutType, setLayoutType] = useState<ScheduleLayoutType>('schedule_1d')
   const [bucketFilters, setBucketFilters] = useState<string[]>([])
   const [sourceFilters, setSourceFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
@@ -310,7 +304,7 @@ export function MyScheduleScreen({
         return
       }
 
-      const classSession: ClassSession = {
+      const classSession: ClassSession = slot.rawClassSession || {
         id: slot.id,
         classCode: slot.classCode || 'SA1_TA_001',
         className: slot.subtitle,
@@ -369,7 +363,6 @@ export function MyScheduleScreen({
         isMySchedule={isMySchedule}
         onIsMyScheduleChange={onIsMyScheduleChange}
         viewMode={viewMode}
-        layoutType={layoutType}
         titleDate={titleDate}
         branches={branches}
         activeBranch={activeBranch}
@@ -383,7 +376,6 @@ export function MyScheduleScreen({
             setSelectedDate(getScheduleMonday(selectedDate))
           }
         }}
-        onLayoutTypeChange={setLayoutType}
         onBranchChange={setActiveBranch}
         onSearchChange={setSearch}
         onToday={() => setSelectedDate(viewMode === 'day' ? new Date() : getScheduleMonday(new Date()))}
@@ -393,27 +385,15 @@ export function MyScheduleScreen({
 
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
-          {layoutType === 'matrix' ? (
-            <MyScheduleMatrixView
-              slots={slots}
-              days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
-              today={today}
-              viewMode={viewMode}
-              activeBranch={activeBranch}
-              hideBranch={hideBranch}
-              onSlotClick={handleSlotClick}
-            />
-          ) : (
-            <MySchedule1DView
-              slots={slots}
-              days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
-              today={today}
-              viewMode={viewMode}
-              activeBranch={activeBranch}
-              hideBranch={hideBranch}
-              onSlotClick={handleSlotClick}
-            />
-          )}
+          <MySchedule1DView
+            slots={slots}
+            days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
+            today={today}
+            viewMode={viewMode}
+            activeBranch={activeBranch}
+            hideBranch={hideBranch}
+            onSlotClick={handleSlotClick}
+          />
         </div>
 
         {isFilterOpen && (

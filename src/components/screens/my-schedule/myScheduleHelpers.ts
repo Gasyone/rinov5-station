@@ -37,6 +37,7 @@ export function buildUnifiedSlots(
       .map((session) => ({
       id: session.id,
       scheduleType: 'class' as const,
+      rawClassSession: session,
       title: session.title,
       subtitle: session.className,
       className: session.className,

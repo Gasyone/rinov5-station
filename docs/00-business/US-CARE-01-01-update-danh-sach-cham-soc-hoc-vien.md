@@ -156,7 +156,7 @@ Màn hình áp dụng cơ chế kiểm soát hiển thị theo **Mã Quyền Đ�
 | **Bộ chọn Loại thẻ CS** | Ô chọn thả xuống | `Tất cả Loại thẻ CS` | Đặt cạnh bộ chọn môn học; gồm Học lực, Bài tập về nhà, Chuyên cần | Lọc học viên đang bị gắn cờ chăm sóc đặc biệt theo từng tiêu chí |
 | **Phím tắt "Thẻ của tôi"** | Nút bấm chuyển đổi nhanh | Bật / Tắt (Mặc định tắt) | Nằm tại hàng 2 thanh công cụ ngay trước nhóm thẻ trạng thái chăm sóc; hiển thị nhãn "Thẻ của tôi" kèm số lượng ca cá nhân | Bấm để kích hoạt lọc nhanh các ca học viên do chính mình phụ trách; bấm lại để xem tất cả |
 | **Bộ chọn Người phụ trách** | Ô chọn thả xuống | `Tất cả` | Đặt tại hàng 1 thanh công cụ; gồm Tất cả, Thẻ của tôi, và danh sách phân nhóm Chuyên viên CS, Giáo viên | Chọn nhân sự cụ thể để lọc danh sách các ca thuộc trách nhiệm của nhân sự đó |
-| **Ô chọn Hạn xử lý** | Ô chọn thả xuống | `Tất cả hạn xử lý` | Đặt tại hàng 1; gồm Tất cả, Quá hạn (chấm đỏ), Đến hạn (chấm cam), Hẹn gọi lại (chấm tím) | Lọc học viên theo thời hạn cam kết xử lý |
+| **Ô chọn Hạn xử lý** | Ô chọn thả xuống | `Tất cả hạn xử lý` | Đặt tại hàng 1; gồm Tất cả, Quá hạn (chấm đỏ), Đến hạn (chấm cam), Chưa đến hạn (chấm xanh dương), Hẹn gọi lại (chấm tím) | Lọc học viên theo thời hạn cam kết xử lý |
 | **Thanh lọc Trạng thái chăm sóc** | Nhóm thẻ trạng thái chính | `Tất cả` | Đặt tại bên trái hàng 2; gồm Tất cả, Chưa chăm sóc, Đang xử lý, Đã chăm sóc | Nhấp thẻ để chuyển đổi trạng thái vòng đời chăm sóc; thẻ được chọn nổi bật |
 | **Nhóm nút Trạng thái lớp học** | Nhóm thẻ chuyển đổi nhanh | `Tất cả gói` | Đặt tại bên phải hàng 2; gồm Tất cả gói, Đang học, Chờ chuyển lớp, Chờ xếp lớp, Bảo lưu, Hết buổi; hiển thị màu chữ theo trạng thái khi chưa chọn và đổ màu nền khi chọn | Nhấp để lọc học viên theo tình trạng lớp học; tự động thu thành ô thả xuống trên màn hình nhỏ |
 | **Ô tìm kiếm từ khóa** | Ô nhập văn bản mở rộng | Rỗng / Tối đa 100 ký tự | Nằm ở góc phải hàng 1 kèm biểu tượng kính lúp | Tìm kiếm theo tên học viên, mã học viên, số điện thoại phụ huynh hoặc mã lớp |
@@ -169,7 +169,7 @@ Màn hình áp dụng cơ chế kiểm soát hiển thị theo **Mã Quyền Đ�
 
 ### 3.4. Ràng buộc kiểm tra dữ liệu (Validation Rules)
 1. **Quy tắc định dạng số điện thoại hiển thị:** Số điện thoại trên bảng danh sách bắt buộc phải tuân thủ mẫu hiển thị `xxxxxxxNNN` hoặc `091****111` với đúng 3 đến 4 chữ số cuối cùng được hiển thị, toàn bộ các chữ số ở giữa được thay thế bằng ký tự dấu sao `*`.
-2. **Ràng buộc lựa chọn Hạn xử lý:** Ô chọn Hạn xử lý chỉ chấp nhận 1 giá trị duy nhất trong tập hợp: `all` (Tất cả), `overdue` (Quá hạn), `today` (Đến hạn), `rescheduled` (Hẹn gọi lại). Không hỗ trợ chọn đa giá trị cùng lúc.
+2. **Ràng buộc lựa chọn Hạn xử lý:** Ô chọn Hạn xử lý chỉ chấp nhận 1 giá trị duy nhất trong tập hợp: `all` (Tất cả), `overdue` (Quá hạn), `today` (Đến hạn), `upcoming` (Chưa đến hạn), `rescheduled` (Hẹn gọi lại). Không hỗ trợ chọn đa giá trị cùng lúc.
 3. **Ràng buộc nhóm nút Trạng thái lớp học:** Nhóm nút chỉ chấp nhận 1 giá trị duy nhất trong tập hợp: `all` (Tất cả gói), `active` (Đang học), `pending_transfer` (Chờ chuyển lớp), `wait_for_assignment` (Chờ xếp lớp), `reserve` (Bảo lưu), `session_ended` (Hết buổi).
 4. **Ràng buộc lựa chọn Người phụ trách:** Ô chọn nhanh Người phụ trách trên thanh công cụ chỉ chấp nhận 1 giá trị lựa chọn tại một thời điểm (gồm `all`, `my_alerts`, hoặc mã nhân sự cụ thể). Khung chọn trong bảng bộ lọc mở rộng cho phép tích chọn nhiều nhân sự cùng lúc.
 

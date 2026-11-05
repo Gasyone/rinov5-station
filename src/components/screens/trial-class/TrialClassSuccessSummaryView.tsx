@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   CheckCircle2,
@@ -19,6 +19,7 @@ import {
   FileText,
   Phone,
   Layers,
+  RotateCcw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -72,7 +73,7 @@ export function TrialClassSuccessSummaryView({
   const displayRoom = session?.room || 'Phòng 204'
 
   // Biên soạn tin nhắn Zalo gửi phụ huynh (gọn gàng, chuẩn format)
-  const zaloMessage = [
+  const defaultZaloMessage = useMemo(() => [
     `🌟 XÁC NHẬN LỊCH HỌC THỬ TRẢI NGHIỆM - RINOEDU 🌟`,
     `Kính gửi Quý phụ huynh ${displayParentName !== 'Chưa gán' ? displayParentName : (trial.parentName || trial.familyName || '')},`,
     `Hệ thống RinoEdu xin gửi xác nhận thông tin lịch học thử trải nghiệm của con:`,
@@ -90,15 +91,32 @@ export function TrialClassSuccessSummaryView({
     ``,
     `👉 Lưu ý: Ba/Mẹ vui lòng đưa bé đến trước giờ học 10 phút để bé nhận tài liệu học thử và làm quen lớp nhé ạ.`,
     `RinoEdu trân trọng cảm ơn Ba/Mẹ! ❤️`,
-  ].join('\n')
+  ].join('\n'), [
+    displayParentName,
+    trial.parentName,
+    trial.familyName,
+    trial.studentName,
+    trial.program,
+    trial.subject,
+    displayClassName,
+    displayTrialDate,
+    displaySessionName,
+    trial.school,
+    schoolAddress,
+    displayRoom,
+    displayTeacher,
+    session,
+  ])
+
+  const [messageText, setMessageText] = useState(defaultZaloMessage)
 
   const handleCopyZalo = async () => {
     try {
       if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(zaloMessage)
+        await navigator.clipboard.writeText(messageText)
       } else {
         const textArea = document.createElement('textarea')
-        textArea.value = zaloMessage
+        textArea.value = messageText
         textArea.style.position = 'fixed'
         textArea.style.opacity = '0'
         document.body.appendChild(textArea)
@@ -389,40 +407,64 @@ export function TrialClassSuccessSummaryView({
           </div>
         </div>
 
-        {/* CỘT PHẢI: MẪU TIN NHẮN ZALO GỬI PHỤ HUYNH (MỞ RỘNG) */}
+        {/* CỘT PHẢI: MẪU TIN NHẮN ZALO GỬI PHỤ HUYNH (MỞ RỘNG VÀ CHO PHÉP NHẬP LIỆU) */}
         <div className="lg:col-span-7 flex flex-col">
           <div className="rounded-lg border border-border/80 bg-card p-3.5 space-y-2.5 shadow-2xs flex flex-col h-full">
-            <div className="flex items-center justify-between border-b border-border/60 pb-1.5">
+            <div className="flex items-center justify-between border-b border-border/60 pb-1.5 flex-wrap gap-2">
               <div className="flex items-center gap-1.5">
                 <MessageSquare className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                 <h3 className="font-bold text-xs text-foreground">
                   Mẫu tin nhắn Zalo gửi Phụ huynh
                 </h3>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopyZalo}
-                className="h-6 px-2 text-xs font-semibold gap-1 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-300 dark:text-emerald-300 dark:hover:bg-emerald-950/40 cursor-pointer"
-              >
-                {isCopied ? (
-                  <>
-                    <Check className="h-3 w-3 text-emerald-600" />
-                    <span>Đã sao chép</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3 w-3 text-muted-foreground" />
-                    <span>Sao chép toàn bộ</span>
-                  </>
+              <div className="flex items-center gap-1.5">
+                {messageText !== defaultZaloMessage && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setMessageText(defaultZaloMessage)}
+                    className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="Khôi phục nội dung mẫu ban đầu"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    <span>Khôi phục</span>
+                  </Button>
                 )}
-              </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyZalo}
+                  className="h-6 px-2 text-xs font-semibold gap-1 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-300 dark:text-emerald-300 dark:hover:bg-emerald-950/40 cursor-pointer shadow-2xs"
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="h-3 w-3 text-emerald-600" />
+                      <span>Đã sao chép</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 text-muted-foreground" />
+                      <span>Sao chép toàn bộ</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
-            <div className="relative rounded-lg bg-muted/40 border border-border/60 p-3 sm:p-3.5 font-mono text-[11.5px] sm:text-xs text-foreground leading-relaxed whitespace-pre-line select-all flex-1 min-h-[320px] sm:min-h-[340px]">
-              {zaloMessage}
+            <div className="flex-1 flex flex-col min-h-[320px] sm:min-h-[340px]">
+              <textarea
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Nhập hoặc chỉnh sửa nội dung tin nhắn gửi phụ huynh..."
+                className="w-full flex-1 rounded-lg bg-muted/40 border border-border/60 p-3 sm:p-3.5 font-mono text-[11.5px] sm:text-xs text-foreground leading-relaxed resize-y focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-primary/50 min-h-[340px]"
+              />
             </div>
+            <p className="text-[11px] text-muted-foreground italic flex items-center justify-between">
+              <span>* Bạn có thể trực tiếp nhập liệu hoặc chỉnh sửa nội dung trước khi gửi qua Zalo / SMS.</span>
+              <span className="font-mono text-muted-foreground/70 not-italic">{messageText.length} ký tự</span>
+            </p>
           </div>
         </div>
       </div>

@@ -188,7 +188,7 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     ],
   },
   {
-    id: 'TR-2605-010',
+    id: 'TR-2605-011',
     trialName: 'Học thử IELTS Starter',
     customerId: 'KH-10355',
     studentName: 'Lê Chi',

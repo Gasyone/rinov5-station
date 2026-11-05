@@ -21,7 +21,6 @@ import { toast } from 'sonner'
 
 // Existing Enterprise Dialogs (Tái sử dụng các modal đã có sẵn của hệ thống)
 import { SessionDetailDialog } from '@/components/screens/calendar/SessionDetailDialog'
-import { FeedbackFormDialog } from '@/components/screens/session-feedback/FeedbackFormDialog'
 import { ClassesTestScoreDialog } from '@/components/screens/classes/detail/ClassesTestScoreDialog'
 import { StudentCareDetailDialog } from '@/components/screens/care/StudentCareDetailDialog'
 import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
@@ -30,7 +29,6 @@ import { StudentDetailDialog } from '@/components/screens/students/detail/Studen
 import { getMockClassSessions, type ClassSession } from '@/mocks/calendarSchedule'
 import { mockCareAlerts } from '@/mocks/careAlerts'
 import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
-import type { SessionFeedback } from '@/mocks/sessionFeedback'
 import type { RosterStudent, TestScoreData } from '@/components/screens/classes/detail/classesDetailTypes'
 
 export type StudentTaskType =
@@ -49,7 +47,7 @@ export interface StudentTaskItem {
   statusLabel: string
   statusColor: 'amber' | 'blue' | 'purple' | 'red' | 'emerald' | 'orange'
   dateOrDue?: string
-  extraData?: Record<string, any>
+  extraData?: Record<string, unknown>
 }
 
 export interface StudentProfileItem {
@@ -93,7 +91,6 @@ export function StudentProfileHoverCard({
 }: StudentProfileHoverCardProps) {
   // Modal visibility states for existing enterprise dialogs
   const [isSessionDetailOpen, setIsSessionDetailOpen] = useState(false)
-  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false)
   const [isTestScoreDialogOpen, setIsTestScoreDialogOpen] = useState(false)
   const [isCareDialogOpen, setIsCareDialogOpen] = useState(false)
   const [isLeaveReserveDialogOpen, setIsLeaveReserveDialogOpen] = useState(false)
@@ -201,31 +198,6 @@ export function StudentProfileHoverCard({
     }
   }, [student])
 
-  // Synthesize or resolve feedback data for FeedbackFormDialog
-  const sessionFeedback: SessionFeedback = useMemo(() => {
-    return {
-      id: `fb-${student.id}`,
-      sessionId: classSession.id,
-      sessionCode: 'SES-012',
-      classId: classSession.classCode || 'CLS-IELTS-001',
-      className: student.className || classSession.className,
-      classCode: student.classCode || classSession.classCode,
-      branch: student.branch || classSession.branch,
-      studentId: student.id,
-      studentName: student.name,
-      attendance: 'present',
-      progress: 'stable',
-      status: 'pending',
-      teacher: classSession.teacher || 'Sarah J.',
-      date: new Date().toISOString().split('T')[0],
-      homeworkTitle: 'Bài tập phát âm âm /θ/ và /ð/',
-      homeworkStatus: 'done',
-      homeworkScore: 8,
-      feedback: 'Học sinh tích cực tham gia thảo luận trên lớp, phát âm tròn vành rõ chữ. Cần chú ý tốc độ nói tự nhiên hơn.',
-      recommendation: 'Luyện tập thêm bài tập số 3 trong giáo trình.',
-    }
-  }, [student, classSession])
-
   // Roster student format for ClassesTestScoreDialog
   const rosterStudents: RosterStudent[] = useMemo(() => [
     {
@@ -252,10 +224,8 @@ export function StudentProfileHoverCard({
 
   // Task click dispatcher to existing enterprise modals
   const handleTaskClick = (task: StudentTaskItem) => {
-    if (task.type === 'attendance') {
+    if (task.type === 'attendance' || task.type === 'feedback') {
       setIsSessionDetailOpen(true)
-    } else if (task.type === 'feedback') {
-      setIsFeedbackDialogOpen(true)
     } else if (task.type === 'grading') {
       setIsTestScoreDialogOpen(true)
     } else if (task.type === 'care' || task.type === 'renewal') {
@@ -455,24 +425,14 @@ export function StudentProfileHoverCard({
         </HoverCardContent>
       </HoverCard>
 
-      {/* 1. Detail Buổi học (Điểm danh ca học) -> Mở detail buổi học chuẩn đã có */}
+      {/* 1. Detail Buổi học (Điểm danh & Nhận xét ca học) -> Mở detail buổi học chuẩn đã có */}
       <SessionDetailDialog
         session={classSession}
         open={isSessionDetailOpen}
         onOpenChange={setIsSessionDetailOpen}
       />
 
-      {/* 2. Detail Form Nhận xét của buổi học -> Mở detail form nhận xét đã có */}
-      <FeedbackFormDialog
-        open={isFeedbackDialogOpen}
-        onOpenChange={setIsFeedbackDialogOpen}
-        feedback={sessionFeedback}
-        onSave={(saved) => {
-          toast.success(`Đã lưu nhận xét cho học viên: ${saved.studentName}`)
-        }}
-      />
-
-      {/* 3. Detail Chấm điểm test / dự án -> Mở modal chấm điểm bài test / rubric đã có */}
+      {/* 2. Detail Chấm điểm test / dự án -> Mở modal chấm điểm bài test / rubric đã có */}
       <ClassesTestScoreDialog
         isOpen={isTestScoreDialogOpen}
         onClose={() => setIsTestScoreDialogOpen(false)}

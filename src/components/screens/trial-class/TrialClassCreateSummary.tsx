@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { TrialSessionSelection } from './trialClassTypes'
+import { PoExplainSectionWrapper } from './explain'
 
 interface TrialClassCreateSummaryProps {
   selectedSession?: TrialSessionSelection | null
@@ -49,18 +50,6 @@ export function TrialClassCreateSummary({
 }: TrialClassCreateSummaryProps) {
   const [sendConfirmation, setSendConfirmation] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
-
-  // Masking phone on display to comply with security rules (e.g. 098****321)
-  const formatPhoneMask = (p?: string) => {
-    if (!p) return '---'
-    const clean = p.replace(/\s+/g, '')
-    if (clean.length >= 7) {
-      return `${clean.slice(0, 3)}****${clean.slice(-3)}`
-    }
-    return p
-  }
-
-  const maskedPhone = formatPhoneMask(phone)
 
   const handleCopyZalo = async () => {
     const parentDisplay = parentName?.trim() || '[Tên Phụ huynh]'
@@ -191,142 +180,162 @@ export function TrialClassCreateSummary({
       </div>
 
       {/* Danh sách tóm tắt: Chỉ icon và nội dung, bỏ nhãn thừa */}
-      <div className="space-y-2 text-xs">
-        {/* 1. Lịch học thử */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          <Calendar className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-          <div className="min-w-0 flex-1 truncate">
-            {selectedSession ? (
-              <span className="font-semibold text-primary">{selectedSession.trialDate}</span>
-            ) : (
-              <span className="text-muted-foreground font-normal">Chưa chọn ca học cụ thể</span>
-            )}
-          </div>
-        </div>
-
-        {/* 2. Lớp học & Phòng */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          <BookOpen className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
-          <div className="min-w-0 flex-1 truncate">
-            {selectedSession ? (
-              <span className="font-semibold text-foreground">
-                {selectedSession.className}
-                {selectedSession.room ? ` • ${selectedSession.room}` : ''}
-              </span>
-            ) : (
-              <span className="text-muted-foreground font-normal">Chưa gán lớp (ghép sau)</span>
-            )}
-          </div>
-        </div>
-
-        {/* 3. Cơ sở (Tách dòng riêng) */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          <MapPin className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
-          <div className="min-w-0 flex-1 truncate" title={school || 'Chưa chọn cơ sở'}>
-            {school ? (
-              <span className="font-semibold text-foreground">{school}</span>
-            ) : (
-              <span className="text-muted-foreground font-normal">Chưa chọn cơ sở</span>
-            )}
-          </div>
-        </div>
-
-        {/* 4. Chương trình (Tách dòng riêng) */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          <Layers className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
-          <div
-            className="min-w-0 flex-1 truncate"
-            title={program ? `${program}${subject ? ` (${subject})` : ''}` : 'Chưa chọn chương trình'}
-          >
-            {program ? (
-              <span className="font-semibold text-foreground">
-                {program}
-                {subject ? ` (${subject})` : ''}
-              </span>
-            ) : (
-              <span className="text-muted-foreground font-normal">Chưa chọn chương trình</span>
-            )}
-          </div>
-        </div>
-
-        {/* 5. Giáo viên phụ trách */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          <GraduationCap className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-          <div className="min-w-0 flex-1 truncate">
-            {selectedSession?.teacher ? (
-              <span className="font-semibold text-foreground">
-                {selectedSession.teacher}
-                {selectedSession.assistantTeacher ? (
-                  <span className="text-muted-foreground font-normal">
-                    {' '}(TG: {selectedSession.assistantTeacher})
-                  </span>
-                ) : null}
-              </span>
-            ) : (
-              <div className="flex items-center gap-1 text-muted-foreground font-normal">
-                <AlertCircle className="h-3 w-3 shrink-0 text-amber-500/80" />
-                <span className="truncate">Bộ phận chuyên môn phân công</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 6. Bài học / Nội dung buổi học (khi đã chọn ca học có chủ đề) */}
-        {selectedSession?.lessonTopic && (
+      <PoExplainSectionWrapper sectionId="summary-card" side="left" align="start">
+        <div className="space-y-2 text-xs">
+          {/* 1. Lịch học thử */}
           <div className="flex items-start gap-2.5 min-w-0">
-            <FileText className="h-3.5 w-3.5 text-purple-500 mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1 truncate" title={`Chủ đề: ${selectedSession.lessonTopic}`}>
-              <span className="font-semibold text-foreground">Bài học: </span>
-              <span className="text-foreground">{selectedSession.lessonTopic}</span>
+            <Calendar className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 truncate">
+              {selectedSession ? (
+                <span className="font-semibold text-primary">{selectedSession.trialDate}</span>
+              ) : (
+                <span className="text-muted-foreground font-normal">Chưa chọn ca học cụ thể</span>
+              )}
             </div>
           </div>
-        )}
 
-        {/* 7. Học viên & Phụ huynh */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          <User className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 mt-0.5 shrink-0" />
-          <div
-            className="min-w-0 flex-1 truncate"
-            title={studentName ? `${studentName} (PH: ${parentName} - ${maskedPhone})` : 'Chưa gán học viên'}
-          >
-            {studentName ? (
-              <span className="font-semibold text-foreground">
-                {studentName}{' '}
-                <span className="font-normal text-muted-foreground">
-                  ({parentName || 'PH'}{maskedPhone ? ` - ${maskedPhone}` : ''})
+          {/* 2. Lớp học & Phòng */}
+          <div className="flex items-start gap-2.5 min-w-0">
+            <BookOpen className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 truncate">
+              {selectedSession ? (
+                <span className="font-semibold text-foreground">
+                  {selectedSession.className}
+                  {selectedSession.room ? ` • ${selectedSession.room}` : ''}
                 </span>
-              </span>
-            ) : (
-              <span className="text-muted-foreground font-normal">Chưa chọn học viên & phụ huynh</span>
+              ) : (
+                <span className="text-muted-foreground font-normal">Chưa gán lớp (ghép sau)</span>
+              )}
+            </div>
+          </div>
+
+          {/* 3. Cơ sở (Tách dòng riêng) */}
+          <div className="flex items-start gap-2.5 min-w-0">
+            <MapPin className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 truncate" title={school || 'Chưa chọn cơ sở'}>
+              {school ? (
+                <span className="font-semibold text-foreground">{school}</span>
+              ) : (
+                <span className="text-muted-foreground font-normal">Chưa chọn cơ sở</span>
+              )}
+            </div>
+          </div>
+
+          {/* 4. Chương trình (Tách dòng riêng) */}
+          <div className="flex items-start gap-2.5 min-w-0">
+            <Layers className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+            <div
+              className="min-w-0 flex-1 truncate"
+              title={program ? `${program}${subject ? ` (${subject})` : ''}` : 'Chưa chọn chương trình'}
+            >
+              {program ? (
+                <span className="font-semibold text-foreground">
+                  {program}
+                  {subject ? ` (${subject})` : ''}
+                </span>
+              ) : (
+                <span className="text-muted-foreground font-normal">Chưa chọn chương trình</span>
+              )}
+            </div>
+          </div>
+
+          {/* 5. Giáo viên phụ trách */}
+          <div className="flex items-start gap-2.5 min-w-0">
+            <GraduationCap className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 truncate">
+              {selectedSession?.teacher ? (
+                <span className="font-semibold text-foreground">
+                  {selectedSession.teacher}
+                  {selectedSession.assistantTeacher ? (
+                    <span className="text-muted-foreground font-normal">
+                      {' '}(TG: {selectedSession.assistantTeacher})
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                <div className="flex items-center gap-1 text-muted-foreground font-normal">
+                  <AlertCircle className="h-3 w-3 shrink-0 text-amber-500/80" />
+                  <span className="truncate">Bộ phận chuyên môn phân công</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 6. Bài học / Nội dung buổi học (khi đã chọn ca học có chủ đề) */}
+          {selectedSession?.lessonTopic && (
+            <div className="flex items-start gap-2.5 min-w-0">
+              <FileText className="h-3.5 w-3.5 text-purple-500 mt-0.5 shrink-0" />
+              <div className="min-w-0 flex-1 truncate" title={`Chủ đề: ${selectedSession.lessonTopic}`}>
+                <span className="font-semibold text-foreground">Bài học: </span>
+                <span className="text-foreground">{selectedSession.lessonTopic}</span>
+              </div>
+            </div>
+          )}
+
+          {/* 7. Học viên & Phụ huynh */}
+          <div className="flex items-start gap-2.5 min-w-0">
+            <User className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 mt-0.5 shrink-0" />
+            <div
+              className="min-w-0 flex-1 truncate"
+              title={studentName ? `${studentName} (PH: ${parentName} - ${phone})` : 'Chưa gán học viên'}
+            >
+              {studentName ? (
+                <span className="font-semibold text-foreground">
+                  {studentName}{' '}
+                  <span className="font-normal text-muted-foreground">
+                    ({parentName || 'PH'}{phone ? ` - ${phone}` : ''})
+                  </span>
+                </span>
+              ) : (
+                <span className="text-muted-foreground font-normal">Chưa chọn học viên & phụ huynh</span>
+              )}
+            </div>
+            {phone && (
+              <button
+                type="button"
+                title="Sao chép SĐT phụ huynh"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigator.clipboard?.writeText(phone)
+                  toast.success(`Đã sao chép SĐT: ${phone}`)
+                }}
+                className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors p-0.5 rounded hover:bg-muted shrink-0"
+              >
+                <Copy className="h-3 w-3" />
+              </button>
             )}
           </div>
         </div>
-      </div>
+      </PoExplainSectionWrapper>
 
       {/* Checkbox gửi xác nhận */}
-      <div className="pt-1.5 border-t border-border/60">
-        <label className="flex items-center gap-2 cursor-pointer text-[11.5px] text-muted-foreground hover:text-foreground transition-colors">
-          <input
-            type="checkbox"
-            checked={sendConfirmation}
-            onChange={(e) => setSendConfirmation(e.target.checked)}
-            className="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5"
-          />
-          <span>Tự động gửi SMS / Zalo ZNS xác nhận</span>
-        </label>
-      </div>
+      <PoExplainSectionWrapper sectionId="sms-zns-toggle" side="left" align="start">
+        <div className="pt-1.5 border-t border-border/60">
+          <label className="flex items-center gap-2 cursor-pointer text-[11.5px] text-muted-foreground hover:text-foreground transition-colors">
+            <input
+              type="checkbox"
+              checked={sendConfirmation}
+              onChange={(e) => setSendConfirmation(e.target.checked)}
+              className="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5"
+            />
+            <span>Tự động gửi SMS / Zalo ZNS xác nhận</span>
+          </label>
+        </div>
+      </PoExplainSectionWrapper>
 
       {/* Nút Tạo booking học thử chính */}
       <div className="pt-1 space-y-1.5">
-        <Button
-          type="submit"
-          form="trial-create-form"
-          disabled={isSubmitting}
-          className="w-full gap-1.5 cursor-pointer h-9 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 shadow-sm transition-all"
-        >
-          <Plus className="h-4 w-4" />
-          <span>{isSubmitting ? 'Đang tạo booking...' : 'Tạo booking học thử ngay'}</span>
-        </Button>
+        <PoExplainSectionWrapper sectionId="submit-btn" side="left" align="start">
+          <Button
+            type="submit"
+            form="trial-create-form"
+            disabled={isSubmitting}
+            className="w-full gap-1.5 cursor-pointer h-9 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 shadow-sm transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{isSubmitting ? 'Đang tạo booking...' : 'Tạo booking học thử ngay'}</span>
+          </Button>
+        </PoExplainSectionWrapper>
 
         {onCancel && (
           <Button

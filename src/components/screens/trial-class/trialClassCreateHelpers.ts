@@ -8,23 +8,9 @@ export function mapLeadSubjectToTrialProgram(targetSubject?: string): string {
   if (!targetSubject) return PROGRAM_OPTIONS[0]
   const lower = targetSubject.toLowerCase()
 
-  if (lower.includes('starter')) return 'Cambridge Starter'
-  if (lower.includes('mover')) return 'Cambridge Movers'
-  if (lower.includes('flyer')) return 'Cambridge Flyers'
-  if (lower.includes('superkid') || lower.includes('nhi đồng')) return 'Cambridge Starter'
-  if (lower.includes('kindy') || lower.includes('mẫu giáo')) return 'Cambridge Starter'
-  if (lower.includes('foundation') || lower.includes('nền tảng')) return 'English Foundation'
-  if (lower.includes('communication kids') || lower.includes('giao tiếp nhí')) return 'Communication Kids'
-  if (lower.includes('communication junior') || lower.includes('giao tiếp')) return 'Communication Junior'
-  if (lower.includes('ielts junior')) return 'IELTS Junior'
-  if (lower.includes('ielts')) return 'IELTS Prep'
-  if (lower.includes('toán') || lower.includes('math')) return 'Math Thinking'
-  if (lower.includes('phonics')) return 'Phonics'
-  if (lower.includes('robotics') || lower.includes('robot')) return 'STEM Robotics'
-  if (lower.includes('coding') || lower.includes('lập trình')) return 'STEM Coding'
-
-  const found = PROGRAM_OPTIONS.find((p) => lower.includes(p.toLowerCase()))
-  return found || PROGRAM_OPTIONS[0]
+  if (lower.includes('toán') || lower.includes('math')) return 'Chương trình Toán tư duy'
+  if (lower.includes('grammar') || lower.includes('ngữ pháp')) return 'Chương trình Station Grammar'
+  return 'Chương trình Station'
 }
 
 export function buildTrialContactsList(customContacts: TrialContactPerson[] = []): TrialContactPerson[] {
@@ -141,5 +127,6 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
 }
 
 export function getSubjectForProgram(program: string): string {
+  if (!program) return ''
   return SUBJECT_MAP[program] || 'Tiếng Anh'
 }

@@ -17,13 +17,14 @@ import {
   type QcRemediationRound,
 } from '@/mocks/qcChecks'
 import {
-  type IncidentStatusFilter,
-  type IncidentDeadlineFilter,
   type FilterState,
   BRANCH_OPTIONS,
   ADVANCED_STATUS_OPTIONS,
-  matchesDeadlineFilter,
-  computeIncidentStatusTotal,
+  TARGET_GROUP_FILTER_OPTIONS,
+  SOURCE_FILTER_OPTIONS,
+  SEVERITY_FILTER_OPTIONS,
+  INITIAL_FILTER_STATE,
+  CRITERIA_TILE_CONFIG,
 } from './qcCheckTypes'
 import { QcCheckToolbar } from './QcCheckToolbar'
 import { QcCheckTable } from './QcCheckTable'
@@ -34,30 +35,17 @@ import {
 } from './QcCheckCreateDialog'
 import { QcCheckDetailDialog } from './QcCheckDetailDialog'
 import { QcCheckSlaConfigDialog } from './QcCheckSlaConfigDialog'
-import { sortQcIncidents, matchesIncidentSearch } from './qcCheckHelpers'
-import { groupIncidentsByPersonnel, formatStaffName } from './qcPersonnelHelpers'
+import { QcCheckBusinessModelDialog } from './QcCheckBusinessModelDialog'
+import {
+  sortQcIncidents,
+  matchesIncidentSearch,
+  getRelatedDetailIncidents,
+} from './qcCheckHelpers'
+import { groupIncidentsByPersonnel } from './qcPersonnelHelpers'
 import type { QcPersonnelGroup } from './qcPersonnelTypes'
 
 const CURRENT_USER_ID = 'ins_01'
 const CURRENT_USER_NAME = 'Trần Văn Kiên'
-
-const TARGET_GROUP_OPTIONS = [
-  { value: 'teacher', label: 'Giáo viên' },
-  { value: 'facility', label: 'Cơ sở vật chất' },
-  { value: 'operations', label: 'Vận hành (CS)' },
-]
-
-const SOURCE_OPTIONS = [
-  { value: 'manual', label: 'Thủ công' },
-  { value: 'system', label: 'Hệ thống tự tạo' },
-]
-
-const SEVERITY_OPTIONS = [
-  { value: 'low', label: 'Thấp' },
-  { value: 'medium', label: 'Trung bình' },
-  { value: 'high', label: 'Cao' },
-  { value: 'critical', label: 'Nghiêm trọng' },
-]
 
 export interface QcCheckScreenProps {
   defaultViewMode?: string
@@ -77,13 +65,7 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
       .then((res) => res.json())
       .then((resData) => {
         if (isMounted && resData.success && Array.isArray(resData.data)) {
-          setIncidents((prev) => {
-            const map = new Map<string, QcIncident>()
-            mockQcIncidents.forEach((i) => map.set(i.id, i))
-            prev.forEach((i) => map.set(i.id, i))
-            resData.data.forEach((i: QcIncident) => map.set(i.id, i))
-            return Array.from(map.values())
-          })
+          setIncidents(resData.data)
         }
       })
       .catch((err) => {
@@ -102,21 +84,9 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeSubject, setActiveSubject] = useState('all')
   const [activeCriteria, setActiveCriteria] = useState('all')
-  const [activeDeadline, setActiveDeadline] = useState<IncidentDeadlineFilter>('all')
-  const [selectedAssignee, setSelectedAssignee] = useState('all')
   const [activeTargetGroup, setActiveTargetGroup] = useState('all')
-  const [activeStatus, setActiveStatus] = useState<IncidentStatusFilter>('all')
   const [searchTerm, setSearchTerm] = useState('')
-
-  const [filters, setFilters] = useState<FilterState>({
-    branches: [],
-    targetGroups: [],
-    sources: [],
-    criteriaList: [],
-    severities: [],
-    statuses: [],
-  })
-
+  const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [page, setPage] = useState(1)
@@ -124,31 +94,9 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [createPrefill, setCreatePrefill] = useState<QcCreatePrefill | null>(null)
   const [isSlaConfigOpen, setIsSlaConfigOpen] = useState(false)
+  const [isBusinessModelOpen, setIsBusinessModelOpen] = useState(false)
   const [detailIncidentId, setDetailIncidentId] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
-
-  // Dynamic list of assignees for the personnel filter dropdown
-  const assigneeOptions = useMemo(() => {
-    const names = Array.from(new Set(incidents.map((i) => i.assignee?.trim()).filter(Boolean))).sort()
-    return [
-      { value: 'all', label: 'Tất cả nhân sự', selectedLabel: 'Tất cả nhân sự' },
-      { value: 'my', label: `Lỗi của tôi (${currentStaffName})`, selectedLabel: 'Lỗi của tôi' },
-      ...names.map((name) => ({ value: name, label: name, selectedLabel: name })),
-    ]
-  }, [incidents, currentStaffName])
-
-  // Count of incidents assigned to or involving the current staff member
-  const myIncidentsCount = useMemo(() => {
-    const target = currentStaffName.toLowerCase().trim()
-    return incidents.filter((inc) => {
-      if (activeBranch !== 'all' && inc.branch !== activeBranch) return false
-      return (
-        inc.assignee.toLowerCase().includes(target) ||
-        (inc.teacherName && inc.teacherName.toLowerCase().includes(target)) ||
-        (inc.csmName && inc.csmName.toLowerCase().includes(target))
-      )
-    }).length
-  }, [incidents, activeBranch, currentStaffName])
 
   // Filter & 2-Tier Sort logic (Level 1: Severity, Level 2: Deadline)
   const filteredIncidents = useMemo(() => {
@@ -157,33 +105,12 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
       if (activeSubject !== 'all' && inc.subject && inc.subject !== activeSubject) return false
       if (activeCriteria !== 'all' && inc.criteria !== activeCriteria) return false
       if (activeTargetGroup !== 'all' && inc.targetGroup !== activeTargetGroup) return false
-      if (!matchesDeadlineFilter(inc, activeDeadline)) return false
 
-      if (selectedAssignee === 'my') {
-        const target = currentStaffName.toLowerCase().trim()
-        const isMine =
-          inc.assignee.toLowerCase().includes(target) ||
-          (inc.teacherName && inc.teacherName.toLowerCase().includes(target)) ||
-          (inc.csmName && inc.csmName.toLowerCase().includes(target))
-        if (!isMine) return false
-      } else if (selectedAssignee !== 'all') {
-        const target = selectedAssignee.toLowerCase().trim()
-        if (!inc.assignee.toLowerCase().includes(target)) return false
-      }
-
-      // Lọc trạng thái (kết hợp tab nhanh và filter nâng cao)
+      // Lọc trạng thái (từ bộ lọc nâng cao)
       if (filters.statuses.length > 0) {
         if (!filters.statuses.includes(inc.status)) return false
       } else {
-        if (activeStatus === 'all') {
-          // 1. Đã hủy đưa vào filter nâng cao, không hiển thị ở đây
-          if (inc.status === 'cancelled') return false
-        } else if (activeStatus === 'correcting') {
-          // 2. Chưa đáp ứng vẫn là đang khắc phục
-          if (inc.status !== 'correcting' && inc.status !== 'not_met') return false
-        } else if (inc.status !== activeStatus) {
-          return false
-        }
+        if (inc.status === 'cancelled') return false
       }
 
       if (searchTerm && !matchesIncidentSearch(inc, searchTerm)) {
@@ -199,28 +126,15 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
     })
 
     return sortQcIncidents(base)
-  }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, activeStatus, searchTerm, filters])
+  }, [incidents, activeBranch, activeSubject, activeCriteria, activeTargetGroup, searchTerm, filters])
 
-  // Status totals according to active filters (Rule 5: Status Tiles update dynamically according to all active filters)
-  const statusTileTotals = useMemo(() => {
+  // Criteria totals according to active filters (Rule 5: Status Tiles update dynamically according to all active filters)
+  const criteriaTileTotals = useMemo(() => {
     const totals: Record<string, number> = {}
     const baseFiltered = incidents.filter((inc) => {
       if (activeBranch !== 'all' && inc.branch !== activeBranch) return false
       if (activeSubject !== 'all' && inc.subject && inc.subject !== activeSubject) return false
-      if (activeCriteria !== 'all' && inc.criteria !== activeCriteria) return false
       if (activeTargetGroup !== 'all' && inc.targetGroup !== activeTargetGroup) return false
-      if (!matchesDeadlineFilter(inc, activeDeadline)) return false
-      if (selectedAssignee === 'my') {
-        const target = currentStaffName.toLowerCase().trim()
-        const isMine =
-          inc.assignee.toLowerCase().includes(target) ||
-          (inc.teacherName && inc.teacherName.toLowerCase().includes(target)) ||
-          (inc.csmName && inc.csmName.toLowerCase().includes(target))
-        if (!isMine) return false
-      } else if (selectedAssignee !== 'all') {
-        const target = selectedAssignee.toLowerCase().trim()
-        if (!inc.assignee.toLowerCase().includes(target)) return false
-      }
       if (searchTerm && !matchesIncidentSearch(inc, searchTerm)) {
         return false
       }
@@ -228,17 +142,22 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
       if (filters.targetGroups.length > 0 && !filters.targetGroups.includes(inc.targetGroup)) return false
       if (filters.sources.length > 0 && !filters.sources.includes(inc.source)) return false
       if (filters.severities.length > 0 && !filters.severities.includes(inc.severity)) return false
-      if (filters.statuses.length > 0 && !filters.statuses.includes(inc.status)) return false
+      if (filters.statuses.length > 0) {
+        if (!filters.statuses.includes(inc.status)) return false
+      } else {
+        if (inc.status === 'cancelled') return false
+      }
       return true
     })
 
-    const tileKeys: IncidentStatusFilter[] = ['all', 'open', 'correcting', 'corrected', 'closed']
-    const hasCancelledFilter = filters.statuses.includes('cancelled')
-    for (const key of tileKeys) {
-      totals[key] = computeIncidentStatusTotal(baseFiltered, key, hasCancelledFilter)
+    totals['all'] = baseFiltered.length
+    for (const cfg of CRITERIA_TILE_CONFIG) {
+      if (cfg.id !== 'all') {
+        totals[cfg.id] = baseFiltered.filter((i) => i.criteria === cfg.id).length
+      }
     }
     return totals
-  }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, searchTerm, filters])
+  }, [incidents, activeBranch, activeSubject, activeTargetGroup, searchTerm, filters])
 
   // Group filtered incidents into personnel-centric rows matching Care screen architecture
   const personnelGroups = useMemo(() => {
@@ -268,21 +187,21 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
     createFilterGroup({
       id: 'targetGroups',
       title: 'Đối tượng đánh giá',
-      options: TARGET_GROUP_OPTIONS,
+      options: TARGET_GROUP_FILTER_OPTIONS,
       selectedValues: filters.targetGroups,
       getOptionCount: (val) => incidents.filter((i) => i.targetGroup === val).length,
     }),
     createFilterGroup({
       id: 'sources',
       title: 'Nguồn phát hiện',
-      options: SOURCE_OPTIONS,
+      options: SOURCE_FILTER_OPTIONS,
       selectedValues: filters.sources,
       getOptionCount: (val) => incidents.filter((i) => i.source === val).length,
     }),
     createFilterGroup({
       id: 'severities',
       title: 'Mức độ vi phạm',
-      options: SEVERITY_OPTIONS,
+      options: SEVERITY_FILTER_OPTIONS,
       selectedValues: filters.severities,
       getOptionCount: (val) => incidents.filter((i) => i.severity === val).length,
     }),
@@ -303,50 +222,12 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
   }, [personnelGroups, detailIncidentId])
 
   const relatedDetailIncidents = useMemo(() => {
-    if (!detailIncident) return []
-    const map = new Map<string, QcIncident>()
-
-    // 1. Luôn đưa toàn bộ incidents của personnelGroup đang xem vào trước tiên (đồng bộ 100% với danh sách ngoài)
-    if (currentPersonnelGroupForDetail?.incidents) {
-      currentPersonnelGroupForDetail.incidents.forEach((inc) => {
-        map.set(inc.id, inc)
-      })
-    }
-
-    if (!map.has(detailIncident.id)) {
-      map.set(detailIncident.id, detailIncident)
-    }
-
-    const cleanTargetName = formatStaffName(
-      currentPersonnelGroupForDetail?.cleanName ||
-      detailIncident.teacherName ||
-      detailIncident.assignee ||
-      detailIncident.csmName
+    return getRelatedDetailIncidents(
+      detailIncident,
+      currentPersonnelGroupForDetail,
+      incidents,
+      mockQcIncidents
     )
-    const branch = currentPersonnelGroupForDetail?.branch || detailIncident.branch
-
-    // Bổ sung dữ liệu sự cố từ mock data & incidents cùng nhân sự
-    mockQcIncidents.forEach((i) => {
-      const name = formatStaffName(i.teacherName || i.assignee || i.csmName)
-      if (name === cleanTargetName && (!branch || i.branch === branch)) {
-        map.set(i.id, i)
-      }
-    })
-
-    incidents.forEach((i) => {
-      const name = formatStaffName(i.teacherName || i.assignee || i.csmName)
-      if (name === cleanTargetName && (!branch || i.branch === branch)) {
-        map.set(i.id, i)
-      }
-    })
-
-    const results = Array.from(map.values())
-    results.sort((a, b) => {
-      const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      if (timeDiff !== 0) return timeDiff
-      return a.id.localeCompare(b.id)
-    })
-    return results.length > 0 ? results : [detailIncident]
   }, [detailIncident, currentPersonnelGroupForDetail, incidents])
 
   // Create Batch Incidents
@@ -369,8 +250,8 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
       if (data.success && Array.isArray(data.data)) {
         setIncidents((prev) => [...data.data, ...prev])
         setPage(1)
-        if (activeStatus !== 'all' && activeStatus !== 'open') {
-          setActiveStatus('all')
+        if (activeCriteria !== 'all') {
+          setActiveCriteria('all')
         }
         if (activeBranch !== 'all' && form.branch !== activeBranch) {
           setActiveBranch('all')
@@ -708,32 +589,18 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
         activeBranch={activeBranch}
         activeSubject={activeSubject}
         activeCriteria={activeCriteria}
-        activeDeadline={activeDeadline}
-        onDeadlineChange={(d) => { setActiveDeadline(d); setPage(1) }}
-        selectedAssignee={selectedAssignee}
-        onAssigneeChange={(a) => { setSelectedAssignee(a); setPage(1) }}
-        assigneeOptions={assigneeOptions}
-        myIncidentsCount={myIncidentsCount}
-        currentStaffName={currentStaffName}
+        criteriaTileTotals={criteriaTileTotals}
         activeTargetGroup={activeTargetGroup}
-        activeStatus={activeStatus}
         searchTerm={searchTerm}
         activeFilterCount={activeFilterCount}
-        statusTileTotals={statusTileTotals}
         onBranchChange={(b) => { setActiveBranch(b); setPage(1) }}
         onSubjectChange={(s) => { setActiveSubject(s); setPage(1) }}
         onCriteriaChange={(c) => { setActiveCriteria(c); setPage(1) }}
         onTargetGroupChange={(g) => { setActiveTargetGroup(g); setPage(1) }}
-        onStatusChange={(s) => {
-          setActiveStatus(s)
-          if (filters.statuses.length > 0) {
-            setFilters((current) => ({ ...current, statuses: [] }))
-          }
-          setPage(1)
-        }}
         onSearchChange={(v) => { setSearchTerm(v); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
         onOpenSlaConfig={() => setIsSlaConfigOpen(true)}
+        onOpenBusinessModel={() => setIsBusinessModelOpen(true)}
         onCreate={() => setIsCreateOpen(true)}
       />
 
@@ -776,14 +643,7 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
               }))
             }}
             onClearAll={() => {
-              setFilters({
-                branches: [],
-                targetGroups: [],
-                sources: [],
-                criteriaList: [],
-                severities: [],
-                statuses: [],
-              })
+              setFilters(INITIAL_FILTER_STATE)
               setPage(1)
             }}
             onClose={() => setIsFilterOpen(false)}
@@ -833,6 +693,12 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
       <QcCheckSlaConfigDialog
         open={isSlaConfigOpen}
         onOpenChange={setIsSlaConfigOpen}
+      />
+
+      {/* Business Model & Operational Flow Dialog */}
+      <QcCheckBusinessModelDialog
+        open={isBusinessModelOpen}
+        onOpenChange={setIsBusinessModelOpen}
       />
     </div>
   )

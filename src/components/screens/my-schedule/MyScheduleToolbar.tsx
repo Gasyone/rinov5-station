@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Clock, LayoutList } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   BranchSelect,
   ExpandableSearch,
@@ -8,8 +8,6 @@ import {
 } from '@/components/controls'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
-import type { ScheduleLayoutType } from './myScheduleTypes'
 
 const VIEW_MODES = [
   { value: 'day', label: 'Ngày' },
@@ -20,14 +18,12 @@ interface MyScheduleToolbarProps {
   isMySchedule?: boolean
   onIsMyScheduleChange?: (val: boolean) => void
   viewMode: 'day' | 'week'
-  layoutType: ScheduleLayoutType
   titleDate: string
   branches: string[]
   activeBranch: string
   search: string
   activeFilterCount: number
   onViewModeChange: (value: 'day' | 'week') => void
-  onLayoutTypeChange: (value: ScheduleLayoutType) => void
   onBranchChange: (value: string) => void
   onSearchChange: (value: string) => void
   onToday: () => void
@@ -39,14 +35,12 @@ export function MyScheduleToolbar({
   isMySchedule,
   onIsMyScheduleChange,
   viewMode,
-  layoutType,
   titleDate,
   branches,
   activeBranch,
   search,
   activeFilterCount,
   onViewModeChange,
-  onLayoutTypeChange,
   onBranchChange,
   onSearchChange,
   onToday,
@@ -89,36 +83,6 @@ export function MyScheduleToolbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {/* Toggle Kiểu View: Ma trận 2D / Lịch 1 chiều (Icon only) */}
-        <div className="flex items-center rounded-lg border border-border/60 bg-muted/30 p-0.5">
-          <button
-            type="button"
-            onClick={() => onLayoutTypeChange('matrix')}
-            title="Ma trận giờ (2D)"
-            className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer",
-              layoutType === 'matrix'
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Clock className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onLayoutTypeChange('schedule_1d')}
-            title="Lịch 1 chiều (1D)"
-            className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer",
-              layoutType === 'schedule_1d'
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <LayoutList className="h-4 w-4" />
-          </button>
-        </div>
-
         <SegmentedControl
           value={viewMode}
           options={VIEW_MODES.map((mode) => ({ value: mode.value as 'day' | 'week', label: mode.label }))}
@@ -135,6 +99,4 @@ export function MyScheduleToolbar({
       </div>
     </div>
   )
-
 }
-

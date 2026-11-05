@@ -221,7 +221,7 @@ export function Form2025Section({
                         label={`${feedback.prompt} ${option.label}`}
                         onToggle={() => setFeedbackAnswer(feedback.key, option.value)}
                       />
-                      <span className="truncate">{option.label}</span>
+                      <span className="truncate" title={option.label}>{option.label}</span>
                     </label>
                   )
                 })}
@@ -260,7 +260,7 @@ export function Form2025Section({
                   onCheckedChange={() => toggleWeakness(option.key)}
                   className="h-3.5 w-3.5 shrink-0"
                 />
-                <span className="truncate">{option.label}</span>
+                <span className="truncate" title={option.label}>{option.label}</span>
               </label>
             )
           })}

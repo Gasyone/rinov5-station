@@ -15,7 +15,12 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import type { QcIncident, QcRemediationRound } from '@/mocks/qcChecks'
-import { QC_ERROR_STATUS_LABELS } from '@/mocks/qcChecks'
+import {
+  QC_ERROR_STATUS_LABELS,
+  QC_ACTION_LABELS,
+  QC_CM_CONFIRM_LABELS,
+  QC_FINAL_STATUS_LABELS,
+} from '@/mocks/qcChecks'
 import { formatDateTime, formatShortDate } from './qcCheckHelpers'
 import { isIncidentOverdue } from './qcCheckTypes'
 import { formatStaffName } from './qcPersonnelHelpers'
@@ -189,6 +194,58 @@ export function QcDetailActiveRemediation({
             </div>
           </div>
         )}
+
+        {/* ─── XỬ LÝ VẬN HÀNH & GIẢI TRÌNH THEO QUY CHẾ ─── */}
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap text-xs">
+              <span className="font-medium text-foreground text-[11px]">Thống kê vi phạm:</span>
+              <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+                Vi phạm lần {incident.repeatCount || 1} trong tháng
+              </span>
+              {incident.actionTaken && (
+                <span className="px-1.5 py-0.5 rounded text-[11px] font-normal bg-sky-50 text-sky-800 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300">
+                  {QC_ACTION_LABELS[incident.actionTaken]}
+                </span>
+              )}
+            </div>
+
+            {incident.sourceDailyCheckId && (
+              <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                Nguồn: Daily Check #{incident.sourceDailyCheckId}
+              </span>
+            )}
+          </div>
+
+          {/* Giải trình & Xác nhận của Quản lý cơ sở */}
+          {(incident.explanation || incident.cmConfirmation) && (
+            <div className="bg-muted/40 rounded-lg p-2.5 space-y-1.5 text-xs border border-border/50">
+              {incident.explanation && (
+                <div>
+                  <span className="text-muted-foreground font-medium mr-1">Giải trình nhân sự:</span>
+                  <span className="text-foreground">{incident.explanation}</span>
+                </div>
+              )}
+              {incident.cmConfirmation && (
+                <div className="flex items-center gap-2 pt-1 border-t border-border/30 text-[11px]">
+                  <span className="text-muted-foreground">Xác nhận Quản lý cơ sở (CM):</span>
+                  <span className={cn('font-medium', incident.cmConfirmation === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+                    {QC_CM_CONFIRM_LABELS[incident.cmConfirmation]}
+                  </span>
+                  {incident.cmConfirmationNote && (
+                    <span className="text-muted-foreground italic font-normal">- {incident.cmConfirmationNote}</span>
+                  )}
+                </div>
+              )}
+              {incident.finalStatus && (
+                <div className="text-[11px] text-muted-foreground pt-0.5">
+                  <span>Kết luận xử lý: </span>
+                  <strong className="text-foreground">{QC_FINAL_STATUS_LABELS[incident.finalStatus]}</strong>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ─── PHẦN 2 (Ở DƯỚI): KHẮC PHỤC & NGHIỆM THU (REMEDIATION & REVIEW) ─── */}

@@ -1,8 +1,10 @@
 import type { ScreenTourConfig } from '../explainTourTypes'
 import { STUDENT_OPERATIONS_ALERT_TOUR } from './studentOperationsAlertTour'
+import { DAILY_CHECK_TOUR } from './dailyCheckTour'
 
 export const SCREEN_TOURS: Record<string, ScreenTourConfig> = {
   student_operations_alert: STUDENT_OPERATIONS_ALERT_TOUR,
+  daily_check: DAILY_CHECK_TOUR,
 }
 
 export function getTourForPathname(pathname: string | null): ScreenTourConfig | null {

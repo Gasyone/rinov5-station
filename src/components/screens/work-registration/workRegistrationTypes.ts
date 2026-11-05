@@ -36,7 +36,7 @@ export const WORK_REGISTRATION_GRID_SECTIONS: WorkRegistrationGridSection[] = [
   },
 ]
 
-export type WorkRegistrationTab = 'mine' | 'roster' | 'staff'
+export type WorkRegistrationTab = 'mine' | 'roster' | 'staff' | 'center'
 export type WorkRegistrationViewMode = 'week' | 'month'
 export type WorkRegistrationStatusFilter =
   | 'all'
@@ -91,10 +91,38 @@ export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string
   { value: 'mine', label: 'Đăng ký' },
   { value: 'staff', label: 'Lịch làm việc' },
   { value: 'roster', label: 'Lịch trực test' },
+  { value: 'center', label: 'Lịch trường' },
 ]
-
 
 export const WORK_VIEW_OPTIONS: Array<{ value: WorkRegistrationViewMode; label: string }> = [
   { value: 'week', label: 'Tuần' },
   { value: 'month', label: 'Tháng' },
 ]
+
+export type ShiftFilterOption = ShiftSection
+
+export interface ShiftFilterItem {
+  id: ShiftSection
+  label: string
+  shortLabel: string
+  timeRange: string
+}
+
+export const SHIFT_FILTER_OPTIONS: ShiftFilterItem[] = [
+  { id: 'morning', label: 'Sáng', shortLabel: 'Sáng', timeRange: '08:00 - 12:00' },
+  { id: 'afternoon', label: 'Chiều', shortLabel: 'Chiều', timeRange: '13:00 - 17:30' },
+  { id: 'evening', label: 'Tối', shortLabel: 'Tối', timeRange: '17:30 - 22:00' },
+]
+
+export interface EmployeeDayShiftSummary {
+  employee: WorkRegistrationEmployee
+  records: WorkRegistrationRecord[]
+  totalMinutes: number
+  badgeLabel: string
+  badgeVariant: 'all_day' | 'double_shift' | 'morning' | 'afternoon' | 'evening' | 'custom'
+  badgeClass: string
+  timeDetail: string
+  timeRangeLabel: string
+  shifts: ShiftSection[]
+  assignedClasses: string[]
+}

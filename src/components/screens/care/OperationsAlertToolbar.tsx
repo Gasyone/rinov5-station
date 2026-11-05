@@ -27,9 +27,9 @@ interface OperationsAlertToolbarProps {
   careStatusFilter: 'all' | 'pending' | 'in_progress' | 'cared'
   onCareStatusFilterChange: (status: 'all' | 'pending' | 'in_progress' | 'cared') => void
   careStatusCounts?: { all: number; pending: number; in_progress: number; cared: number }
-  dueDateFilter: 'all' | 'overdue' | 'today' | 'rescheduled'
-  onDueDateFilterChange: (due: 'all' | 'overdue' | 'today' | 'rescheduled') => void
-  dueDateCounts?: { all: number; overdue: number; today: number; rescheduled: number }
+  dueDateFilter: 'all' | 'overdue' | 'today' | 'upcoming' | 'rescheduled'
+  onDueDateFilterChange: (due: 'all' | 'overdue' | 'today' | 'upcoming' | 'rescheduled') => void
+  dueDateCounts?: { all: number; overdue: number; today: number; upcoming?: number; rescheduled: number }
   packageStatusFilter: string
   onPackageStatusFilterChange: (status: string) => void
   packageStatusCounts?: {
@@ -55,7 +55,6 @@ interface OperationsAlertToolbarProps {
   onCsdbFilterChange: (val: string) => void
   selectedAssignee: string
   onAssigneeChange: (assignee: string) => void
-  assigneeOptions: ToolbarSelectOption[]
   myAlertsCount: number
   currentStaffName: string
   /** Tạm thời ẩn thống kê và popover theo yêu cầu */
@@ -131,7 +130,6 @@ export function OperationsAlertToolbar({
   onCsdbFilterChange,
   selectedAssignee,
   onAssigneeChange,
-  assigneeOptions,
   myAlertsCount,
   currentStaffName,
   showSmartcardMetrics = false,
@@ -184,6 +182,22 @@ export function OperationsAlertToolbar({
       ),
     },
     {
+      value: 'upcoming',
+      label: (
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+          <span>Chưa đến hạn</span>
+        </span>
+      ),
+      textValue: 'Chưa đến hạn',
+      selectedLabel: (
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+          <span>Chưa đến hạn</span>
+        </span>
+      ),
+    },
+    {
       value: 'rescheduled',
       label: (
         <span className="flex items-center gap-1.5">
@@ -203,7 +217,7 @@ export function OperationsAlertToolbar({
 
   return (
     <div className="flex shrink-0 flex-col gap-1.5 bg-background px-2.5 pt-2 pb-1 lg:px-3">
-      {/* Row 1: 5 Selections (Branch, Subject, Assignee, CSDB, Due Date), Search + Filter + Export + Smartcard Popover */}
+      {/* Row 1: 4 Selections (Branch, Subject, CSDB, Due Date), Search + Filter + Export + Smartcard Popover */}
       <div className="flex items-center justify-between flex-wrap gap-1.5 min-w-0">
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
           {/* 1. Branch Selector */}
@@ -233,19 +247,7 @@ export function OperationsAlertToolbar({
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
-          {/* 3. Assignee Selector (Người phụ trách) */}
-          <ToolbarSelect
-            value={selectedAssignee}
-            options={assigneeOptions}
-            onValueChange={onAssigneeChange}
-            className="h-8 text-xs min-w-[135px] sm:min-w-[145px]"
-            ariaLabel="Lọc theo người phụ trách"
-            placeholder="Người phụ trách"
-          />
-
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
-
-          {/* 4. Loại thẻ CS filter droplist */}
+          {/* 3. Loại thẻ CS filter droplist */}
           <ToolbarSelect
             value={csdbFilter}
             options={[
@@ -262,11 +264,11 @@ export function OperationsAlertToolbar({
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
-          {/* 5. Hạn xử lý / Hạn chăm sóc Selector */}
+          {/* 4. Hạn xử lý / Hạn chăm sóc Selector */}
           <ToolbarSelect
             value={dueDateFilter}
             options={dueDateOptions}
-            onValueChange={(val) => onDueDateFilterChange(val as 'all' | 'overdue' | 'today' | 'rescheduled')}
+            onValueChange={(val) => onDueDateFilterChange(val as 'all' | 'overdue' | 'today' | 'upcoming' | 'rescheduled')}
             className="h-8 text-xs min-w-[120px] sm:min-w-[125px]"
             ariaLabel="Lọc theo hạn xử lý"
             placeholder="Hạn xử lý"

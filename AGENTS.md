@@ -162,6 +162,7 @@ When writing or editing business documentation (CAP, BF, US, FLOW), you MUST:
    - New List Screen US → `TEMPLATE-US-LIST.md`
    - New Form/Modal US → `TEMPLATE-US-FORM.md`
    - New Detail Page US → `TEMPLATE-US-DETAIL.md`
+   - Upgrade / Adjustment US → `TEMPLATE-US-UPGRADE.md` (Mẫu chuẩn cho nâng cấp, điều chỉnh giao diện & nghiệp vụ hiện có theo mẫu Confluence https://rinoeduai.atlassian.net/wiki/x/M4A_Cg)
    - New End-to-End Flow → `TEMPLATE-FLOW.md`
 2. **Do NOT invent custom structures.** Every documentation file must strictly follow its template layout.
 3. **Strict separation of Form and Detail:** For complex core entities (Branch, HR Worker, Student, etc.), NEVER merge "Create" and "Update" into a single US. "Create" MUST use `TEMPLATE-US-FORM.md` (representing a simple Popup/Wizard). "Update/View/Read" MUST use `TEMPLATE-US-DETAIL.md` (representing a complex multi-tab orchestrator page).

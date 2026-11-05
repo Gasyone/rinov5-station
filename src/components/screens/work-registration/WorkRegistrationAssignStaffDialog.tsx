@@ -1,13 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import {
-  Check,
-  Calendar,
-  User,
-  ChevronRight,
-  Search,
-} from 'lucide-react'
+import { Check, Search } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -18,19 +12,28 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { getStatusColors } from '@/lib/statusColors'
+import { getStatusTextColor } from '@/lib/statusColors'
 import {
-  DUTY_SECTIONS,
-  WEEKDAYS,
   type DutyEmployee,
   type MasterShiftAssignment,
   type ShiftSection,
 } from '@/mocks/shiftRoster'
 import {
-  WORK_TIME_SLOTS,
   toWorkDateKey,
+  type WorkRegistrationEmployee,
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
+import { getEmployeeSectionShiftInfo } from './workRegistrationShiftHelpers'
+
+function getStaffSubjectTag(staff: DutyEmployee, employees?: WorkRegistrationEmployee[]): string {
+  if (staff.role === 'Giáo viên' || staff.role === 'Trợ giảng') {
+    if (staff.subject === 'math') return '· Toán'
+    if (staff.subject === 'english') return '· Tiếng Anh'
+    const emp = employees?.find((e) => e.id === staff.id)
+    return emp?.subjects?.length ? `· ${emp.subjects.join(', ')}` : ''
+  }
+  return '· Hỗ trợ chung'
+}
 
 interface WorkRegistrationAssignStaffDialogProps {
   open: boolean
@@ -44,6 +47,8 @@ interface WorkRegistrationAssignStaffDialogProps {
   currentAssignedIds: string[]
   records?: WorkRegistrationRecord[]
   weekDays?: Date[]
+  subjectFilter?: string
+  employees?: WorkRegistrationEmployee[]
   onClose: () => void
   onSave: (ids: string[]) => void
 }
@@ -60,32 +65,78 @@ export function WorkRegistrationAssignStaffDialog({
   currentAssignedIds,
   records = [],
   weekDays = [],
+  subjectFilter = 'all',
+  employees = [],
   onClose,
   onSave,
 }: WorkRegistrationAssignStaffDialogProps) {
-  const isDigi = section === 'evening_digi'
-  const [selectedIds, setSelectedIds] = useState<string[]>(currentAssignedIds)
+  // Helper lấy thông tin đăng ký ca trực của 1 nhân viên trong ca đang chọn
+  const getStaffRegistrationForCurrentShift = (staff: DutyEmployee) => {
+    const isTeaching = staff.role === 'Giáo viên' || staff.role === 'Trợ giảng'
+    const targetDateObj = weekDays[dayIndex]
+    const targetDateKey = targetDateObj ? toWorkDateKey(targetDateObj) : ''
+    const shiftInfo = getEmployeeSectionShiftInfo(records, staff.id, targetDateKey, section)
+
+    if (!isTeaching && shiftInfo.notRegistered) {
+      return {
+        isTeaching,
+        isFull: true,
+        isPartial: false,
+        intervals: [] as string[],
+        notRegistered: false,
+      }
+    }
+
+    return {
+      isTeaching,
+      isFull: shiftInfo.isFull,
+      isPartial: shiftInfo.isPartial,
+      intervals: shiftInfo.intervals,
+      notRegistered: shiftInfo.notRegistered,
+    }
+  }
+
+  const isStaffDisabled = (staff: DutyEmployee) => {
+    const isTeaching = staff.role === 'Giáo viên' || staff.role === 'Trợ giảng'
+    if (!isTeaching) return false
+    const regInfo = getStaffRegistrationForCurrentShift(staff)
+    return regInfo.notRegistered
+  }
+
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
+    return currentAssignedIds.filter((id) => {
+      const staff = allStaff.find((s) => s.id === id)
+      return staff ? !isStaffDisabled(staff) : true
+    })
+  })
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | 'Giáo viên' | 'Khác'>('all')
 
-  // Nhân sự đang được chọn xem lịch ở Panel phải
-  const [focusedStaffId, setFocusedStaffId] = useState<string>(() => {
-    return currentAssignedIds[0] || allStaff[0]?.id || ''
-  })
-
   const toggleStaff = (id: string) => {
+    const staff = allStaff.find((s) => s.id === id)
+    if (staff && isStaffDisabled(staff)) return
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     )
-    setFocusedStaffId(id)
   }
 
   const filteredStaff = useMemo(() => {
     let list = allStaff
     if (roleFilter === 'Giáo viên') {
-      list = list.filter((staff) => staff.role === 'Giáo viên')
+      list = list.filter((staff) => staff.role === 'Giáo viên' || staff.role === 'Trợ giảng')
     } else if (roleFilter === 'Khác') {
-      list = list.filter((staff) => staff.role !== 'Giáo viên')
+      list = list.filter((staff) => staff.role !== 'Giáo viên' && staff.role !== 'Trợ giảng')
+    }
+    if (subjectFilter && subjectFilter !== 'all') {
+      list = list.filter((staff) => {
+        if (staff.subject === 'all' || (staff.role !== 'Giáo viên' && staff.role !== 'Trợ giảng')) {
+          return true
+        }
+        if (staff.subject === 'math') return subjectFilter === 'Toán'
+        if (staff.subject === 'english') return subjectFilter === 'Tiếng Anh'
+        const emp = employees?.find((e) => e.id === staff.id)
+        return emp?.subjects?.includes(subjectFilter)
+      })
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
@@ -97,93 +148,23 @@ export function WorkRegistrationAssignStaffDialog({
       )
     }
     return list
-  }, [allStaff, searchQuery, roleFilter])
+  }, [allStaff, searchQuery, roleFilter, subjectFilter, employees])
 
-  // Nhân sự đang được focus xem lịch
-  const focusedStaff = useMemo(() => {
-    return allStaff.find((s) => s.id === focusedStaffId) || filteredStaff[0] || allStaff[0]
-  }, [allStaff, filteredStaff, focusedStaffId])
-
-  // Lấy danh sách các ca trong tuần của nhân sự được focus
-  const getStaffWeeklyShifts = (employeeId: string) => {
-    return masterRoster
-      .filter((item) => item.branch === branchName && item.assignedEmployeeIds.includes(employeeId))
-      .map((item) => {
-        const day = WEEKDAYS.find((w) => w.index === item.dayIndex)
-        const sec = DUTY_SECTIONS.find((s) => s.id === item.section)
-        return {
-          dayIndex: item.dayIndex,
-          dayShort: day?.short || `T${item.dayIndex + 2}`,
-          dayFull: day?.label || `Thứ ${item.dayIndex + 2}`,
-          sectionId: item.section,
-          sectionLabel: sec?.label || item.section,
-          sectionIcon: sec?.icon || '⏱',
-        }
-      })
-      .sort((a, b) => a.dayIndex - b.dayIndex)
-  }
-
-  const focusedWeeklyShifts = focusedStaff ? getStaffWeeklyShifts(focusedStaff.id) : []
-  const isFocusedAssignedCurrent = focusedStaff ? selectedIds.includes(focusedStaff.id) : false
-
-  // Helper lấy thông tin đăng ký ca trực của 1 nhân viên trong ca đang chọn
-  const getStaffRegistrationForCurrentShift = (staffId: string) => {
-    const targetDateObj = weekDays[dayIndex]
-    const targetDateKey = targetDateObj ? toWorkDateKey(targetDateObj) : ''
-
-    // Lấy danh sách slots thuộc ca trực hiện tại
-    const dutySec = DUTY_SECTIONS.find((s) => s.id === section)
-    const prefix = section === 'evening_digi' ? 'evening' : section
-    const expectedSlotIds = dutySec?.slots.map((t) => `${prefix}-${t.replace(':', '')}`) || []
-
-    if (!targetDateKey || expectedSlotIds.length === 0) {
-      return { isFull: false, isPartial: false, timeRange: null }
-    }
-
-    const empSlots = records
-      .filter((r) => r.employeeId === staffId && r.date === targetDateKey && expectedSlotIds.includes(r.slotId))
-      .map((r) => WORK_TIME_SLOTS.find((s) => s.id === r.slotId)!)
-      .filter(Boolean)
-      .sort((a, b) => a.start.localeCompare(b.start))
-
-    if (empSlots.length === 0) {
-      return { isFull: false, isPartial: false, timeRange: null }
-    }
-
-    const isFull = empSlots.length >= expectedSlotIds.length
-    const timeRange = isFull ? null : `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
-
-    return { isFull, isPartial: !isFull, timeRange }
-  }
-
-  // Helper lấy thông tin đăng ký ca trực của 1 nhân viên trong bất kỳ ngày + ca nào
-  const getStaffRegisteredTimeForDaySection = (staffId: string, targetDayIndex: number, targetSection: ShiftSection): string => {
-    const targetDateObj = weekDays[targetDayIndex]
-    const targetDateKey = targetDateObj ? toWorkDateKey(targetDateObj) : ''
-
-    const dutySec = DUTY_SECTIONS.find((s) => s.id === targetSection)
-    const prefix = targetSection === 'evening_digi' ? 'evening' : targetSection
-    const expectedSlotIds = dutySec?.slots.map((t) => `${prefix}-${t.replace(':', '')}`) || []
-
-    if (targetDateKey && expectedSlotIds.length > 0 && records && records.length > 0) {
-      const empSlots = records
-        .filter((r) => r.employeeId === staffId && r.date === targetDateKey && expectedSlotIds.includes(r.slotId))
-        .map((r) => WORK_TIME_SLOTS.find((s) => s.id === r.slotId)!)
-        .filter(Boolean)
-        .sort((a, b) => a.start.localeCompare(b.start))
-
-      if (empSlots.length > 0) {
-        if (empSlots.length >= expectedSlotIds.length) return 'Cả ca'
-        return `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
-      }
-    }
-
-    return 'Cả ca'
+  // Số ca trong tuần của 1 nhân sự (phản ánh trực tiếp trạng thái đang tick)
+  const getWeeklyShiftCount = (employeeId: string) => {
+    let count = masterRoster.filter(
+      (item) =>
+        item.branch === branchName &&
+        item.assignedEmployeeIds.includes(employeeId) &&
+        !(item.dayIndex === dayIndex && item.section === section)
+    ).length
+    if (selectedIds.includes(employeeId)) count += 1
+    return count
   }
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="w-[95vw] sm:max-w-3xl lg:max-w-4xl max-h-[88vh] flex flex-col gap-0 p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] sm:max-w-xl max-h-[88vh] flex flex-col gap-0 p-0 overflow-hidden">
         {/* HEADER: TIÊU ĐỀ */}
         <DialogHeader className="px-4 py-3 border-b shrink-0">
           <div className="flex items-center justify-between gap-2">
@@ -191,22 +172,20 @@ export function WorkRegistrationAssignStaffDialog({
               <DialogTitle className="text-sm font-bold text-foreground">
                 Phân bổ người trực: {dayLabel} - {sectionLabel}
               </DialogTitle>
-              {isDigi && (
-                <span className="rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-2 py-0.2 text-xs font-bold uppercase border border-purple-200 dark:border-purple-800">
-                  Phòng Digi
+              {subjectFilter && subjectFilter !== 'all' && (
+                <span className="rounded-full bg-primary/10 text-primary dark:bg-primary/20 px-2 py-0.5 text-xs font-semibold border border-primary/30">
+                  Môn: {subjectFilter}
                 </span>
               )}
             </div>
           </div>
         </DialogHeader>
 
-        {/* BODY: 2 PANELS (TRÁI: DANH SÁCH NHÂN SỰ, PHẢI: LỊCH TRỰC CHI TIẾT) */}
-        <div className="grid grid-cols-2 flex-1 min-h-0 overflow-hidden divide-x divide-border">
-          {/* PANEL TRÁI: TOOLBAR + DANH SÁCH NHÂN SỰ */}
-          <div className="p-3 flex flex-col min-h-0 overflow-hidden space-y-2.5">
-            {/* HÀNG BỘ LỌC VAI TRÒ & SEARCH GỌN GÀNG TRONG PANEL TRÁI */}
+        {/* BODY: CHỈ HIỂN THỊ PANEL TRÁI (DANH SÁCH NHÂN SỰ) */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="p-3 flex flex-col min-h-0 h-full overflow-hidden space-y-2.5">
+            {/* HÀNG BỘ LỌC VAI TRÒ & SEARCH */}
             <div className="flex items-center justify-between gap-1.5 shrink-0">
-              {/* TABS LỌC VAI TRÒ */}
               <div className="flex items-center gap-1 flex-wrap">
                 {(['all', 'Giáo viên', 'Khác'] as const).map((r) => (
                   <button
@@ -225,14 +204,13 @@ export function WorkRegistrationAssignStaffDialog({
                 ))}
               </div>
 
-              {/* SEARCH INPUT NHỎ GỌN TRỰC TIẾP TRONG PANEL TRÁI */}
               <div className="relative flex items-center shrink-0">
                 <Search className="h-3.5 w-3.5 absolute left-2 text-muted-foreground pointer-events-none" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm theo tên..."
-                  className="h-7 w-28 sm:w-32 text-xs pl-7 pr-2 bg-background border-border/80"
+                  className="h-7 w-32 sm:w-40 text-xs pl-7 pr-2 bg-background border-border/80"
                 />
               </div>
             </div>
@@ -241,89 +219,128 @@ export function WorkRegistrationAssignStaffDialog({
             <div className="space-y-1 flex-1 min-h-0 overflow-y-auto pr-1">
               {filteredStaff.map((staff) => {
                 const isSelected = selectedIds.includes(staff.id)
-                const isFocused = focusedStaff?.id === staff.id
-                const weeklyShifts = getStaffWeeklyShifts(staff.id)
-                const regInfo = getStaffRegistrationForCurrentShift(staff.id)
+                const weeklyCount = getWeeklyShiftCount(staff.id)
+                const regInfo = getStaffRegistrationForCurrentShift(staff)
+                const disabled = isStaffDisabled(staff)
 
                 return (
                   <div
                     key={staff.id}
-                    onClick={() => setFocusedStaffId(staff.id)}
+                    onClick={() => {
+                      if (!disabled) toggleStaff(staff.id)
+                    }}
                     className={cn(
-                      'flex items-center justify-between rounded-lg px-2.5 py-2 cursor-pointer transition-all',
-                      isFocused
-                        ? 'bg-primary/10 text-foreground'
+                      'flex items-center justify-between rounded-lg px-2.5 py-2 transition-all border select-none',
+                      disabled
+                        ? 'border-transparent bg-muted/20 opacity-60 cursor-not-allowed'
                         : isSelected
-                        ? 'bg-primary/5 text-foreground hover:bg-primary/10'
-                        : 'hover:bg-muted/50 text-foreground'
+                        ? 'bg-primary/5 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer'
+                        : 'border-transparent hover:bg-muted/50 text-foreground cursor-pointer'
                     )}
                   >
-                    {/* TRÁI: CHECKBOX + AVATAR + TÊN + VAI TRÒ */}
+                    {/* TRÁI: CHECKBOX + TÊN + VAI TRÒ */}
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div
                         onClick={(e) => {
                           e.stopPropagation()
-                          toggleStaff(staff.id)
+                          if (!disabled) toggleStaff(staff.id)
                         }}
                         className={cn(
-                          'flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors cursor-pointer',
-                          isSelected
-                            ? 'bg-primary border-primary text-primary-foreground'
-                            : 'border-input hover:border-primary/60 bg-background'
+                          'flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors',
+                          disabled
+                            ? 'border-border/60 bg-muted/40 text-muted-foreground/30 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-primary border-primary text-primary-foreground cursor-pointer'
+                            : 'border-input hover:border-primary/60 bg-background cursor-pointer'
                         )}
-                        title={isSelected ? 'Bỏ chọn phân bổ' : 'Chọn phân bổ ca này'}
+                        title={
+                          disabled
+                            ? 'Giáo viên chưa đăng ký thời gian rảnh - Không thể chọn'
+                            : isSelected
+                            ? 'Bỏ chọn phân bổ'
+                            : 'Chọn phân bổ ca này'
+                        }
                       >
                         {isSelected && <Check className="h-3.5 w-3.5" />}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-normal text-foreground truncate">{staff.name}</p>
-                        <div className="mt-0.5 flex items-center">
+                        <p
+                          className={cn(
+                            'text-xs font-semibold truncate',
+                            disabled ? 'text-muted-foreground' : 'text-foreground'
+                          )}
+                        >
+                          {staff.name}
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
                           <span
                             className={cn(
                               'text-[10.5px] font-normal leading-tight',
-                              staff.role === 'Giáo viên'
+                              disabled
+                                ? 'text-muted-foreground/60'
+                                : staff.role === 'Giáo viên'
                                 ? 'text-blue-600 dark:text-blue-400'
+                                : staff.role === 'Trợ giảng'
+                                ? 'text-purple-600 dark:text-purple-400'
+                                : staff.role === 'CS'
+                                ? 'text-rose-600 dark:text-rose-400'
                                 : 'text-muted-foreground'
                             )}
                           >
-                            {staff.role === 'Giáo viên' ? 'Giáo viên' : 'Khác'}
+                            {staff.role}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/70 font-normal">
+                            {getStaffSubjectTag(staff, employees)}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* PHẢI: GIỜ ĐĂNG KÝ (NẾU KHÔNG CẢ CA) Ở TRÊN + SỐ CA TRONG TUẦN & NÚT CHI TIẾT */}
-                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <div className="flex flex-col items-end gap-0.5">
-                        {regInfo.isPartial && regInfo.timeRange ? (
-                          <span
-                            className="inline-flex items-center rounded px-1.5 py-0.2 text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 tabular-nums"
-                            title={`Giờ đăng ký: ${regInfo.timeRange}`}
-                          >
-                            {regInfo.timeRange}
-                          </span>
-                        ) : null}
-
+                    {/* PHẢI: GIỜ ĐĂNG KÝ + SỐ CA TRONG TUẦN */}
+                    <div className="flex flex-col items-end gap-0.5 shrink-0 ml-2">
+                      {regInfo.isFull ? (
+                        <span
+                          className="inline-flex items-center rounded px-1.5 py-0.2 text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
+                          title="Đăng ký trọn ca (Full)"
+                        >
+                          Full
+                        </span>
+                      ) : regInfo.isPartial && regInfo.intervals.length > 0 ? (
+                        <div className="flex flex-wrap items-center justify-end gap-1 max-w-[240px]">
+                          {regInfo.intervals.map((range, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center rounded px-1.5 py-0.2 text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 tabular-nums"
+                              title={`Giờ đăng ký: ${range}`}
+                            >
+                              {range}
+                            </span>
+                          ))}
+                        </div>
+                      ) : regInfo.notRegistered ? (
                         <span
                           className={cn(
-                            'text-xs font-normal tabular-nums',
-                            weeklyShifts.length > 0
-                              ? 'text-muted-foreground'
-                              : 'text-muted-foreground/50'
+                            'text-xs font-semibold leading-tight',
+                            getStatusTextColor('not_registered')
                           )}
-                          title={`Đã phân bổ ${weeklyShifts.length} ca trực trong tuần`}
+                          title="Chưa đăng ký thời gian rảnh"
                         >
-                          {weeklyShifts.length} ca/tuần
+                          Chưa đăng ký
                         </span>
-                      </div>
+                      ) : null}
 
-                      <ChevronRight
+                      <span
                         className={cn(
-                          'h-4 w-4 transition-colors',
-                          isFocused ? 'text-primary' : 'text-muted-foreground/40'
+                          'text-xs font-normal tabular-nums',
+                          weeklyCount > 0
+                            ? 'text-muted-foreground'
+                            : 'text-muted-foreground/50'
                         )}
-                      />
+                        title={`Đã phân bổ ${weeklyCount} ca trực trong tuần`}
+                      >
+                        {weeklyCount} ca/tuần
+                      </span>
                     </div>
                   </div>
                 )
@@ -335,158 +352,6 @@ export function WorkRegistrationAssignStaffDialog({
                 </div>
               )}
             </div>
-          </div>
-
-          {/* PANEL PHẢI: THÔNG TIN LỊCH TRỰC CỦA NHÂN SỰ ĐANG XEM (PHẲNG, KHÔNG VIỀN HỘP) */}
-          <div className="p-3.5 bg-muted/20 flex flex-col min-h-0 overflow-hidden">
-            {focusedStaff ? (
-              <div className="flex flex-col h-full min-h-0 space-y-3">
-                {/* THÔNG TIN NHÂN SỰ HEADER */}
-                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-border/50 shrink-0">
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-xs font-semibold text-foreground truncate">{focusedStaff.name}</h4>
-                    <p className="text-xs text-muted-foreground">{focusedStaff.role === 'Giáo viên' ? 'Giáo viên' : 'Khác'} · {focusedStaff.branch}</p>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <span className="text-xs text-muted-foreground block">Lịch trực tuần</span>
-                    <span className="text-xs font-medium text-primary tabular-nums">
-                      {focusedWeeklyShifts.length} ca
-                    </span>
-                  </div>
-                </div>
-
-                {/* MA TRẬN / TIMELINE 7 NGÀY TRỰC TRONG TUẦN */}
-                <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                  <div className="py-1 text-xs font-normal text-foreground flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>Lịch các ngày trong tuần</span>
-                    </div>
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {WEEKDAYS[0]?.short} - {WEEKDAYS[6]?.short}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 pt-1">
-                    {WEEKDAYS.map((day) => {
-                      const isTargetDay = day.index === dayIndex
-                      const dayShifts = focusedWeeklyShifts.filter((s) => s.dayIndex === day.index)
-                      const isEditingSlotHere = isTargetDay
-
-                      return (
-                        <div
-                          key={day.index}
-                          className={cn(
-                            'p-2 rounded-lg text-xs transition-colors',
-                            isTargetDay ? 'bg-primary/10 border border-primary/30' : 'bg-card/70 border border-border/40'
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span
-                              className={cn(
-                                'text-xs font-medium',
-                                isTargetDay ? 'text-primary' : 'text-foreground'
-                              )}
-                            >
-                              {day.label}
-                              {isTargetDay && (
-                                <span className="ml-1 text-xs font-normal text-primary">
-                                  (Ngày đang chọn)
-                                </span>
-                              )}
-                            </span>
-
-                            {dayShifts.length > 0 ? (
-                              <span className="text-xs font-normal text-muted-foreground tabular-nums">
-                                {dayShifts.length} ca
-                              </span>
-                            ) : (
-                              <span className="text-xs text-muted-foreground/60 italic">
-                                Trống
-                              </span>
-                            )}
-                          </div>
-
-                          {/* DANH SÁCH CA TRONG NGÀY */}
-                          <div className="space-y-1">
-                            {dayShifts.map((shift, idx) => {
-                              const isCurrentSection = isTargetDay && shift.sectionId === section
-                              const shiftRegTime = getStaffRegisteredTimeForDaySection(focusedStaff.id, day.index, shift.sectionId)
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className={cn(
-                                    'flex items-center justify-between rounded px-2 py-1 text-xs',
-                                    isCurrentSection
-                                      ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
-                                      : 'bg-muted/70 text-foreground'
-                                  )}
-                                >
-                                  <div className="flex items-center gap-1.5">
-                                    <span>{shift.sectionIcon}</span>
-                                    <span>{shift.sectionLabel}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    {isCurrentSection && (
-                                      <span className="text-xs uppercase font-bold opacity-90">
-                                        Ca đang chọn
-                                      </span>
-                                    )}
-                                    <span
-                                      className={cn(
-                                        'text-[9.5px] font-semibold tabular-nums',
-                                        isCurrentSection
-                                          ? 'text-primary-foreground/95 font-bold'
-                                          : shiftRegTime === 'Cả ca'
-                                          ? getStatusColors('success').text
-                                          : 'text-muted-foreground'
-                                      )}
-                                    >
-                                      {shiftRegTime}
-                                    </span>
-                                  </div>
-                                </div>
-                              )
-                            })}
-
-                            {/* NẾU ĐANG PHÂN BỔ VÀO CA NÀY */}
-                            {isEditingSlotHere && isFocusedAssignedCurrent && !dayShifts.some((s) => s.sectionId === section) && (
-                              <div className="flex items-center justify-between rounded px-2 py-1 text-xs bg-primary/20 border border-primary/40 text-primary font-semibold">
-                                <div className="flex items-center gap-1.5">
-                                  <span>{isDigi ? '💻' : '⏱'}</span>
-                                  <span>{sectionLabel}</span>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <span className="text-xs uppercase font-bold">
-                                    + Vừa gán
-                                  </span>
-                                  <span className="text-[9.5px] font-semibold text-primary tabular-nums">
-                                    {getStaffRegisteredTimeForDaySection(focusedStaff.id, day.index, section)}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-
-                            {dayShifts.length === 0 && (!isEditingSlotHere || !isFocusedAssignedCurrent) && (
-                              <p className="text-xs text-muted-foreground/60 italic pl-1">
-                                Không có ca trực
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center text-center p-4 text-muted-foreground">
-                <User className="h-8 w-8 text-muted-foreground/40 mb-2" />
-                <p className="text-xs">Chọn một nhân sự ở danh sách bên trái để xem lịch trực chi tiết.</p>
-              </div>
-            )}
           </div>
         </div>
 

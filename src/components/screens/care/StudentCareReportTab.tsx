@@ -394,6 +394,11 @@ export function StudentCareReportTab({
             evaluator: r.teacherName,
             date: r.updatedAt.includes('-') ? r.updatedAt.split('-').reverse().join('/') : r.updatedAt,
             isCurrent: r.isCurrent,
+            testScore: r.testScore,
+            priorTestScore: r.priorTestScore,
+            testDocUrl: r.testDocUrl,
+            testDocName: r.testDocName,
+            isEndTerm: r.isEndTerm,
           }))
 
           const matchedMockStudent = mockStudents.find(
@@ -491,6 +496,11 @@ export function StudentCareReportTab({
                           packageId: pkg.id,
                         })
                         setIsEvaluationModalOpen(true)
+                      }}
+                      onOpenSemesterEval={(month) => {
+                        setSelectedEvalMonth(month || 'Tháng 4/2026')
+                        setSelectedEvalPkgId(pkg.id)
+                        setIsEvalOpen(true)
                       }}
                     />
                   )}

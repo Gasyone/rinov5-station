@@ -6,6 +6,8 @@ import {
   Copy,
   Pencil,
   Award,
+  GraduationCap,
+  ClipboardCheck,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
@@ -41,11 +43,17 @@ export interface MonthlyCommentItem {
   sectionBContent?: string
   isCurrent?: boolean
   monthOptionValue?: string
+  testScore?: number | string | null
+  priorTestScore?: number | string | null
+  testDocUrl?: string
+  testDocName?: string
+  isEndTerm?: boolean
 }
 
 interface MonthlyCommentsSectionProps {
   monthlyComments: MonthlyCommentItem[]
   onOpenEvaluationTab?: (month?: string) => void
+  onOpenSemesterEval?: (month?: string) => void
   studentId?: string
   studentName?: string
   studentCode?: string
@@ -55,6 +63,8 @@ interface MonthlyCommentsSectionProps {
 
 export function MonthlyCommentsSection({
   monthlyComments,
+  onOpenEvaluationTab,
+  onOpenSemesterEval,
   studentId = 'HV-S4-10',
   studentName = 'Alex (Nguyễn An)',
   studentCode = 'HV-S4-10',
@@ -106,6 +116,11 @@ export function MonthlyCommentsSection({
         evaluator: r.teacherName,
         date: r.updatedAt.includes('-') ? r.updatedAt.split('-').reverse().join('/') : r.updatedAt,
         isCurrent: r.isCurrent,
+        testScore: r.testScore,
+        priorTestScore: r.priorTestScore,
+        testDocUrl: r.testDocUrl,
+        testDocName: r.testDocName,
+        isEndTerm: r.isEndTerm,
       }))
     }
     if (monthlyComments && monthlyComments.length > 0) {
@@ -132,6 +147,9 @@ export function MonthlyCommentsSection({
         evaluator: '',
         date: '28/04/2026',
         isCurrent: true,
+        testScore: '00',
+        testDocUrl: '',
+        isEndTerm: false,
       },
     ]
   }, [monthlyComments, studentId, studentName, syncCounter])
@@ -202,6 +220,17 @@ export function MonthlyCommentsSection({
       {/* List of Monthly Report Summary Cards (Compact, Direct Modal Opener) */}
       <div className="space-y-1.5 pt-0.5">
         {visibleComments.map((mc, idx) => {
+          const hasEndTerm = Boolean(
+            mc.isEndTerm ||
+            (mc.testScore !== null &&
+              mc.testScore !== undefined &&
+              mc.testScore !== '' &&
+              mc.testScore !== 0 &&
+              mc.testScore !== '0' &&
+              mc.testScore !== '00') ||
+            (mc.testDocUrl && mc.testDocUrl.trim() !== '')
+          )
+
           return (
             <div
               key={mc.id || idx}
@@ -241,6 +270,30 @@ export function MonthlyCommentsSection({
                     <span className="text-[10.5px] 2xl:text-[11.5px] font-normal px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 leading-none shrink-0">
                       Bản dự thảo
                     </span>
+                  )}
+
+                  {/* Semester Eval Button / Badge (Chuẩn theo detail buổi học kiểm tra giữa kỳ & cuối kỳ) */}
+                  {hasEndTerm && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (onOpenSemesterEval) {
+                          onOpenSemesterEval(mc.month)
+                        } else {
+                          handleOpenReport(mc.monthOptionValue || mc.month)
+                        }
+                      }}
+                      className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold text-[10.5px] 2xl:text-[11.5px] px-2 py-0.5 rounded-md leading-none inline-flex items-center shrink-0 shadow-xs cursor-pointer transition-all border-none"
+                      title={
+                        mc.testScore && mc.testScore !== '00' && mc.testScore !== '0'
+                          ? `Semester Eval: Đánh giá kỳ (Điểm kiểm tra: ${mc.testScore}/10) - Nhấp để mở đánh giá`
+                          : 'Semester Eval: Đánh giá kỳ (Kiểm tra & Nhận xét) - Nhấp để mở đánh giá'
+                      }
+                    >
+                      <ClipboardCheck className="h-3 w-3 shrink-0" />
+                      <span>Semester Eval</span>
+                    </button>
                   )}
 
                   {/* Danh hiệu (Award Badge) đưa lên header */}

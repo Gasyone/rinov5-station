@@ -2,13 +2,10 @@
 
 import React from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { QcPersonnelGroup } from './qcPersonnelTypes'
 import { getInitials } from './qcPersonnelHelpers'
-import { formatShortDate } from './qcCheckHelpers'
 import { QcTagHoverCard } from './QcTagHoverCard'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
@@ -60,18 +57,6 @@ export function QcPersonnelRow({
     if (primaryIncident) {
       onViewIncidentDetail(primaryIncident.id)
     }
-  }
-
-  // Aggregate badge status
-  let aggregateBadgeText = 'Đã giải quyết'
-  let aggregateBadgeClass = getStatusBadgeClass('completed')
-
-  if (group.aggregateStatus === 'has_open') {
-    aggregateBadgeText = 'Đang có lỗi'
-    aggregateBadgeClass = getStatusBadgeClass('open')
-  } else if (group.aggregateStatus === 'pending_review') {
-    aggregateBadgeText = 'Chờ nghiệm thu'
-    aggregateBadgeClass = getStatusBadgeClass('pending')
   }
 
   const assignedClasses = group.locationContext.assignedClasses || []
@@ -210,14 +195,14 @@ export function QcPersonnelRow({
         </div>
       </td>
 
-      {/* 4. Thống kê lỗi (chu kỳ 30 ngày & tháng trước: Lỗi x/x, Tháng trước X/x, bỏ tăng giảm) */}
+      {/* 4. Thống kê lỗi (trong tháng & tháng trước: Lỗi x/x, Tháng trước X/x) */}
       <td className="w-[145px] min-w-[135px] px-2.5 border-b border-border/40 text-left">
         <div className="flex flex-col gap-0.5 text-left">
           {/* Dòng 1: Lỗi: x/x */}
           <div className="text-xs text-foreground font-normal leading-tight">
             <span className="text-muted-foreground mr-1">Lỗi:</span>
             <span className={cn('font-normal', group.errorStats.currentOpenCount > 0 ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-foreground')}>
-              {group.errorStats.currentOpenCount}/{group.errorStats.current30DaysCount}
+              {group.errorStats.currentOpenCount}/{group.errorStats.currentMonthCount ?? group.errorStats.current30DaysCount}
             </span>
           </div>
 
@@ -233,7 +218,7 @@ export function QcPersonnelRow({
 
       {/* 5. Thẻ vi phạm (Violation Tags) */}
       <td
-        className="w-[280px] min-w-[240px] xl:w-[320px] 2xl:w-[350px] px-2.5 border-b border-border/40 text-left"
+        className="px-2.5 border-b border-border/40 text-left min-w-[320px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap items-center gap-1 py-0.5">
@@ -258,77 +243,6 @@ export function QcPersonnelRow({
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
-        </div>
-      </td>
-
-      {/* 5. Xử lý gần nhất */}
-      <td className="w-[280px] min-w-[230px] xl:w-[310px] 2xl:w-[340px] px-2.5 border-b border-border/40 text-left">
-        {group.latestRemediation ? (
-          <div className="flex flex-col gap-0.5 py-0 text-left">
-            <div
-              className="text-xs text-muted-foreground leading-tight line-clamp-1 break-words hover:text-foreground transition-colors"
-              title={group.latestRemediation.action}
-            >
-              {group.latestRemediation.relativeTimeText && (
-                <span className="font-semibold text-foreground mr-1 shrink-0">
-                  {group.latestRemediation.relativeTimeText}:
-                </span>
-              )}
-              <span className="text-zinc-600 dark:text-zinc-400">
-                {group.latestRemediation.action}
-              </span>
-            </div>
-            <div className="text-xs font-normal leading-none mt-0.5">
-              {group.latestRemediation.status === 'corrected' ? (
-                <span className="text-amber-600 dark:text-amber-400">Chờ nghiệm thu</span>
-              ) : group.latestRemediation.status === 'closed' ? (
-                <span className="text-emerald-600 dark:text-emerald-400">Đã nghiệm thu</span>
-              ) : (
-                <span className="text-muted-foreground">Đang khắc phục</span>
-              )}
-            </div>
-          </div>
-        ) : (
-          <span className="text-xs text-muted-foreground font-normal italic">
-            Chưa có báo cáo
-          </span>
-        )}
-      </td>
-
-      {/* 6. Trạng thái tổng hợp & SLA dòng 2 */}
-      <td className="w-[145px] min-w-[135px] xl:w-[155px] 2xl:w-[165px] px-2.5 border-b border-border/40 text-left whitespace-nowrap">
-        <div className="space-y-0.5 text-left">
-          {/* Dòng 1: Badge trạng thái */}
-          <div>
-            <Badge
-              variant="outline"
-              className={cn(
-                'text-xs font-normal px-1.5 py-0.5 h-5 leading-none',
-                aggregateBadgeClass
-              )}
-            >
-              {aggregateBadgeText}
-            </Badge>
-          </div>
-
-          {/* Dòng 2: Thời hạn SLA (bỏ in đậm) */}
-          <div className="text-xs font-normal leading-tight mt-0.5">
-            {group.aggregateStatus === 'all_closed' ? (
-              <span className="text-muted-foreground font-normal">Đã hoàn tất</span>
-            ) : group.hasOverdue ? (
-              <span className="text-red-600 dark:text-red-400 font-normal">
-                Quá hạn: {group.earliestDeadline ? formatShortDate(group.earliestDeadline) : 'Đã quá hạn'}
-              </span>
-            ) : group.hasDueToday ? (
-              <span className="text-amber-600 dark:text-amber-400 font-normal">
-                Đến hạn: Hôm nay
-              </span>
-            ) : group.earliestDeadline ? (
-              <span className="text-muted-foreground font-normal">
-                Hạn: {formatShortDate(group.earliestDeadline)}
-              </span>
-            ) : null}
-          </div>
         </div>
       </td>
     </tr>

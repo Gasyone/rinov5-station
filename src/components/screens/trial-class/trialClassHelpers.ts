@@ -47,6 +47,39 @@ export function getWeekdayAbbr(dateStr: string): string {
   return WEEKDAYS_VI[d.getDay()] ?? ''
 }
 
+const AVATAR_COLORS = [
+  'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
+  'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+  'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
+  'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400',
+  'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400',
+  'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400',
+  'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400',
+  'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-400',
+]
+
+function stableHash(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
+
+export const getAvatarColor = (id: string): string =>
+  AVATAR_COLORS[stableHash(id) % AVATAR_COLORS.length]
+
+export function isMyTrial(trial: TrialClass, userName: string): boolean {
+  if (!userName) return false
+  const u = userName.toLowerCase().trim()
+  return (
+    Boolean(trial.owner && trial.owner.toLowerCase().includes(u)) ||
+    Boolean(trial.creator && trial.creator.toLowerCase().includes(u)) ||
+    Boolean(trial.sessions && trial.sessions.some((s) => s.className?.toLowerCase().includes(u)))
+  )
+}
+
 export function getEndTime(startTimeStr: string): string {
   if (!startTimeStr) return ''
   const [hStr, mStr] = startTimeStr.split(':')
@@ -330,10 +363,11 @@ export function filterTrialClasses(
       if (activeResultFilter === 'expired' && (trial.status as string) !== 'expired' && trial.status !== 'cancelled') return false
     }
     if (activeSubject && activeSubject !== 'all') {
-      const ts = trial.subject.toLowerCase()
-      if (activeSubject === 'english' && !ts.includes('anh')) return false
-      if (activeSubject === 'math' && !ts.includes('toán')) return false
-      if (activeSubject === 'stem' && !ts.includes('stem')) return false
+      const ts = (trial.subject || '').toLowerCase()
+      const asLower = activeSubject.toLowerCase()
+      if ((asLower === 'english' || asLower.includes('anh')) && !ts.includes('anh')) return false
+      if ((asLower === 'math' || asLower.includes('toán')) && !ts.includes('toán')) return false
+      if ((asLower === 'stem' || asLower.includes('stem')) && !ts.includes('stem')) return false
     }
     if (filters.programs.length > 0 && !filters.programs.includes(trial.program)) return false
     if (filters.creators.length > 0 && !filters.creators.includes(trial.creator)) return false
@@ -517,6 +551,16 @@ export function sortTrialClasses(
       const aTime = a.auditLog[0]?.timestamp || a.id
       const bTime = b.auditLog[0]?.timestamp || b.id
       return factor * aTime.localeCompare(bTime)
+    }
+
+    if (sortField === 'program') {
+      return factor * (a.program || '').localeCompare(b.program || '', 'vi')
+    }
+
+    if (sortField === 'school') {
+      const aSchool = a.branch || a.school || ''
+      const bSchool = b.branch || b.school || ''
+      return factor * aSchool.localeCompare(bSchool, 'vi')
     }
 
     return 0

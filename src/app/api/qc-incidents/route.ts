@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import type { QcIncident as DbQcIncident, Prisma } from '@prisma/client'
+import type { QcIncident as DbQcIncident } from '@prisma/client'
 import { mockQcIncidents } from '@/mocks/qcChecks'
 import type { QcIncident, QcComment, QcLog, QcTargetGroup, QcEvaluationCriteria, QcSourceType, QcErrorSeverity, QcErrorStatus, QcClosureMethod, QcRemediationRound } from '@/mocks/qcChecks'
 
@@ -78,33 +78,24 @@ export async function GET(request: NextRequest) {
     const source = searchParams.get('source')
     const search = searchParams.get('search')?.toLowerCase().trim()
 
-    const where: Prisma.QcIncidentWhereInput = {}
-    if (branch && branch !== 'all') where.branch = branch
-    if (status && status !== 'all') where.status = status
-    if (targetGroup && targetGroup !== 'all') where.targetGroup = targetGroup
-    if (severity && severity !== 'all') where.severity = severity
-    if (source && source !== 'all') where.source = source
+    // Chuẩn hóa dữ liệu theo mockQcIncidents (khớp 100% Google Sheet thực tế)
+    let all = [...mockQcIncidents]
 
-    const incidentsFromDb = await prisma.qcIncident.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    })
-
-    const mapped = incidentsFromDb.map(mapDbToQcIncident)
-    const dbCodes = new Set(mapped.map((m) => m.code))
-
-    // Bổ sung đầy đủ các sự cố mẫu mockQcIncidents chưa có trong DB (đặc biệt các sự cố nhiều lỗi cho nhân sự)
-    let all = [...mapped]
-    mockQcIncidents.forEach((mock) => {
-      if (!dbCodes.has(mock.code)) {
-        if (branch && branch !== 'all' && mock.branch !== branch) return
-        if (status && status !== 'all' && mock.status !== status) return
-        if (targetGroup && targetGroup !== 'all' && mock.targetGroup !== targetGroup) return
-        if (severity && severity !== 'all' && mock.severity !== severity) return
-        if (source && source !== 'all' && mock.source !== source) return
-        all.push(mock)
-      }
-    })
+    if (branch && branch !== 'all') {
+      all = all.filter((i) => i.branch === branch)
+    }
+    if (status && status !== 'all') {
+      all = all.filter((i) => i.status === status)
+    }
+    if (targetGroup && targetGroup !== 'all') {
+      all = all.filter((i) => i.targetGroup === targetGroup)
+    }
+    if (severity && severity !== 'all') {
+      all = all.filter((i) => i.severity === severity)
+    }
+    if (source && source !== 'all') {
+      all = all.filter((i) => i.source === source)
+    }
 
     if (search) {
       all = all.filter(

@@ -146,6 +146,10 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Quản lý Ticket & Hỗ trợ',
     description: 'Ghi nhận và xử lý phản ánh, khiếu nại và yêu cầu hỗ trợ từ học viên/phụ huynh',
   },
+  daily_check: {
+    label: 'Kiểm tra hàng ngày (Daily Check)',
+    description: 'Giám sát và kiểm tra chất lượng cơ sở hàng ngày theo ca (Đầu ca & Cuối ca) kèm minh chứng ảnh',
+  },
   qc_check: {
     label: 'Kiểm tra & Khắc phục chất lượng',
     description: 'Quản lý các đợt kiểm tra chất lượng (QC) và quy trình khắc phục, duyệt / trả lại các hạng mục lỗi sự cố',
@@ -153,10 +157,6 @@ export const screens: Record<string, ScreenConfig> = {
   qc_remediation: {
     label: 'Khắc phục sự cố QC (Đã tích hợp vào QC)',
     description: 'Theo dõi tiến độ khắc phục và phúc tra các lỗi/sự cố phát hiện từ các đợt kiểm tra chất lượng',
-  },
-  session_feedback: {
-    label: 'Đánh giá buổi học',
-    description: 'Tổng hợp đánh giá của học viên/phụ huynh sau từng buổi học và ghi nhận phản hồi chất lượng đào tạo',
   },
   branches: {
     label: 'Quản lý cơ sở',

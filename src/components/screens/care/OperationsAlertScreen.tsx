@@ -19,6 +19,7 @@ import {
   isWeakAcademic,
   isLowAttendance,
   isToday,
+  isUpcoming,
   isHomeworkAlert,
   isCared,
   isRescheduled,
@@ -28,6 +29,8 @@ import {
   getConsecutiveLowScores,
   getUnassignedStaffStatus,
   isMyCareAlert,
+  isMyCSStaff,
+  isMyTeacher,
   DEFAULT_CARE_EXPORT_FIELDS,
   parseToYYYYMMDD,
 } from './operationsAlertHelpers'
@@ -43,7 +46,7 @@ export function OperationsAlertScreen() {
   const [selectedSubject, setSelectedSubject] = useState('all')
   const [selectedAssignee, setSelectedAssignee] = useState<string>('all')
   const [careStatusFilter, setCareStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'cared'>('all')
-  const [dueDateFilter, setDueDateFilter] = useState<'all' | 'overdue' | 'today' | 'rescheduled'>('all')
+  const [dueDateFilter, setDueDateFilter] = useState<'all' | 'overdue' | 'today' | 'upcoming' | 'rescheduled'>('all')
   const [packageStatusFilter, setPackageStatusFilter] = useState<string>('all')
 
   // CSDB filter state (droplist selection)
@@ -51,8 +54,7 @@ export function OperationsAlertScreen() {
 
   // Advanced filters state (Sets for multi-select checkboxes)
   const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
-  const [selectedCSStaff, setSelectedCSStaff] = useState<Set<string>>(new Set())
-  const [selectedTeachers, setSelectedTeachers] = useState<Set<string>>(new Set())
+  const [selectedCaregivers, setSelectedCaregivers] = useState<Set<string>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set())
   const [selectedCareStatuses, setSelectedCareStatuses] = useState<Set<string>>(new Set())
   const [selectedAlerts, setSelectedAlerts] = useState<Set<string>>(new Set())
@@ -141,58 +143,73 @@ export function OperationsAlertScreen() {
     []
   )
 
-  const csStaffOptions = useMemo(() => {
-    const list = mockCareAlerts.map((item) => item.csStaff).filter(Boolean)
-    return Array.from(new Set(list)).sort()
-  }, [])
+  const caregiverOptions = useMemo(() => {
+    const csList = Array.from(new Set(mockCareAlerts.map((item) => item.csStaff).filter(Boolean))).sort()
 
-  const teacherOptions = useMemo(() => {
-    const allTeachers: string[] = []
+    const teacherList: string[] = []
     mockCareAlerts.forEach((item) => {
       if (item.teacherCode) {
         item.teacherCode.split(/[,;\s/]+/).forEach((t) => {
           const clean = t.trim()
-          if (clean) allTeachers.push(clean)
+          if (clean) teacherList.push(clean)
         })
       }
       if (item.substituteTeacher) {
         item.substituteTeacher.split(/[,;\s/]+/).forEach((t) => {
           const clean = t.trim()
-          if (clean) allTeachers.push(clean)
+          if (clean) teacherList.push(clean)
         })
       }
     })
-    return Array.from(new Set(allTeachers)).sort()
-  }, [])
+    const uniqueTeachers = Array.from(new Set(teacherList)).sort()
 
-  const assigneeOptions = useMemo(() => {
-    return [
-      {
-        value: 'all',
-        label: 'Tất cả người phụ trách',
-        selectedLabel: 'Tất cả người phụ trách',
-        textValue: 'Tất cả người phụ trách',
-      },
-      {
-        value: 'my',
-        label: `⭐ Thẻ của tôi (${currentStaffName})`,
-        selectedLabel: '⭐ Thẻ của tôi',
-        textValue: `Thẻ của tôi (${currentStaffName})`,
-      },
-      ...csStaffOptions.map((cs) => ({
-        value: `cs:${cs}`,
-        label: `CS: ${cs}`,
-        selectedLabel: `CS: ${cs}`,
-        textValue: `CS ${cs}`,
-      })),
-      ...teacherOptions.map((t) => ({
-        value: `gv:${t}`,
-        label: `GV: ${t}`,
-        selectedLabel: `GV: ${t}`,
-        textValue: `GV ${t}`,
-      })),
-    ]
-  }, [currentStaffName, csStaffOptions, teacherOptions])
+    const options: Array<{ value: string; label: string; isMine?: boolean }> = []
+
+    csList.forEach((name) => {
+      const isMine = isMyCSStaff(name, currentStaffName)
+      options.push({
+        value: `CS: ${name}`,
+        label: `CS: ${name}${isMine ? ' (Bạn)' : ''}`,
+        isMine,
+      })
+    })
+
+    uniqueTeachers.forEach((t) => {
+      const isMine = isMyTeacher(t, currentStaffName)
+      options.push({
+        value: `GV: ${t}`,
+        label: `GV: ${t}${isMine ? ' (Bạn)' : ''}`,
+        isMine,
+      })
+    })
+
+    // (Bạn) first, then alphabetical
+    return options.sort((a, b) => {
+      if (a.isMine && !b.isMine) return -1
+      if (!a.isMine && b.isMine) return 1
+      return a.label.localeCompare(b.label, 'vi')
+    })
+  }, [currentStaffName])
+
+  // Helper to match a care alert against selected caregiver option
+  const matchesCaregiver = (item: StudentCareAlert, val: string) => {
+    if (val.startsWith('CS: ')) {
+      const name = val.replace('CS: ', '').trim()
+      return item.csStaff === name || isMyCSStaff(item.csStaff, name)
+    }
+    if (val.startsWith('GV: ')) {
+      const name = val.replace('GV: ', '').trim()
+      const tCodes = item.teacherCode ? item.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []
+      const subCodes = item.substituteTeacher ? item.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []
+      return (
+        tCodes.includes(name) ||
+        subCodes.includes(name) ||
+        tCodes.some((t) => isMyTeacher(t, name)) ||
+        subCodes.some((t) => isMyTeacher(t, name))
+      )
+    }
+    return false
+  }
 
   // 2. Perform search and filtering logic (before assignee & care progress tab)
   const preAssigneeFiltered = useMemo(() => {
@@ -210,20 +227,6 @@ export function OperationsAlertScreen() {
           (s) => s.id === item.studentId || s.name === item.studentName
         )
         return student && selectedBranches.has(student.branch)
-      })
-    }
-
-    // Filter by CS Staff (Advanced filter)
-    if (selectedCSStaff.size > 0) {
-      res = res.filter((item) => selectedCSStaff.has(item.csStaff))
-    }
-
-    // Filter by Teachers (Advanced filter)
-    if (selectedTeachers.size > 0) {
-      res = res.filter((item) => {
-        const tCodes = item.teacherCode ? item.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []
-        const subCodes = item.substituteTeacher ? item.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []
-        return Array.from(selectedTeachers).some((t) => tCodes.includes(t) || subCodes.includes(t))
       })
     }
 
@@ -412,8 +415,6 @@ export function OperationsAlertScreen() {
     return res.filter(hasActiveTags)
   }, [
     selectedBranches,
-    selectedCSStaff,
-    selectedTeachers,
     selectedStatuses,
     selectedCareStatuses,
     selectedAlerts,
@@ -441,14 +442,30 @@ export function OperationsAlertScreen() {
     return preAssigneeFiltered.filter((item) => isMyCareAlert(item, currentStaffName)).length
   }, [preAssigneeFiltered, currentStaffName])
 
-  // Apply Toolbar assignee selection ('my', 'cs:name', 'gv:name', or 'all')
+  // Apply Caregiver filter (Combines Toolbar "Thẻ của tôi" and Advanced Filter "Người chăm sóc" with OR logic)
   const baseFiltered = useMemo(() => {
     let res = preAssigneeFiltered
-    if (selectedAssignee === 'my') {
+    const isMyActive = selectedAssignee === 'my'
+    const hasCaregivers = selectedCaregivers.size > 0
+
+    if (isMyActive && hasCaregivers) {
+      // CỘNG DỒN (Logic OR): Ra ca của Tôi HOẶC ca của bất kỳ ai trong selectedCaregivers
+      res = res.filter(
+        (item) =>
+          isMyCareAlert(item, currentStaffName) ||
+          Array.from(selectedCaregivers).some((c) => matchesCaregiver(item, c))
+      )
+    } else if (isMyActive) {
+      // Chỉ lọc ca của Tôi
       res = res.filter((item) => isMyCareAlert(item, currentStaffName))
+    } else if (hasCaregivers) {
+      // Lọc ca của các nhân sự trong selectedCaregivers (Logic OR giữa các nhân sự)
+      res = res.filter((item) =>
+        Array.from(selectedCaregivers).some((c) => matchesCaregiver(item, c))
+      )
     } else if (selectedAssignee.startsWith('cs:')) {
       const staff = selectedAssignee.replace('cs:', '')
-      res = res.filter((item) => item.csStaff === staff)
+      res = res.filter((item) => item.csStaff === staff || isMyCSStaff(item.csStaff, staff))
     } else if (selectedAssignee.startsWith('gv:')) {
       const teacher = selectedAssignee.replace('gv:', '')
       res = res.filter((item) => {
@@ -458,7 +475,7 @@ export function OperationsAlertScreen() {
       })
     }
     return res
-  }, [preAssigneeFiltered, selectedAssignee, currentStaffName])
+  }, [preAssigneeFiltered, selectedAssignee, selectedCaregivers, currentStaffName])
 
   // Compute care status counts from baseFiltered
   const careStatusCounts = useMemo(() => {
@@ -476,6 +493,7 @@ export function OperationsAlertScreen() {
       all: baseFiltered.length,
       overdue: baseFiltered.filter(isOverdue).length,
       today: baseFiltered.filter(isToday).length,
+      upcoming: baseFiltered.filter(isUpcoming).length,
       rescheduled: baseFiltered.filter(isRescheduled).length,
     }
   }, [baseFiltered])
@@ -498,6 +516,7 @@ export function OperationsAlertScreen() {
     // Due date filter
     if (dueDateFilter === 'overdue') res = res.filter(isOverdue)
     else if (dueDateFilter === 'today') res = res.filter(isToday)
+    else if (dueDateFilter === 'upcoming') res = res.filter(isUpcoming)
     else if (dueDateFilter === 'rescheduled' && selectedCareStatuses.size > 0) res = res.filter(isRescheduled)
 
     return res
@@ -590,9 +609,7 @@ export function OperationsAlertScreen() {
   const activeFilterCount = useMemo(() => {
     return [
       selectedBranches.size > 0,
-      selectedCSStaff.size > 0,
-      selectedTeachers.size > 0,
-      selectedAssignee !== 'all',
+      selectedCaregivers.size > 0,
       selectedStatuses.size > 0,
       selectedCareStatuses.size > 0,
       selectedAlerts.size > 0,
@@ -610,9 +627,7 @@ export function OperationsAlertScreen() {
     ].filter(Boolean).length
   }, [
     selectedBranches,
-    selectedCSStaff,
-    selectedTeachers,
-    selectedAssignee,
+    selectedCaregivers,
     selectedStatuses,
     selectedCareStatuses,
     selectedAlerts,
@@ -632,14 +647,14 @@ export function OperationsAlertScreen() {
   ])
 
   const filterState = {
-    selectedBranches, selectedCSStaff, selectedTeachers, selectedStatuses,
+    selectedBranches, selectedCaregivers, selectedStatuses,
     selectedCareStatuses, selectedAlerts, selectedCareTypes, selectedAbsences,
     selectedHomeworks, selectedLowScores, selectedCalls, selectedClasses,
     scoreMin, scoreMax, sessionMin, sessionMax, selectedMonths, fromDate, toDate,
   }
 
   const filterActions = {
-    setSelectedBranches, setSelectedCSStaff, setSelectedTeachers, setSelectedStatuses,
+    setSelectedBranches, setSelectedCaregivers, setSelectedStatuses,
     setSelectedCareStatuses, setSelectedAlerts, setSelectedCareTypes, setSelectedAbsences,
     setSelectedHomeworks, setSelectedLowScores, setSelectedCalls, setSelectedClasses,
     setScoreMin, setScoreMax, setSessionMin, setSessionMax, setSelectedMonths,
@@ -678,7 +693,6 @@ export function OperationsAlertScreen() {
         onSubjectChange={(s) => { setSelectedSubject(s); resetPagination() }}
         selectedAssignee={selectedAssignee}
         onAssigneeChange={(val) => { setSelectedAssignee(val); resetPagination() }}
-        assigneeOptions={assigneeOptions}
         myAlertsCount={myAlertsCount}
         currentStaffName={currentStaffName}
         careStatusFilter={careStatusFilter}
@@ -732,8 +746,7 @@ export function OperationsAlertScreen() {
           onOpenChange={setIsFilterOpen}
           branchOptions={branchOptions}
           classList={classList}
-          csStaffOptions={csStaffOptions}
-          teacherOptions={teacherOptions}
+          caregiverOptions={caregiverOptions}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
           state={filterState}

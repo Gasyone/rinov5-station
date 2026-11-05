@@ -19,6 +19,7 @@ export * from "./jobTitles"
 export * from "./branches"
 export * from "./orgStructure"
 export * from "./monthlyReports"
+export * from "./tutorialVideos"
 
 
 export type { User as AuthUser } from "./users"

@@ -1,244 +1,243 @@
 ---
 id: US-BT01
-title: "Quản lý danh sách Booking Test"
+title: "Nâng cấp Giao diện Danh sách Booking Test - Tinh gọn 8 cột chuẩn hóa, Tách Thẻ trạng thái & Điều kiện, Tích hợp Check-in nhanh và Kiểm tra trùng lịch"
 bf: BF-ENR-01
 domain: CAP-ADM
-status: draft
-tags: [enrollment, booking-test, list, modal]
+persona: "PERSONA-BRANCH-MANAGER, PERSONA-CSM, PERSONA-TEACHER"
+sr: "SR-PERSONA-STAFF"
+status: approved
+tags: [admissions, booking-test, list, table-redesign, upgrade, assessment]
 ---
 
-# US-BT01: Quản lý danh sách Booking Test
+# US-BT01: Nâng cấp Giao diện Danh sách Booking Test - Tinh gọn 8 cột chuẩn hóa, Tách Thẻ trạng thái & Điều kiện, Tích hợp Check-in nhanh và Kiểm tra trùng lịch (Booking Test List Interface Upgrade)
 
-> **Tham chiếu:** BF-ENR-01 · `[POLICY-DS-03]` · Giao diện Mẫu §4.2 (Danh sách)
-
-## 1. Yêu cầu Người dùng (User Story)
-
-**Là một** nhân viên Tư vấn / Quản lý chi nhánh / Giáo viên,
-**tôi muốn** xem và lọc danh sách lịch hẹn kiểm tra năng lực đầu vào theo cơ sở, môn học và trạng thái, đồng thời thực hiện các thao tác xử lý nhanh trực tiếp trên dòng danh sách,
-**để** theo dõi sát sao tình hình kiểm tra của học viên, phân phối giáo viên chấm điểm kịp thời và quản lý tiến độ hiệu quả.
-
-> **Kiểm tra chất lượng (INVEST):**
-> - [x] **I**ndependent — Triển khai độc lập trên bảng quản lý danh sách lịch đánh giá, không phụ thuộc các câu chuyện người dùng khác.
-> - [x] **N**egotiable — Thứ tự các cột và vị trí các bộ lọc có thể thương lượng dựa trên thói quen vận hành.
-> - [x] **V**aluable — Mang lại cái nhìn toàn diện về lịch hẹn cho các bộ phận tư vấn, giáo vụ và giáo viên.
-> - [x] **E**stimable — Đã rõ ràng cấu trúc bảng danh sách, thanh công cụ và bộ lọc nâng cao.
-> - [x] **S**mall — Hoàn thành trong một đợt phát triển.
-> - [x] **T**estable — Có tiêu chí nghiệm thu rõ ràng ở mục 6.
+> **Tham chiếu:** `BF-ENR-01` · `SR-PERSONA-STAFF` · Giao diện Mẫu §4.2 (Màn hình Danh sách & Thanh công cụ chuẩn)  
+> **Đường dẫn màn hình & Trạng thái liên quan:**  
+> - `Quản lý Đặt lịch (/app/booking_test)` -> Trạng thái chính: `Tất cả`, `Đã đặt lịch test`, `Đang đánh giá`, `Hoàn tất` | Điều kiện lọc phụ (Trạng thái ảo): `Chưa gán GV`, `Đã check-in`, `Đã phỏng vấn`, `Đã làm bài`, `Không đạt`
 
 ---
 
-## 2. Quy tắc Nghiệp vụ (Business Rules)
+## 1. NHẬT KÝ THAY ĐỔI & BỐI CẢNH (CHANGELOG & CONTEXT)
 
-1.  **[RULE-LIST-01] Hiển thị mặc định:** Khi mới truy cập, danh sách tự động chọn môn học là Tiếng Anh và hiển thị tất cả các ca kiểm tra thuộc quyền hạn truy cập của tài khoản.
-2.  **[RULE-LIST-02] Tìm kiếm đa trường:** Thanh tìm kiếm tự động lọc kết quả khi người dùng nhập chữ, tìm kiếm không phân biệt chữ hoa thường trên 6 thông tin: tên học viên, tên gia đình, số điện thoại, mã lịch hẹn, tên cơ sở và phòng học.
-3.  **[RULE-LIST-03] Trạng thái chính và trạng thái phụ (trạng thái ảo):**
-    *   Thanh trạng thái bao gồm các ô lọc hiển thị số đếm cho các trạng thái chính và một số trạng thái phụ (trạng thái ảo) đặc biệt: *Chưa gán Giáo viên*, *Đã check-in*, *Đã phỏng vấn*, *Đã làm bài*.
-    *   Các trạng thái ảo không loại trừ lẫn nhau và không loại trừ trạng thái chính. Số đếm của các ô trạng thái này được tính toán đồng thời từ tập dữ liệu thỏa mãn điều kiện lọc.
-4.  **[RULE-LIST-04] Lọc kết hợp đồng thời:** Tất cả bộ lọc từ thanh công cụ (chọn cơ sở), ô trạng thái, ô tìm kiếm và bảng lọc nâng cao đều hoạt động đồng thời theo logic VÀ.
-5.  **[RULE-LIST-05] Đồng bộ số đếm theo cơ sở:** Khi thay đổi lựa chọn Cơ sở ở thanh công cụ hoặc lọc nhiều cơ sở ở bảng lọc nâng cao, số đếm hiển thị trên tất cả các ô trạng thái phải tự động tính toán lại theo cơ sở đã chọn.
-6.  **[RULE-LIST-06] Bảo mật số điện thoại liên hệ:** Số điện thoại của phụ huynh học sinh hiển thị trên danh sách sẽ được che bớt các số ở giữa (ví dụ: `038****122`) để bảo mật thông tin. Nhân viên chỉ sử dụng số điện thoại đầy đủ khi thực hiện cuộc gọi hoặc sao chép nhanh.
-7.  **[RULE-LIST-07] Phân quyền hiển thị theo Giáo viên:** Nhân sự đăng nhập với vai trò Giáo viên chỉ nhìn thấy các ca đánh giá được phân công cho chính họ tại các cơ sở phụ trách. Quản lý chi nhánh, tư vấn viên và quản trị viên hệ thống có quyền xem toàn bộ ca đánh giá thuộc phạm vi quản lý.
-8.  **[RULE-LIST-08] Tự động khởi tạo bài kiểm tra trên thiết bị (iPad):** Khi một ca kiểm tra được đặt lịch thành công hoặc khi học viên được check-in, hệ thống tự động sinh một liên kết làm bài kiểm tra trắc nghiệm (Nghe-Đọc-Viết) dành riêng cho học sinh trên thiết bị làm bài.
-9.  **[RULE-LIST-09] Đồng bộ kết quả tự động về bảng danh sách:**
-    *   **Điểm trắc nghiệm (LWR):** Ngay sau khi học sinh nộp bài thi trên thiết bị (iPad), điểm số bài thi sẽ tự động đồng bộ và hiển thị trực tiếp tại cột **LWR** trên bảng danh sách.
-    *   **Điểm phỏng vấn (Speaking):** Điểm số đánh giá Nói của Giáo viên (ví dụ: `GV: 5/8`) và kết quả phân tích của trí tuệ nhân tạo (AI) (ví dụ: `AI: 6/8`) tự động cập nhật hiển thị tại cột **Speaking** ngay sau khi Giáo viên hoàn tất chấm bài trên phiếu đánh giá.
-    *   **Liên kết kết quả:** Cột **Kết quả** tự động hiển thị nút liên kết mở trang báo cáo kết quả chi tiết ở tab trình duyệt mới ngay khi ghi nhận điểm số của bất kỳ phần thi nào.
-10. **[RULE-LIST-10] Chỉnh sửa trình độ qua bảng nổi (popover):** Trình độ (Level) và Nhánh trình độ (Sublevel) được gộp chung hiển thị trên cùng một cột xếp trên/dưới. Di chuột hiển thị biểu tượng cây bút để kích hoạt bảng nổi (popover) cập nhật trình độ mà không cần mở hộp thoại chi tiết. Tính năng này chỉ được mở khóa khi học sinh đã làm bài kiểm tra, phỏng vấn xong hoặc trạng thái lịch hẹn đã kết thúc.
+### Lịch sử cập nhật tài liệu (Changelog)
 
-### 2.1. Thông số & Định mức (Metrics & Thresholds)
+| Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
+|---|---|---|
+| 05/11/2026 | Biên tập tài liệu đặc tả nâng cấp màn hình Danh sách Booking Test (/app/booking_test): Đối chiếu toàn diện giữa hệ thống đang vận hành (Staging sta.rinoedu.ai) và phiên bản nâng cấp Rinov5. Tái cấu trúc thanh công cụ 2 tầng (bộ chọn cơ sở, mở khóa môn Toán, nút Tạo lịch test trực tiếp, phím tắt Lịch của tôi); tinh giản bảng dữ liệu từ 13 cột xuống 8 cột tích hợp; che số điện thoại bảo mật; tích hợp thao tác 1 chạm Check-in và Hủy ca; hỗ trợ kiểm tra trùng lịch giáo viên tức thì | Khắc phục tình trạng dàn trải thông tin, gom lẫn trạng thái tiến trình và điều kiện lọc, thiếu tính năng tạo lịch trên hệ thống trung tâm, lộ số điện thoại khách hàng và thiếu kiểm soát trùng lịch giáo viên |
 
-- **[METRIC-01] Số dòng mặc định:** Danh sách hiển thị mặc định 20 dòng trên mỗi trang.
-- **[METRIC-02] Tùy chọn phân trang:** Cung cấp các tùy chọn số lượng hiển thị trên trang bao gồm: 20, 50, 100 bản ghi.
+### Bối cảnh & Vấn đề nghiệp vụ (Context & Problem)
 
----
+* **Bối cảnh vận hành:** Màn hình Danh sách Đặt lịch Đánh giá Năng lực (Booking Test) tại đường dẫn `/app/booking_test` là đầu mối vận hành quan trọng bậc nhất của bộ phận Tuyển sinh, Quản lý học vụ (CS/CSM), Quản lý giáo viên và Giáo viên khảo thí tại các trung tâm. Đây là nơi tiếp nhận thông tin học sinh đăng ký trải nghiệm/khảo thí từ hệ thống quản lý khách hàng (CRM), phân bổ giáo viên phỏng vấn, thực hiện check-in khi học sinh đến trung tâm, ghi nhận kết quả bài thi trên máy tính bảng (iPad) cùng điểm số phỏng vấn để xếp cấp độ học tập phù hợp.
+* **Tồn tại trên giao diện hệ thống hiện tại (sta.rinoedu.ai):**
+  1. *Thanh trạng thái dồn ứ và nhầm lẫn khái niệm:* Hệ thống cũ bố trí 10 thẻ trạng thái nằm phẳng trên cùng một hàng ngang, gom lẫn giữa **Trạng thái tiến trình vòng đời** (`Đã đặt lịch test`, `Đang đánh giá`, `Hoàn tất`) và **Điều kiện nghiệp vụ / Trạng thái ảo** (`Chưa gán GV`, `Đã check-in`, `Đã phỏng vấn`, `Đã làm bài`, `Không đạt`). Điều này gây nhầm lẫn nghiêm trọng cho nhân viên khi theo dõi luồng xử lý của ca khảo thí.
+  2. *Bảng dữ liệu dàn trải 13 cột gây quá tải thị giác:* Bảng cũ tách rời quá nhiều cột dữ liệu: `Booking Trải nghiệm`, `Học viên`, `Liên hệ`, `Cơ sở`, `Giờ test`, `Trình độ`, `Nhánh TĐ`, `Speaking`, `LWR`, `Kết quả`, `Nhân sự`, `Ghi chú`, `Trạng thái`. Người dùng trên màn hình tiêu chuẩn liên tục phải cuộn ngang để xem hết thông tin.
+  3. *Lỗ hổng bảo mật thông tin liên hệ:* Số điện thoại phụ huynh hiển thị công khai hoặc che sơ sài kèm nút gọi trần trụi, tiềm ẩn nguy cơ sao chép hàng loạt dữ liệu khách hàng ra bên ngoài.
+  4. *Khóa cứng môn Toán học:* Nút chọn môn Toán trên hệ thống cũ bị vô hiệu hóa hoàn toàn, chưa hỗ trợ quy trình khảo thí môn Toán (chỉ làm bài trên máy tính bảng, không có phỏng vấn).
+  5. *Thiếu công cụ tạo mới và lọc ca cá nhân:* Nhân viên vận hành tại trung tâm không thể bấm tạo nhanh lịch khảo thí trực tiếp trên giao diện mà phải chuyển sang hệ thống quản lý khách hàng; giáo viên cũng không có nút lọc nhanh "Lịch của tôi" để xem danh sách ca mình được phân công phụ trách.
+  6. *Thiếu kiểm soát trùng lịch giáo viên tại dòng danh sách:* Khi chọn gán nhanh giáo viên trên bảng, hệ thống cũ không hiển thị cảnh báo giáo viên bị trùng ca dạy hoặc ca khảo thí khác, dẫn đến tình trạng xếp trùng giờ.
 
-## 3. Cấu trúc Giao diện & Dữ liệu
+* **Mục tiêu điều chỉnh & Giá trị mang lại:**
+  1. **Quy hoạch thanh công cụ 2 tầng thông minh:**
+     - Tầng 1: Đưa Bộ chọn cơ sở và Bộ chọn môn học lên đầu (mở khóa đầy đủ cho cả Tiếng Anh và Toán học); ô tìm kiếm mở rộng đa năng (tìm theo 6 trường: tên con, tên phụ huynh, số điện thoại, mã ca test, trường, phòng); nút mở Bảng điều khiển lọc nâng cao có số đếm; nút "Tạo lịch test" trực tiếp.
+     - Tầng 2: Tách biệt rõ ràng thành 2 cụm: Cụm bên trái gồm Phím tắt "Lịch của tôi" (kèm số đếm động) và Dải thẻ trạng thái chính (`Tất cả`, `Đã đặt lịch test`, `Đang đánh giá`, `Hoàn tất`). Cụm bên phải là Dải điều kiện lọc phụ / trạng thái ảo (`Chưa gán GV`, `Đã check-in`, `Đã phỏng vấn`, `Đã làm bài`, `Không đạt`).
+  2. **Tối ưu bảng dữ liệu còn 8 cột chuẩn hóa:**
+     - Cột 1: Hộp kiểm chọn dòng (cố định bên trái).
+     - Cột 2: Cột Học viên (cố định bên trái): Avatar nhận diện màu sắc + Tên in đậm + Biểu tượng trạng thái check-in (tích xanh) / vắng mặt (icon đỏ) + Dòng phụ (Giới tính, tuổi, năm sinh) + Nút Check-in nhanh 1 chạm (màu ngọc lục bảo) và Nút Hủy ca test (khi rê chuột).
+     - Cột 3: Cột Liên hệ: Tên phụ huynh kèm quan hệ + Số điện thoại bắt buộc che 4 chữ số ở giữa (`xxxxxxx555`).
+     - Cột 4: Lịch test: Ngày giờ thi có Thứ kèm liên kết mở Lịch sự kiện cơ sở + Thẻ nổi xem trước chi tiết buổi test khi rê chuột + Tên chương trình & Cấp độ dự kiến.
+     - Cột 5: Điểm số Speaking & LWR: Tích hợp điểm phỏng vấn (Giáo viên / Trí tuệ nhân tạo), nút mở chấm Speaking và điểm Nghe-Đọc-Viết máy tính bảng. Đối với môn Toán: tự động ẩn Speaking, chỉ hiển thị điểm máy tính bảng.
+     - Cột 6: Kết quả: Hộp nổi xem & thiết lập cấp độ đề xuất kèm ghi nhận nhận xét.
+     - Cột 7: Trạng thái: Huy hiệu trạng thái đơn lẻ đồng bộ màu sắc.
+     - Cột 8: Phụ trách: Người phụ trách phỏng vấn (kèm nhãn `(bạn)` nếu trùng tài khoản đăng nhập), thẻ nổi thông tin nhân sự; bấm để mở hộp thoại gán nhân sự có cảnh báo trùng lịch + Cơ sở khảo thí có icon định vị.
+  3. **Bảng điều khiển Lọc nâng cao (Aside Panel):** Trượt từ cạnh phải với 8 nhóm tiêu chí lọc chuyên sâu, hỗ trợ chế độ lọc nháp và nút áp dụng đồng bộ.
 
-### 3.1. Thanh công cụ (Toolbar)
+### Bảng đối chiếu tổng quan Thay đổi (So sánh Hệ thống Hiện tại vs. Giao diện Mới)
 
-| Thành phần | Loại hiển thị | Nội dung / Thao tác | Ghi chú & Quy tắc |
-| :--- | :--- | :--- | :--- |
-| **Tab môn học** | Thanh chuyển tab phân đoạn | ENGLISH / MATH | Môn Toán (MATH) nằm ngoài phạm vi phiên bản hiện tại nên bị mờ và vô hiệu hóa tương tác. Mặc định chọn ENGLISH. |
-| **Chọn Cơ sở** | Hộp chọn thả xuống | Danh sách chi nhánh đang hoạt động | Lọc nhanh theo chi nhánh được chọn. Có nhãn "Tất cả cơ sở" để hiển thị toàn bộ. |
-| **Ô tìm kiếm** | Ô nhập chữ mở rộng | Tìm kiếm tự động khi nhập | Gợi ý: "Tìm tên học viên, số điện thoại, mã lịch...". Tìm kiếm không dấu và không biệt hoa thường. |
-| **Nút Lọc nâng cao** | Nút biểu tượng | Bấm mở bảng lọc nâng cao từ cạnh phải | Hiển thị chấm đỏ kèm số lượng bộ lọc đang áp dụng bên cạnh biểu tượng nếu lớn hơn 0. |
+| Hạng mục đối chiếu | Hệ thống Hiện tại (sta.rinoedu.ai) | Giao diện Mới (Rinov5) | Giá trị mang lại cho người dùng |
+|---|---|---|---|
+| **Cấu trúc Thẻ trạng thái & Điều kiện** | Dàn trải 10 thẻ phẳng trên 1 hàng, lẫn lộn giữa trạng thái vòng đời và điều kiện lọc. | Tách rõ 2 cụm: Thẻ trạng thái chính (4 thẻ tiến trình cốt lõi) và Dải điều kiện lọc phụ (5 trạng thái ảo). Tự động ẩn "Đã phỏng vấn" khi chọn môn Toán. | Giúp người dùng phân định rõ tiến trình xử lý hồ sơ và các điều kiện cần can thiệp gấp, không bị rối mắt. |
+| **Phím tắt Lịch của tôi** | Không có phím tắt; giáo viên phải tự tìm kiếm tên mình trong ô tìm kiếm. | Phím tắt "Lịch của tôi" độc lập có số đếm động ca phụ trách, nhấp 1 chạm để lọc nhanh. | Giáo viên và chuyên viên khảo thí lọc ngay các ca thuộc trách nhiệm cá nhân chỉ trong 1 giây. |
+| **Tạo lịch khảo thí trực tiếp** | Không có nút tạo lịch trên ERP; phải chuyển sang hệ thống quản lý khách hàng CRM. | Bổ sung nút "+ Tạo lịch test" màu xanh nổi bật ngay góc phải thanh công cụ. | Cho phép nhân sự tại cơ sở chủ động tạo nhanh ca khảo thí khi có khách vãng lai hoặc phụ huynh đăng ký trực tiếp. |
+| **Số lượng cột bảng dữ liệu** | 13 cột dàn trải rời rạc, chữ nhỏ, phải cuộn ngang liên tục trên màn hình máy tính. | Tinh gọn còn 8 cột chuẩn hóa, nhóm thông tin logic, cố định cột Học viên và Hộp kiểm bên trái. | Tối ưu tầm nhìn, không cần cuộn ngang trên màn hình tiêu chuẩn, dễ theo dõi thông tin từ trái sang phải. |
+| **Bảo mật số điện thoại** | Hiển thị số điện thoại đầy đủ hoặc che sơ sài kèm nút gọi trần ra bảng chính. | Bắt buộc che 4 chữ số ở giữa dạng `xxxxxxx555`. Ẩn nút gọi trần, chỉ xem số đầy đủ trong hộp thoại chi tiết. | Chống rò rỉ thông tin khách hàng và ngăn chặn hành vi sao chép dữ liệu liên hệ hàng loạt. |
+| **Thao tác Check-in & Hủy ca** | Nằm sâu trong hộp thoại chi tiết hoặc menu ngữ cảnh nhiều bước. | Nút Check-in nhanh 1 chạm (màu ngọc lục bảo) hiển thị trực tiếp ngay cột Học viên; nút Hủy ca hiển thị khi rê chuột. | Rút ngắn thời gian tiếp đón và check-in học sinh tại quầy lễ tân từ 30 giây xuống còn 2 giây. |
+| **Gán giáo viên & Kiểm tra trùng lịch** | Hộp thoại gán giáo viên đơn giản, không hiển thị trực quan ca trùng lịch trên dòng danh sách. | Tích hợp hộp thoại chọn nhân viên có cơ chế lọc bỏ giáo viên trùng lịch, hiển thị mờ kèm nhãn ca trùng khi tìm kiếm. | Triệt tiêu 100% rủi ro phân công giáo viên bị trùng ca dạy lớp chính khóa hoặc trùng ca khảo thí khác. |
+| **Hỗ trợ môn Toán học** | Nút môn Toán bị khóa cứng (`disabled`), không thể xem hoặc xử lý ca test môn Toán. | Mở khóa toàn diện môn Toán; tự động ẩn các trường phỏng vấn Speaking, hiển thị điểm máy tính bảng và nút hoàn thành thủ công. | Đồng bộ hóa quy trình tuyển sinh cho cả 2 môn học mũi nhọn Tiếng Anh và Toán học trên cùng một giao diện. |
 
-### 3.2. Khối lọc Trạng thái (Status Tiles)
+### Ràng buộc nghiệp vụ toàn cục (Global Rules):
 
-| Ô trạng thái | Loại nhãn màu | Điều kiện lọc bản ghi | Ý nghĩa & Quy tắc |
-| :--- | :--- | :--- | :--- |
-| **Tất cả (ALL)** | Trung tính | Bỏ lọc trạng thái, hiển thị toàn bộ | Cố định ở góc trái ngoài cùng khi cuộn ngang. |
-| **Đã đặt lịch test** | Xanh lá cây | Trạng thái = `booked_assessment` | Lịch hẹn đã được tạo thành công và chờ đến ngày giờ test. |
-| **Chưa gán GV** | Vàng cảnh báo | Trạng thái = `booked_assessment` VÀ chưa có giáo viên phụ trách | Trạng thái ảo hỗ trợ tìm nhanh các ca test thiếu nhân sự. |
-| **Đang đánh giá** | Xanh dương | Trạng thái = `started_assessment` | Học viên đang làm bài test hoặc đang phỏng vấn với giáo viên. |
-| **Đã phỏng vấn** | Tím đặc biệt | Trạng thái = `started_assessment` VÀ học viên đã hoàn thành phỏng vấn Nói | Trạng thái ảo giúp nhận biết tiến độ phỏng vấn Nói. |
-| **Đã làm bài** | Cam cảnh báo | Trạng thái = `started_assessment` VÀ học viên đã hoàn thành bài LWR | Trạng thái ảo giúp nhận biết tiến độ làm trắc nghiệm LWR. |
-| **Đã check-in** | Xanh lá viền | Điểm danh = `confirmed` hoặc trạng thái ∈ {started_assessment, completed, failed} | Trạng thái ảo xác nhận học viên đã đến cơ sở làm bài hoặc đã vào thi. |
-| **Hoàn tất** | Xanh ngọc hoàn tất | Trạng thái = `completed` | Đã có đầy đủ kết quả đánh giá Nói, LWR và gán trình độ. |
-| **Không đạt** | Đỏ rủi ro | Trạng thái = `failed` | Kết quả đánh giá không đạt điều kiện tối thiểu. |
-| **Đã hủy** | Xám trung tính | Trạng thái = `cancelled` | Ca hẹn kiểm tra đã bị hủy bỏ bởi nhân viên hoặc phụ huynh. |
-
-### 3.3. Bảng danh sách chính
-
-*Thao tác nhấp chuột vào bất kỳ dòng nào (trừ các hộp chọn tại chỗ và nút hành động) sẽ mở Hộp thoại chi tiết lịch hẹn (US-BT03).*
-
-| Cột | Loại hiển thị | Nội dung dữ liệu | Ghi chú & Quy tắc |
-| :--- | :--- | :--- | :--- |
-| **Ô chọn** | Hộp đánh dấu | Hộp chọn đầu dòng và trên thanh tiêu đề | Hộp chọn đầu dòng dùng để chọn bản ghi; hộp chọn trên tiêu đề dùng để chọn/bỏ chọn toàn bộ dòng đang hiển thị. Cố định bên trái. |
-| **Học viên** | Khung thông tin hai dòng | Dòng 1: Ảnh đại diện + Tên học viên (in đậm) + Dấu tích xanh nếu đã đến cơ sở<br>Dòng 2: Nhãn môn học | Cố định bên trái. Cung cấp các nút thao tác nhanh khi di chuột (§3.4). Không hiển thị mã học viên. |
-| **Điện thoại** | Khung thông tin | Tên gia đình phụ huynh (in hoa màu mờ), Số điện thoại che phần giữa, Nút sao chép. | Nếu gia đình có trên 1 thành viên, hiển thị thêm biểu tượng nút mở bảng nổi liên hệ gia đình (§3.5). |
-| **Cơ sở** | Văn bản hai dòng | Dòng 1: Chi nhánh tổ chức (in đậm)<br>Dòng 2: Phòng thi cụ thể | Cắt ngắn bớt văn bản nếu tên chi nhánh quá dài. |
-| **Nội dung Trải nghiệm** | Văn bản hai dòng | Dòng 1: Tên Khung chương trình (in đậm)<br>Dòng 2: Biểu tượng đồng hồ + Ngày, giờ booking | Hiển thị rõ ràng chương trình học và thời gian hẹn kiểm tra của học viên. |
-| **Giáo viên** | Nhóm ảnh đại diện tròn | Tối đa 3 ảnh tròn viết tắt tên xếp chồng của nhóm nhân sự phụ trách | Di chuột hiển thị tên đầy đủ. Xếp trước cột Trình độ. |
-| **Trình độ** | Văn bản hai dòng + Nút chỉnh sửa | Dòng 1: Trình độ xếp lớp được gán hoặc "Chưa đặt"<br>Dòng 2: Nhánh trình độ hoặc "-" | Hiển thị xếp trên/dưới. Rê chuột xuất hiện biểu tượng cây bút để mở bảng nổi (popover) cập nhật trình độ và nhánh trình độ. |
-| **Speaking** | Nhãn điểm | Điểm Nói do GV chấm và AI chấm (ví dụ: `GV: 5/8 AI: 6/8`) | Chỉ hiển thị khi môn học là Tiếng Anh. Trống hiển thị "-". |
-| **LWR** | Văn bản | Điểm trắc nghiệm Nghe-Đọc-Viết (ví dụ: `27/40`) | Lấy tự động từ dữ liệu bài thi trên máy tính bảng. Trống hiển thị "-". |
-| **Trạng thái** | Nhãn trạng thái màu | Nhãn màu thể hiện trạng thái chính của ca hẹn | Ánh xạ màu theo quy chuẩn chung của hệ thống. |
-| **Kết quả** | Nút liên kết | Nút "Mở" mở liên kết kết quả bài thi ở trang mới | Chỉ hiển thị khi đã có kết quả bài thi/phỏng vấn. |
-| **Ghi chú** | Văn bản kèm biểu tượng | Biểu tượng tin nhắn + Nội dung ghi chú mới nhất | Nội dung ghi chú viết nghiêng và tự động cắt ngắn nếu quá dài. |
-
-### 3.4. Thao tác nhanh khi di chuột vào dòng
-
-Khi người dùng rê chuột vào một dòng trên bảng danh sách, các nút thao tác nhanh sẽ xuất hiện phía bên phải bên trong ô cột **Booking Trải nghiệm**:
-
-| Nút thao tác | Loại biểu tượng | Hành động | Điều kiện hiển thị |
-| :--- | :--- | :--- | :--- |
-| **Check-in** | Người dùng kèm dấu check | Cập nhật điểm danh học viên thành "Đã đến" trực tiếp. | Học viên chưa check-in (attendance !== 'confirmed') |
-| **Mở đánh giá** | Tờ tài liệu | Mở màn hình chấm điểm phỏng vấn Nói (US-BT04). | Môn học = Tiếng Anh VÀ đã gán giáo viên phụ trách VÀ ca hẹn ở trạng thái "Đang đánh giá" |
-| **Gán giáo viên** | Người dùng kèm dấu cộng | Mở hộp thoại phụ "Chọn giáo viên" (US-BT03 §3.5) để gán nhanh giáo viên phụ trách. | Môn học ≠ Toán VÀ chưa gán giáo viên phụ trách |
-| **Gọi điện** | Điện thoại | Thực hiện cuộc gọi nhanh đến số điện thoại liên hệ chính của học viên. | Luôn hiển thị |
-
-### 3.5. Bảng nổi liên hệ phụ gia đình (Family Popover)
-
-*   Chỉ xuất hiện khi học viên có trên 1 thành viên gia đình được khai báo trong hồ sơ.
-*   Bấm nút mở bảng nổi sẽ hiển thị danh sách các thành viên liên hệ phụ:
-    *   **Tên thành viên:** Tên phụ huynh kèm mối quan hệ (ví dụ: "Lê Hoa (Mẹ)").
-    *   **Số điện thoại:** Dạng ẩn một phần, có nút gọi điện nhanh và nút sao chép nhanh số điện thoại gốc.
-*   Hộp thoại tự động đóng lại khi nhấp chuột ra ngoài vùng hiển thị.
-
-### 3.6. Bảng lọc nâng cao (Filter Sheet)
-
-Bảng lọc nâng cao trượt ra từ bên phải màn hình khi bấm nút Lọc nâng cao:
-
-| Nhóm bộ lọc | Loại hiển thị | Cơ chế hoạt động |
-| :--- | :--- | :--- |
-| **Cơ sở** | Danh sách hộp chọn (Checkbox) | Cho phép chọn lọc nhiều cơ sở đồng thời. Hiển thị số lượng ca test bên cạnh mỗi cơ sở. |
-| **Trạng thái** | Danh sách hộp chọn (Checkbox) | Lọc nhiều trạng thái chính (Đã đặt lịch, Đang đánh giá, Hoàn tất, Đã hủy). |
-| **Điều kiện khác** | Danh sách hộp chọn (Checkbox) | Lọc các trạng thái ảo (Đã phỏng vấn, Đã làm bài, Không đạt, Đã check-in). |
-| **Giáo viên** | Danh sách hộp chọn (Checkbox) | Danh sách giáo viên phụ trách tại các cơ sở, sắp xếp theo bảng chữ cái kèm số lượng lịch hẹn tương ứng. |
-| **Ngày trong tuần** | Danh sách hộp chọn (Checkbox) | Thứ Hai đến Chủ Nhật (tính toán tự động từ ngày hẹn test). |
-| **Khung chương trình** | Danh sách hộp chọn (Checkbox) | Lọc theo danh sách chương trình học của học viên. |
-| **Sale / Người booking** | Danh sách hộp chọn (Checkbox) | Lọc theo tên nhân viên tư vấn đã tạo lịch hẹn. |
-| **Xóa tất cả** | Nút chữ | Nằm trên tiêu đề bảng lọc, cho phép đưa toàn bộ bộ lọc đang chọn về trạng thái trống ban đầu. |
-
-### 3.7. Bộ phân trang (Pagination)
-
-Bố trí ở góc dưới cùng bên phải của bảng danh sách:
-- **Tổng kết:** Hiển thị thông báo bên trái: *"Hiển thị {số lượng dòng đang hiển thị} / {tổng số lượng bản ghi sau lọc} bản ghi"*.
-- **Số dòng trên trang:** Hộp chọn thả xuống với các giá trị `20`, `50`, `100`. Mặc định hiển thị 20 dòng. Khi người dùng thay đổi giá trị này, hệ thống sẽ đưa trang hiện tại về trang đầu tiên (Trang 1).
-- **Điều hướng trang:** Nút chuyển trang trước / trang sau và các nút số trang. Vô hiệu hóa nút Trang trước khi đang ở Trang 1 và nút Trang sau khi đang ở trang cuối cùng.
+* **[RULE-BT-01] Bảo toàn dữ liệu & Đồng nhất thực thể:** Ca đặt lịch khảo thí được liên kết chặt chẽ với hồ sơ học sinh từ hệ thống quản lý khách hàng. Hệ thống sử dụng chung một mã định danh học sinh duy nhất, không tạo bản ghi học sinh trùng lặp.
+* **[RULE-BT-02] Che số điện thoại chống sao chép hàng loạt:** Trong mọi bảng danh sách, thẻ xem nhanh và bảng nổi, số điện thoại phụ huynh bắt buộc phải che 4 chữ số ở giữa theo định dạng `xxxxxxx555` hoặc `091****111`. Chỉ người dùng có thẩm quyền khi mở Hộp thoại chi tiết ca test mới được xem số điện thoại đầy đủ.
+* **[RULE-BT-03] Thẻ trạng thái và số đếm đi theo toàn bộ bộ lọc:** Số lượng đếm trên thẻ trạng thái chính, dải điều kiện lọc phụ và phím tắt "Lịch của tôi" phải tự động tính toán lại đồng bộ theo tổ hợp bộ lọc đang áp dụng (Cơ sở, Môn học, Từ khóa tìm kiếm và Bảng lọc nâng cao).
+* **[RULE-BT-04] Cơ chế Lọc Nháp trên Bảng điều khiển nâng cao:** Các thao tác chọn tiêu chí lọc trong bảng điều khiển trượt cạnh phải được lưu ở trạng thái nháp; chỉ khi người dùng bấm "Áp dụng", hệ thống mới thực hiện lọc lại danh sách.
+* **[RULE-BT-05] Quy tắc đặc thù theo môn học:**
+  - Ca khảo thí môn Tiếng Anh: Bắt buộc có điểm phỏng vấn (Speaking) từ giáo viên hoặc hệ thống trí tuệ nhân tạo kết hợp điểm Nghe-Đọc-Viết (LWR) trên máy tính bảng để đề xuất cấp độ.
+  - Ca khảo thí môn Toán học: Không có phần phỏng vấn Speaking; ẩn toàn bộ các trường liên quan đến Speaking; kết quả dựa trên bài làm máy tính bảng và người phụ trách bấm xác nhận hoàn thành thủ công.
+* **[RULE-BT-06] Kiểm tra trùng lịch giáo viên tuyệt đối:** Khi chọn gán hoặc thay đổi người phụ trách, hệ thống tự động kiểm tra chéo lịch dạy lớp và lịch khảo thí khác của nhân sự trong cùng khung giờ. Nhân sự bị trùng lịch sẽ bị ẩn khỏi danh sách đề xuất mặc định và hiển thị mờ kèm cảnh báo khi tìm kiếm đích danh.
 
 ---
 
-## 4. Mô tả chi tiết (Màn hình & Luồng)
+## 2. MÔ TẢ GIAO DIỆN (UI DESCRIPTION & ADJUSTMENT MATRIX)
 
-### 4.1. Mô tả Màn hình
-Màn hình quản lý danh sách booking được chia thành 4 phần chính rõ ràng theo chiều dọc: trên cùng là thanh công cụ điều khiển và lọc cơ bản (chứa phân đoạn môn học Tiếng Anh/Toán, chọn cơ sở và ô tìm kiếm mở rộng); ngay dưới là thanh trạng thái (Status Tiles) nằm ngang cho phép cuộn ngang trên màn hình nhỏ để xem nhanh số lượng ca test ở từng trạng thái; ở giữa là bảng lưới dữ liệu danh sách chính chiếm phần lớn diện tích có khả năng cuộn ngang với hai cột đầu tiên được ghim cố định; dưới cùng là thanh chân trang chứa thông tin tổng kết số lượng dòng hiển thị và bộ điều khiển phân trang.
+### Giao diện tham chiếu: [http://localhost:3001/app/booking_test](http://localhost:3001/app/booking_test)
 
-### 4.2. Luồng Hoạt động (Workflow)
+### 2.1 Thanh công cụ & Bộ lọc (Toolbar & Filter Controls) - Các điều chỉnh
 
-*   **Luồng lọc dữ liệu cơ bản:**
-    1. Khi người dùng truy cập màn hình, hệ thống mặc định lọc môn học Tiếng Anh và cơ sở là "Tất cả cơ sở".
-    2. Người dùng nhấp chọn một ô trạng thái trên thanh trạng thái (ví dụ: "Đang đánh giá"), bảng danh sách sẽ lọc và chỉ hiển thị các ca kiểm tra thỏa mãn trạng thái đó.
-    3. Nhấp chọn lần thứ hai vào ô trạng thái đó sẽ bỏ lọc trạng thái và quay về hiển thị "Tất cả".
-*   **Luồng xử lý nhanh khi di chuột (Hover actions):**
-    1. Khi di chuột vào một dòng ca test cụ thể, hệ thống sẽ hiển thị các biểu tượng hành động nhanh bên phải cột đầu tiên.
-    2. Nếu học viên đã đến cơ sở nhưng chưa được điểm danh, nhân viên bấm nhanh nút biểu tượng **Check-in**. Điểm danh cập nhật thành "Đã đến" và trạng thái chuyển sang "Đang đánh giá" trực tiếp trên dòng mà không cần mở modal.
-    3. Nếu ca test môn Tiếng Anh chưa được gán giáo viên chấm, nhân viên bấm biểu tượng **Gán giáo viên** để mở nhanh hộp thoại phụ chọn giáo viên chấm ngay trên bảng.
-    4. Giáo viên phụ trách có thể bấm nút biểu tượng **Mở đánh giá** để truy cập nhanh màn hình chấm phỏng vấn Nói.
-*   **Luồng lọc nâng cao bằng Filter Sheet:**
-    1. Người dùng bấm biểu tượng chiếc phễu lọc nâng cao ở thanh công cụ, bảng lọc sẽ trượt ra từ bên phải màn hình.
-    2. Người dùng tích chọn các tiêu chí (ví dụ: chọn ngày Thứ Bảy + Giáo viên A).
-    3. Hệ thống áp dụng logic lọc VÀ giữa các nhóm tiêu chí này để cập nhật bảng danh sách học viên tương ứng, đồng thời số đếm trên thanh trạng thái nằm ngang cũng được cập nhật lại theo kết quả đã lọc.
-*   **Luồng tự động tạo bài thi và đồng bộ kết quả (iPad / Giáo viên / AI):**
-    1. Ngay khi ca kiểm tra được đặt lịch hoặc điểm danh thành công, hệ thống tự động tạo mã bài thi trắc nghiệm trên thiết bị (iPad).
-    2. Học viên tiến hành làm bài thi trắc nghiệm trên máy tính bảng. Khi học viên hoàn tất và bấm nộp bài, điểm số trắc nghiệm tự động gửi về hệ thống và cập nhật hiển thị tại cột **LWR** trên bảng danh sách.
-    3. Giáo viên thực hiện phỏng vấn Nói và chấm điểm trên phiếu đánh giá. Sau khi lưu phiếu đánh giá, điểm chấm Nói của Giáo viên và điểm phân tích của trí tuệ nhân tạo (AI) tự động gửi về hệ thống, đồng thời cập nhật hiển thị tại cột **Speaking** trên bảng danh sách.
-    4. Cột **Kết quả** của ca kiểm tra tương ứng tự động hiển thị nút liên kết mở trang kết quả phỏng vấn/thi chi tiết. Các hộp chọn Trình độ (Level) và Nhánh trình độ (Sublevel) được mở khóa cho phép giáo viên/tư vấn viên chọn trực tiếp ngay trên dòng.
+| Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Nội dung điều chỉnh |
+|---|---|---|---|---|
+| **Bộ chọn Cơ sở (Hàng 1 bên trái)** | Hộp chọn thả xuống chuẩn hóa | Danh sách các cơ sở được phân quyền | Cho phép chọn 1 cơ sở hoặc `Tất cả cơ sở`. Mặc định hiển thị cơ sở của người dùng hoặc tất cả. | **Điều chỉnh:** Đồng bộ hóa thành phần chọn cơ sở theo chuẩn giao diện mới, đặt ở vị trí đầu tiên của thanh công cụ. |
+| **Bộ chọn Môn học (Hàng 1)** | Hộp chọn thả xuống | `Tất cả các môn`, `Tiếng Anh`, `Toán học` | Cho phép chuyển đổi môn học khảo thí. Mặc định là `Tiếng Anh`. Khi chọn `Toán học`, bảng tự động chuyển sang chế độ hiển thị đặc thù cho môn Toán. | **Bổ sung:** Mở khóa hoàn toàn môn Toán học (hệ thống cũ bị khóa cứng), cho phép lọc và xử lý ca test môn Toán. |
+| **Ô tìm kiếm mở rộng (Hàng 1 bên phải)** | Ô nhập văn bản có nút co giãn | Từ khóa tìm kiếm tự do | Tìm kiếm tức thời khi nhập theo 6 trường: Tên học sinh, Tên phụ huynh, Số điện thoại, Mã ca test, Trường, Phòng học. | **Điều chỉnh:** Tích hợp ô tìm kiếm mở rộng có nút xóa nhanh, mở rộng kích thước mượt mà khi nhấp chuột. |
+| **Nút Mở bộ lọc nâng cao (Hàng 1)** | Nút biểu tượng kèm huy hiệu số đếm | Số lượng tiêu chí lọc đang chọn | Nhấp để mở Bảng điều khiển lọc nâng cao trượt từ cạnh phải. Huy hiệu hiển thị tổng số tiêu chí đang kích hoạt. | **Điều chỉnh:** Hiển thị rõ số lượng điều kiện đang lọc giúp người dùng kiểm soát trạng thái dữ liệu. |
+| **Nút "Tạo lịch test" (Hàng 1 ngoài cùng)** | Nút hành động chính màu xanh nổi bật | Nút bấm mở điều hướng hoặc hộp thoại | Đặt ở góc phải thanh công cụ. Nhấp để mở biểu mẫu tạo mới ca đặt lịch khảo thí. Ẩn đối với vai trò chỉ giảng dạy. | **Bổ sung:** Đưa nút tạo mới ca test trực tiếp lên giao diện trung tâm thay vì bắt buộc phải thao tác từ hệ thống CRM. |
+| **Phím tắt "Lịch của tôi" (Hàng 2 bên trái)** | Nút bấm dạng viên thuốc bo tròn | Số lượng ca test cá nhân phụ trách | Nhấp để bật/tắt lọc nhanh các ca do người dùng hiện tại làm giáo viên, người chấm hoặc người tạo. Kèm số đếm động. | **Bổ sung:** Phím tắt 1 chạm giúp giáo viên và nhân viên khảo thí lọc việc cá nhân ngay lập tức. |
+| **Dải thẻ trạng thái chính (Hàng 2)** | Khối thẻ tương tác hình chữ nhật bo góc | 4 trạng thái tiến trình cốt lõi | Gồm: `Tất cả`, `Đã đặt lịch test`, `Đang đánh giá`, `Hoàn tất`. Bấm vào thẻ để lọc danh sách; bấm lại để về `Tất cả`. Số đếm tự động cập nhật. | **Điều chỉnh:** Tách riêng 4 trạng thái vòng đời chính ra khỏi các điều kiện lọc phụ, chuẩn hóa màu sắc và số lượng đếm động. |
+| **Dải điều kiện lọc phụ (Hàng 2 bên phải)** | Dãy nhãn văn bản có thể nhấp chọn | 5 trạng thái ảo / điều kiện can thiệp | Gồm: `Chưa gán GV`, `Đã check-in`, `Đã phỏng vấn` (ẩn với môn Toán), `Đã làm bài`, `Không đạt`. Nhấp để lọc nhanh các ca cần can thiệp. | **Điều chỉnh:** Tách biệt thành cụm điều kiện lọc phụ bên phải, tự động ẩn điều kiện "Đã phỏng vấn" đối với môn Toán. |
 
----
+### 2.2 Bảng dữ liệu danh sách (Data Table) - Các điều chỉnh
 
-## 5. Corner Cases (Trường hợp góc cạnh & Đặc biệt)
+| Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Nội dung điều chỉnh |
+|---|---|---|---|---|
+| **Cột 1: Hộp kiểm (Sticky Left)** | Ô kiểm chọn dòng cố định | Trạng thái chọn từng dòng hoặc chọn tất cả | Cố định ở mép trái ngoài cùng khi cuộn ngang. Cho phép chọn nhiều dòng để thao tác theo lô. | **Điều chỉnh:** Chuẩn hóa độ rộng 32 điểm ảnh, nền giữ nguyên màu hàng khi rê chuột hoặc chọn. |
+| **Cột 2: Học viên & Thao tác nhanh (Sticky Left)** | Cột thông tin cố định bên trái | Avatar + Tên + Năm sinh + Check-in + Hủy ca | Cố định ở vị trí 32 điểm ảnh từ lề trái. Hiển thị avatar đa sắc, tên học sinh, icon tích xanh check-in/icon đỏ từ chối, dòng năm sinh/tuổi/giới tính. Tích hợp nút "Check-in" màu ngọc lục bảo và nút "Hủy ca" đỏ khi rê chuột. | **Điều chỉnh:** Gom thông tin định danh và thao tác tiếp đón 1 chạm vào cùng một cột cố định, giúp thao tác check-in tức thì tại quầy. |
+| **Cột 3: Liên hệ phụ huynh** | Khối thông tin 2 dòng | Tên phụ huynh, quan hệ và số điện thoại | Dòng 1: Tên phụ huynh kèm quan hệ trong ngoặc (Bố/Mẹ). Dòng 2: Số điện thoại bị che ẩn ở giữa dạng `xxxxxxx555`. | **Điều chỉnh:** Che số điện thoại bảo mật tuyệt đối, bỏ nút gọi lộ liễu trên bảng, chống sao chép dữ liệu hàng loạt. |
+| **Cột 4: Lịch test & Chương trình** | Khối thông tin tương tác kèm thẻ nổi | Thời gian thi, môn học, cấp độ dự kiến | Dòng 1: Thứ, ngày tháng, giờ thi hiển thị màu xanh liên kết (bấm mở sang Lịch sự kiện cơ sở) kèm thẻ nổi xem trước khi rê chuột. Dòng 2: Khung chương trình và cấp độ dự kiến. | **Điều chỉnh:** Tích hợp thẻ nổi xem nhanh chi tiết buổi test khi rê chuột và liên kết trực tiếp sang lịch biểu sự kiện. |
+| **Cột 5: Điểm số Speaking & LWR** | Khối hiển thị điểm số tích hợp | Điểm phỏng vấn GV/AI và điểm máy tính bảng | Tiếng Anh: Hiển thị điểm Speaking của giáo viên và trí tuệ nhân tạo, nút mở chấm điểm Speaking, điểm bài thi trên máy tính bảng LWR. Toán học: Hiển thị dấu `-` tối giản cho Speaking, chỉ hiển thị điểm máy tính bảng. | **Điều chỉnh:** Gom 2 cột Speaking và LWR riêng lẻ ở bản cũ thành 1 cột điểm số trực quan, tự động điều chỉnh hiển thị theo môn học. |
+| **Cột 6: Kết quả & Cấp độ** | Hộp nổi lựa chọn cấp độ và nhận xét | Cấp độ đề xuất, nhánh cấp độ và ghi chú | Hiển thị cấp độ học sinh đạt được kèm nút mở hộp thoại chọn cấp độ/nhánh cấp độ và nút xem/nhập nhận xét nhanh. | **Điều chỉnh:** Gom cột Trình độ và Nhánh trình độ của hệ thống cũ vào một thành phần tương tác gọn gàng. |
+| **Cột 7: Trạng thái ca test** | Huy hiệu trạng thái chuẩn hóa | Trạng thái vòng đời của ca khảo thí | Hiển thị 1 huy hiệu duy nhất với màu sắc tương ứng: Đã đặt lịch (xanh dương), Đang đánh giá (cam), Hoàn tất (xanh lá), Đã hủy (xám/đỏ). | **Điều chỉnh:** Loại bỏ các nhãn văn bản thô sơ, chuẩn hóa thành huy hiệu trạng thái đơn lẻ theo bảng màu trung tâm. |
+| **Cột 8: Phụ trách & Cơ sở** | Khối thông tin 2 dòng có liên kết | Tên nhân sự khảo thí và tên cơ sở | Dòng 1: Tên giáo viên phụ trách (kèm nhãn `(bạn)` nếu là tài khoản đang đăng nhập), có thẻ nổi thông tin nhân sự khi rê chuột; bấm vào để mở hộp thoại gán/đổi giáo viên. Dòng 2: Tên cơ sở kèm icon bản đồ. | **Điều chỉnh:** Tích hợp thẻ nổi tra cứu nhân sự và hỗ trợ nhấp để đổi giáo viên nhanh với cơ chế cảnh báo trùng lịch. |
 
-| # | Tình huống đặc biệt (Corner Case) | Cách xử lý chi tiết | Ghi chú / Trạng thái |
-| :--- | :--- | :--- | :--- |
-| 5.1 | Không có dữ liệu lịch hẹn nào trong hệ thống | Hiển thị hình ảnh minh họa trống (EmptyState) ở giữa bảng danh sách với thông báo "Không có lịch test phù hợp." | Màn hình trống |
-| 5.2 | Tìm kiếm không trả về kết quả | Bảng danh sách hiển thị trống, chân trang hiển thị tổng số "0 bản ghi", số lượng đếm trên các ô trạng thái nằm ngang vẫn được giữ nguyên để phản ánh tổng thể dữ liệu. | Tìm kiếm trống |
-| 5.3 | Học sinh có nhiều liên hệ phụ huynh | Cột số điện thoại hiển thị nút mở bảng nổi. Nhấp chuột vào nút sẽ mở bảng nổi chứa danh sách tên và số điện thoại che của tất cả phụ huynh đã đăng ký. Chỉ cho phép mở tối đa 1 bảng nổi tại một thời điểm. | Đa liên hệ |
-| 5.4 | Chỉnh sửa trình độ trực tiếp bị lỗi do học sinh chưa hoàn thành thi | Hộp chọn Trình độ và Nhánh trình độ sẽ bị khóa (vô hiệu hóa) không cho phép thay đổi nếu học viên chưa có kết quả làm bài trắc nghiệm LWR hoặc chưa có kết quả phỏng vấn Nói từ giáo viên. | Khóa chỉnh sửa |
-| 5.5 | Giáo viên đăng nhập hệ thống | Hệ thống tự động ẩn nút gán giáo viên nhanh khi di chuột, đồng thời danh sách dữ liệu hiển thị trên bảng sẽ tự động lọc chỉ hiển thị các ca đánh giá được gán cho chính giáo viên đó tại các cơ sở phân công. | Phân quyền giáo viên |
-| 5.6 | Đồng bộ kết quả từ iPad hoặc hệ thống AI bị trễ mạng | Trong lúc chờ kết quả thi trả về từ thiết bị, các cột LWR và Speaking sẽ hiển thị ký hiệu mặc định "—", nút liên kết kết quả được ẩn đi. Hộp chọn trình độ xếp lớp tiếp tục bị khóa cho đến khi kết quả được đồng bộ thành công. | Trễ mạng / Đồng bộ |
-| 5.7 | Trùng lịch chấm của giáo viên khi thực hiện gán nhanh trên bảng | Khi bấm nút gán nhanh giáo viên từ bảng danh sách, nếu giáo viên được chọn đã có lịch chấm ca khác trùng giờ tại chi nhánh đó, hệ thống sẽ hiển thị cảnh báo chữ đỏ lý do trùng ca và vô hiệu hóa dòng chọn nhân viên đó. | Tránh trùng lịch |
-| 5.8 | Check-in tự động kích hoạt bởi hành động của học viên hoặc giáo viên | Nếu học viên chưa được check-in thủ công trên danh sách ERP, nhưng học sinh đã mở và bắt đầu làm bài thi trên iPad, hoặc giáo viên bấm nút "Bắt đầu đánh giá" để chấm phỏng vấn, hệ thống sẽ tự động cập nhật điểm danh thành "Đã đến" và chuyển trạng thái chính thành "Đang đánh giá". | Check-in tự động |
-| 5.9 | Ràng buộc hủy trạng thái check-in của học viên | Thao tác hủy check-in (chuyển điểm danh từ "Đã đến" về "Chờ" và chuyển trạng thái từ "Đang đánh giá" về "Đã đặt lịch") chỉ được phép thực hiện khi ca hẹn chưa ghi nhận bất kỳ điểm số Speaking hay LWR nào. Nếu đã có điểm thi, hệ thống sẽ chặn không cho phép hủy check-in. | Ràng buộc nghiệp vụ |
-| 5.10 | Ca kiểm tra thuộc môn Toán học | Vì môn Toán không có phần chấm phỏng vấn Nói trực tiếp với giáo viên, hệ thống tự động ẩn nút "Gán giáo viên" nhanh khi di chuột trên dòng ca test Toán, đồng thời cột điểm Speaking của ca test này hiển thị mặc định dấu "—". | Đặc thù môn học |
+### 2.3 Bảng điều khiển Lọc nâng cao (Filter Drawer Panel) - Các điều chỉnh
 
----
+| Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Nội dung điều chỉnh |
+|---|---|---|---|---|
+| **Bảng điều khiển lọc trượt cạnh phải** | Bảng điều khiển trượt (Aside Panel) | Toàn bộ 8 nhóm tiêu chí lọc chuyên sâu | Trượt mượt mà từ mép phải màn hình, có nút đóng và tiêu đề kèm tổng số tiêu chí đang chọn. | **Điều chỉnh:** Chuyển đổi từ dạng hộp thả xuống rời rạc sang bảng điều khiển trượt chuyên nghiệp, tối ưu diện tích. |
+| **Nhóm lọc Cơ sở & Trạng thái** | Danh sách hộp kiểm đa lựa chọn | Danh mục cơ sở và danh mục trạng thái | Cho phép chọn đồng thời nhiều cơ sở và nhiều trạng thái chính để lọc kết hợp. | **Điều chỉnh:** Hỗ trợ lọc đa lựa chọn linh hoạt thay vì chỉ chọn đơn lẻ từng mục. |
+| **Nhóm lọc Giáo viên phụ trách** | Ô tìm kiếm kèm danh sách hộp kiểm | Danh sách giáo viên thuộc các cơ sở | Có ô nhập từ khóa tìm nhanh tên giáo viên; danh sách hiển thị tên kèm số ca đang phụ trách. | **Bổ sung:** Tích hợp ô tìm kiếm nội bộ trong nhóm lọc giáo viên giúp tìm nhanh nhân sự giữa danh sách dài. |
+| **Nhóm lọc Ngày trong tuần & Chương trình** | Danh sách hộp kiểm phân loại | Các thứ trong tuần (T2 - CN) và chương trình | Lọc ca test theo các ngày diễn ra trong tuần hoặc theo chương trình học đăng ký. | **Bổ sung:** Bổ sung tiêu chí lọc theo thứ trong tuần phục vụ công tác xếp lịch trực khảo thí định kỳ. |
+| **Chân bảng điều khiển: Xóa tất cả & Áp dụng** | Thanh nút hành động cố định chân bảng | Nút Xóa bộ lọc và Nút Áp dụng | Chế độ lọc nháp: người dùng có thể tích chọn nhiều mục, bấm "Áp dụng" để thực thi lọc hoặc bấm "Xóa tất cả" để khôi phục. | **Bổ sung:** Cơ chế lọc nháp giúp hệ thống không phải tải lại dữ liệu liên tục sau mỗi lần tích chọn. |
 
-## 6. Tiêu chí Nghiệm thu (Acceptance Criteria)
+### 2.4 Hộp thoại & Thao tác nhanh (Dialogs & Quick Actions) - Các điều chỉnh
 
-- **AC-1 (Bố cục danh sách chuẩn):** Hiển thị đúng 4 vùng chức năng theo cấu trúc dọc: Thanh công cụ → Thanh trạng thái → Bảng danh sách chính → Bộ phân trang ở dưới cùng.
-- **AC-2 (Tab môn học hoạt động đúng):** Mặc định chọn tab Tiếng Anh. Tab Toán học bị mờ và không thể click chọn do nằm ngoài phạm vi hoạt động.
-- **AC-3 (Số đếm ô trạng thái đồng bộ):** Các số đếm hiển thị trên các ô trạng thái chính và trạng thái ảo phản ánh chính xác số lượng lịch hẹn tương ứng. Khi chọn cơ sở hoặc áp dụng bộ lọc nâng cao, các số đếm này tự động cập nhật đồng bộ theo kết quả lọc.
-- **AC-4 (Tìm kiếm tự động đa trường):** Nhập từ khóa tìm kiếm tự động lọc danh sách trên 6 trường thông tin (tên học viên, phụ huynh, SĐT, mã, cơ sở, phòng học), hỗ trợ tìm kiếm không dấu và không biệt hoa thường.
-- **AC-5 (Ghi cố định cột bảng):** Khi cuộn ngang bảng danh sách trên màn hình nhỏ, cột Hộp chọn dòng và cột Chương trình/Lịch hẹn test bắt buộc phải được ghim cố định ở cạnh trái của bảng để dễ theo dõi.
-- **AC-6 (Thao tác nhanh di chuột hoạt động):** Khi rê chuột vào một dòng ca test, các biểu tượng thao tác nhanh (Check-in, Gán giáo viên, Mở đánh giá, Gọi điện) hiển thị chính xác và hoạt động đúng logic nghiệp vụ được gán.
-- **AC-7 (Bảng nổi liên hệ gia đình phụ):** Đối với học sinh có trên 1 phụ huynh, nhấp biểu tượng liên hệ mở đúng bảng nổi hiển thị đầy đủ tên, số điện thoại che phần giữa, nút gọi điện và nút sao chép SĐT gốc. Bảng nổi tự đóng khi bấm ra ngoài.
-- **AC-8 (Lọc kết hợp nâng cao):** Bảng lọc nâng cao trượt ra từ bên phải màn hình hiển thị chính xác các nhóm lọc và số lượng ca test tương ứng cho từng mục. Bộ lọc nâng cao kết hợp hoạt động đồng thời theo đúng logic VÀ với các bộ lọc cơ bản ngoài màn hình.
-- **AC-9 (Chỉnh sửa trình độ trực tiếp tại chỗ):** Giáo viên có thể thay đổi trực tiếp Trình độ (Level) và Nhánh trình độ (Sublevel) qua dropdown tại chỗ trên bảng danh sách mà không cần vào trang chi tiết khi ca test đã hoàn thành làm bài/phỏng vấn.
+| Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Nội dung điều chỉnh |
+|---|---|---|---|---|
+| **Hộp thoại Gán / Đổi Giáo viên** | Hộp thoại chọn nhân sự chuyên dụng | Danh sách nhân viên khả dụng tại cơ sở | Hiển thị nhân sự theo ca trực; tự động lọc bỏ giáo viên bị trùng lịch; nếu tìm đích danh giáo viên trùng, hiển thị mờ kèm tên ca trùng. | **Điều chỉnh:** Bổ sung thuật toán kiểm tra trùng lịch dạy và ca test chéo, ngăn ngừa việc gán nhầm nhân sự đang bận. |
+| **Hộp thoại Đánh giá Speaking 2025** | Hộp thoại biểu mẫu chấm điểm chi tiết | Tiêu chí chấm điểm kỹ năng nói tiếng Anh | Mở khi bấm vào nút Đánh giá hoặc nút Speaking. Gồm các thang đo phát âm, ngữ điệu, từ vựng, độ lưu loát và nhận xét chi tiết. | **Điều chỉnh:** Đồng bộ biểu mẫu chấm điểm khảo thí 2025 chuẩn hóa, lưu trữ kết quả tức thì vào hồ sơ ca test. |
+| **Hộp thoại Chi tiết ca test đầy đủ** | Hộp thoại lớn nhiều ngăn thông tin | Toàn bộ hồ sơ khảo thí của học sinh | Gồm: Thông tin học sinh, thông tin gia đình, kết quả kiểm tra máy tính bảng và phỏng vấn, người phụ trách, tab ghi chú và lịch sử. | **Điều chỉnh:** Tái cấu trúc layout hộp thoại chi tiết gọn gàng, hỗ trợ chuyển đổi trạng thái (Check-in, Đang test, Hoàn tất, Hủy) trực quan. |
+| **Hộp thoại Xác nhận Hủy ca test** | Hộp thoại cảnh báo xác nhận | Lý do hủy ca và ghi nhận học viên vắng | Xuất hiện khi bấm nút Hủy ca (icon đỏ) trên bảng; yêu cầu xác nhận để chuyển trạng thái sang Đã hủy và vắng mặt. | **Bổ sung:** Tuân thủ nguyên tắc xác nhận trước các hành động hủy/xóa, tránh thao tác bấm nhầm của nhân viên. |
 
 ---
 
-## 7. Chỉ dẫn cho Lập trình viên
+## 3. KHỐI CHỨC NĂNG CHI TIẾT: ACTION & LUỒNG KÍCH HOẠT (ACTIONS & EVENTS)
 
-### 7.1. Ánh xạ Trạng thái Dữ liệu (State Mappings)
+### Khối chức năng 1: Điều hướng & Bộ lọc nhanh trên thanh công cụ
 
-- **Trạng thái lịch hẹn chính (BookingStatus):**
-  - Đã đặt lịch test -> `booked_assessment`
-  - Đang đánh giá -> `started_assessment`
-  - Hoàn tất -> `completed`
-  - Không đạt -> `failed`
-  - Đã hủy -> `cancelled`
-- **Tình trạng điểm danh (BookingAttendance):**
-  - Chờ -> `pending`
-  - Đã đến -> `confirmed`
-- **Bộ lọc trạng thái ảo trên giao diện:**
-  - *Chưa gán GV* -> Lịch hẹn có trạng thái là `booked_assessment` và thuộc tính `teacher` trống hoặc rỗng.
-  - *Đã check-in* -> Lịch hẹn có tình trạng điểm danh là `confirmed` hoặc trạng thái lịch hẹn nằm trong nhóm `{started_assessment, completed, failed}`.
-  - *Đã phỏng vấn* -> Lịch hẹn có trạng thái là `started_assessment` và thuộc tính `isInterviewed === true`.
-  - *Đã làm bài* -> Lịch hẹn có trạng thái là `started_assessment` và thuộc tính `isTested === true`.
+#### Action 1.1: Lọc nhanh ca khảo thí theo Phím tắt "Lịch của tôi"
+* **Luồng kích hoạt:** Người dùng nhấp chuột vào nút phím tắt "Lịch của tôi" trên hàng 2 thanh công cụ.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  - **AC-1 (Happy Path - Kích hoạt lọc ca test cá nhân phụ trách):**
+    - **Giả sử:** Người dùng đang đăng nhập với vai trò Giáo viên hoặc Chuyên viên khảo thí tại màn hình `/app/booking_test`.
+    - **Khi:** Người dùng nhấp chọn nút "Lịch của tôi".
+    - **Thì:** Nút chuyển sang trạng thái kích hoạt với màu nền đậm; bảng danh sách chỉ hiển thị các ca test mà người dùng là giáo viên phỏng vấn, người chấm hoặc người tạo; số lượng đếm trên các Thẻ trạng thái chính được tính toán lại chính xác theo danh sách đã lọc.
+  - **AC-2 (Happy Path - Tắt lọc cá nhân để xem toàn bộ cơ sở):**
+    - **Giả sử:** Phím tắt "Lịch của tôi" đang ở trạng thái kích hoạt.
+    - **Khi:** Người dùng nhấp chuột lại vào nút "Lịch của tôi".
+    - **Thì:** Nút trở về trạng thái bình thường; bảng danh sách khôi phục hiển thị toàn bộ các ca test thuộc phạm vi cơ sở được phân quyền.
 
-### 7.2. Cấu trúc Component và Tệp tin
+#### Action 1.2: Chuyển đổi môn học khảo thí
+* **Luồng kích hoạt:** Người dùng nhấp chọn môn học tại ô thả xuống Môn học trên hàng 1 thanh công cụ.
+* **Tiêu chí nghiệm thu:**
+  - **AC-3 (Happy Path - Chuyển sang môn Toán học):**
+    - **Giả sử:** Danh sách đang hiển thị ca khảo thí môn Tiếng Anh.
+    - **Khi:** Người dùng chọn giá trị `Toán học`.
+    - **Thì:** Bảng danh sách làm mới chỉ hiển thị các ca môn Toán; dải điều kiện lọc phụ tự động ẩn mục "Đã phỏng vấn"; cột Điểm số Speaking hiển thị dấu gạch ngang `-`; chỉ hiển thị điểm máy tính bảng LWR.
+  - **AC-4 (Happy Path - Chuyển lại môn Tiếng Anh):**
+    - **Giả sử:** Danh sách đang ở chế độ xem môn Toán học.
+    - **Khi:** Người dùng chọn lại `Tiếng Anh`.
+    - **Thì:** Hệ thống khôi phục hiển thị đầy đủ cột Speaking kèm điểm giáo viên, điểm trí tuệ nhân tạo và hiển thị lại mục "Đã phỏng vấn" trên dải điều kiện lọc phụ.
 
-- **Thư mục chức năng:** `src/components/screens/booking-test/`
-- **Tệp điều phối chính:** `BookingTestScreen.tsx` (Quản lý trạng thái lọc, tìm kiếm, phân trang và đóng/mở các Dialog/Sheet).
-- **Các component giao diện liên quan:**
-  - `BookingTestToolbar.tsx` (Thanh công cụ trên cùng chứa các bộ lọc cơ bản, ô tìm kiếm và ô trạng thái StatusTiles).
-  - `BookingTestTable.tsx` (Bảng lưới danh sách chính, quản lý tiêu đề cột và trạng thái trống).
-  - `BookingTestTableRow.tsx` (Dòng dữ liệu trong bảng, quản lý hiển thị các ô cột, sự kiện click dòng, rê chuột hiển thị nút thao tác nhanh).
-  - `FamilyPopover.tsx` (Bảng nổi hiển thị thông tin gia đình phụ liên kết từ nút biểu tượng liên hệ gia đình).
-  - `bookingTestHelpers.ts` (Các hàm lọc, tìm kiếm, định dạng dữ liệu và tính toán số lượng ca test cho từng trạng thái).
-  - `useBookingTestData.ts` (Custom hook tính toán, lọc dữ liệu và chuẩn bị các tùy chọn lọc cho FilterSheetPanel).
-  - `useBookingTestActions.ts` (Custom hook xử lý các hành động click nút check-in, gán giáo viên nhanh, mở đánh giá, gọi điện...).
+---
 
-### 7.3. Sử dụng Primitives & Style
+### Khối chức năng 2: Thao tác Check-in & Hủy ca nhanh trực tiếp trên dòng bảng
 
-- Sử dụng `<DataTableFrame />` làm khung bọc ngoài bảng danh sách chính và chân trang phân trang.
-- Sử dụng `<DataTablePagination />` cho bộ phân trang dưới chân bảng, truyền các thuộc tính `page`, `total`, `pageSize`, `onPageChange` và `onPageSizeChange`.
-- Sử dụng `<FilterSheetPanel />` cho bảng lọc nâng cao trượt từ bên phải màn hình.
-- Sử dụng `<SegmentedControl />` cho thanh chuyển tab môn học Tiếng Anh / Toán học.
-- Sử dụng `<BranchSelect />` cho bộ chọn cơ sở.
-- Sử dụng `<ExpandableSearch />` cho ô tìm kiếm.
-- Sử dụng `<FilterIconButton />` cho biểu tượng phễu lọc nâng cao.
-- Sử dụng `<StatusTiles />` hiển thị nhóm trạng thái nằm ngang.
-- Ghim cố định cột: Sử dụng CSS class `sticky left-0 z-30` cho cột ô chọn đầu dòng và `sticky left-12 z-20` cho cột Booking Trải nghiệm, kèm theo màu nền của dòng để không bị đè chữ khi cuộn ngang.
+#### Action 2.1: Nhấp nút Check-in 1 chạm tại cột Học viên
+* **Luồng kích hoạt:** Người dùng nhấp vào nút "Check-in" màu ngọc lục bảo trên dòng học sinh vừa đến cơ sở.
+* **Tiêu chí nghiệm thu:**
+  - **AC-5 (Happy Path - Check-in thành công cho học sinh đến cơ sở):**
+    - **Giả sử:** Ca khảo thí đang ở trạng thái `Đã đặt lịch test` và học sinh chưa được ghi nhận check-in.
+    - **Khi:** Người dùng nhấp nút "Check-in" tại dòng của học sinh đó.
+    - **Thì:** Hệ thống ghi nhận trạng thái đến của học sinh; biểu tượng tích xanh xuất hiện ngay cạnh tên học sinh; nút Check-in tự động biến mất khỏi dòng; thông báo xác nhận thành công hiển thị góc màn hình; số lượng đếm trên điều kiện "Đã check-in" tăng thêm 1.
+
+#### Action 2.2: Rê chuột và bấm Hủy ca khảo thí
+* **Luồng kích hoạt:** Người dùng rê chuột vào dòng ca test và nhấp vào biểu tượng hủy màu đỏ xuất hiện ở góc phải tên học sinh.
+* **Tiêu chí nghiệm thu:**
+  - **AC-6 (Happy Path - Xác nhận hủy ca test khi học sinh báo vắng):**
+    - **Giả sử:** Ca khảo thí chưa hoàn tất và phụ huynh báo vắng hoặc không đến.
+    - **Khi:** Người dùng rê chuột vào dòng và bấm biểu tượng Hủy màu đỏ, sau đó bấm xác nhận "Hủy ca test" trên hộp thoại cảnh báo.
+    - **Thì:** Trạng thái ca test chuyển sang `Đã hủy`; trạng thái chuyên cần ghi nhận `Từ chối đến / Vắng mặt`; biểu tượng chữ X màu đỏ hiển thị cạnh tên học sinh; số lượng đếm trên thẻ trạng thái cập nhật tức thì.
+
+---
+
+### Khối chức năng 3: Phân bổ & Đổi Giáo viên phụ trách kèm kiểm tra trùng lịch
+
+#### Action 3.1: Nhấp vào tên giáo viên hoặc nút "Gán phụ trách" tại cột Phụ trách
+* **Luồng kích hoạt:** Người dùng nhấp chuột vào ô tên giáo viên hoặc nút "Gán phụ trách" trên dòng dữ liệu.
+* **Tiêu chí nghiệm thu:**
+  - **AC-7 (Happy Path - Hiển thị danh sách giáo viên khả dụng không trùng lịch):**
+    - **Giả sử:** Ca khảo thí diễn ra vào khung giờ cụ thể (ví dụ: Thứ 5, 10:00 - 10:30).
+    - **Khi:** Người dùng nhấp vào ô người phụ trách để mở Hộp thoại chọn giáo viên.
+    - **Thì:** Hộp thoại hiển thị danh sách nhân sự tại cơ sở; các giáo viên đang có ca dạy lớp hoặc ca khảo thí khác trong khung giờ 10:00 - 10:30 tự động bị ẩn khỏi danh sách gợi ý ưu tiên.
+  - **AC-8 (Happy Path - Cảnh báo khi tìm kiếm đích danh giáo viên bị trùng lịch):**
+    - **Giả sử:** Giáo viên A đang có lịch dạy lớp chính khóa trùng giờ thi của ca test.
+    - **Khi:** Người dùng nhập chính xác tên "Giáo viên A" vào ô tìm kiếm của hộp thoại gán nhân sự.
+    - **Thì:** Dòng tên Giáo viên A hiển thị ở trạng thái mờ (vô hiệu hóa) kèm theo nhãn thông tin màu đỏ cảnh báo trùng lịch: `Trùng ca: [Mã lớp / Tên ca test trùng]`; không cho phép người dùng chọn nhân sự này.
+  - **AC-9 (Happy Path - Gán nhân sự thành công):**
+    - **Giả sử:** Người dùng nhấp chọn một giáo viên rảnh lịch trong danh sách khả dụng.
+    - **Khi:** Người dùng xác nhận chọn giáo viên.
+    - **Thì:** Tên giáo viên mới được cập nhật ngay tại cột Phụ trách của dòng bảng; ca test tự động thoát khỏi điều kiện lọc "Chưa gán GV"; số đếm "Chưa gán GV" giảm đi 1.
+
+---
+
+### Khối chức năng 4: Xem & Thiết lập Kết quả đánh giá tại cột Kết quả
+
+#### Action 4.1: Nhấp mở Hộp nổi Cấp độ và Ghi chú nhận xét
+* **Luồng kích hoạt:** Người dùng nhấp vào ô cấp độ tại cột Kết quả của ca khảo thí đã có điểm.
+* **Tiêu chí nghiệm thu:**
+  - **AC-10 (Happy Path - Xem và cập nhật cấp độ đề xuất cho học sinh):**
+    - **Giả sử:** Học sinh đã hoàn tất bài thi máy tính bảng và bài phỏng vấn, hệ thống đã tự động tính toán cấp độ gợi ý.
+    - **Khi:** Người dùng nhấp vào ô cấp độ để mở Hộp nổi kết quả.
+    - **Thì:** Hộp nổi hiển thị cấp độ đề xuất chính và nhánh cấp độ chi tiết; người dùng có thẩm quyền có thể chọn cấp độ phù hợp trong danh mục và nhập ghi chú nhận xét nhanh; dữ liệu được lưu tự động và đồng bộ về hệ thống.
+
+---
+
+## 4. CÁC TRƯỜNG HỢP GÓC CẠNH & LUỒNG NGOẠI LỆ (CORNER CASES & EXCEPTION FLOWS)
+
+### Nhóm 1: Khung hiển thị & Điều hướng dữ liệu
+* **[CASE-01] Danh sách rỗng sau khi áp dụng tổ hợp bộ lọc:**
+  * **Tình huống:** Người dùng chọn kết hợp nhiều điều kiện lọc hoặc nhập từ khóa tìm kiếm không khớp với bất kỳ ca test nào.
+  * **Xử lý:** Bảng dữ liệu hiển thị thành phần trạng thái rỗng chuẩn (`EmptyState`) với biểu tượng lịch biểu, tiêu đề `Không tìm thấy dữ liệu` và hướng dẫn điều chỉnh tìm kiếm hoặc xóa bớt bộ lọc.
+* **[CASE-02] Số điện thoại phụ huynh bị khuyết hoặc có nhiều thành viên gia đình:**
+  * **Tình huống:** Hồ sơ học sinh chưa cập nhật số điện thoại phụ huynh hoặc có nhiều số liên lạc của cả bố và mẹ.
+  * **Xử lý:** Nếu không có số, hiển thị dấu gạch ngang `-`; nếu có nhiều người thân, hiển thị tên người liên hệ chính và số điện thoại đã che, đồng thời hỗ trợ xem danh sách các thành viên gia đình khác trong hộp thoại chi tiết.
+
+### Nhóm 2: Ràng buộc Trùng lịch & Dữ liệu bài test
+* **[CASE-03] Ca test môn Toán học không có điểm phỏng vấn:**
+  * **Tình huống:** Ca khảo thí được tạo cho môn Toán học, quy trình không bao gồm bài phỏng vấn Speaking.
+  * **Xử lý:** Giao diện dòng bảng tự động ẩn component điểm Speaking và thay bằng ký tự `-`; dải điều kiện lọc phụ tự động ẩn mục "Đã phỏng vấn"; hộp thoại chi tiết chỉ hiển thị khối điểm máy tính bảng LWR và nút bấm Hoàn thành thủ công dành cho chuyên viên vận hành.
+* **[CASE-04] Học sinh bắt đầu làm bài test trên máy tính bảng trước khi được check-in tại quầy:**
+  * **Tình huống:** Học sinh vào thẳng phòng khảo thí và mở bài làm trên máy tính bảng trong khi nhân viên lễ tân chưa kịp bấm nút Check-in trên giao diện máy tính.
+  * **Xử lý:** Hệ thống tự động ghi nhận check-in và chuyển trạng thái ca test từ `Đã đặt lịch test` sang `Đang đánh giá`; biểu tượng tích xanh tự động hiển thị cạnh tên học sinh trên bảng danh sách mà không cần nhân viên bấm thủ công.
+* **[CASE-05] Giáo viên phụ trách được gán chính là tài khoản đang đăng nhập:**
+  * **Tình huống:** Ca khảo thí được phân bổ cho chính người dùng hiện tại đang đăng nhập hệ thống.
+  * **Xử lý:** Tại cột Phụ trách, bên cạnh tên giáo viên hiển thị thêm nhãn chữ thanh mảnh `(bạn)` màu tím; ca test tự động được tính vào số lượng đếm của phím tắt "Lịch của tôi" trên thanh công cụ.
+
+### Nhóm 3: Bộ lọc nâng cao & Đồng bộ số liệu
+* **[CASE-06] Áp dụng lọc nháp và hủy bỏ thay đổi:**
+  * **Tình huống:** Người dùng mở bảng điều khiển lọc nâng cao, tích chọn một số tiêu chí nhưng sau đó bấm nút Đóng (dấu X) hoặc bấm ra ngoài màn hình mà không bấm nút "Áp dụng".
+  * **Xử lý:** Hệ thống hủy bỏ toàn bộ các lựa chọn tạm thời, giữ nguyên trạng thái danh sách và các bộ lọc đang có trước đó.
+* **[CASE-07] Học sinh có ca khảo thí trước đó chưa hoàn thành:**
+  * **Tình huống:** Phụ huynh yêu cầu đặt lịch khảo thí mới cho học sinh trong khi học sinh đó đang có một ca test ở trạng thái Đã đặt lịch hoặc Đang đánh giá.
+  * **Xử lý:** Biểu mẫu tạo mới ca test kích hoạt quy tắc chặn đặt trùng theo mã học sinh, hiển thị thông báo nhắc nhở nhân viên hoàn tất hoặc hủy ca cũ trước khi tạo lịch mới.
+* **[CASE-08] Khung giờ kết thúc ca khảo thí chạm sát ca tiếp theo:**
+  * **Tình huống:** Ca test kết thúc lúc 09:30 và có một ca test hoặc lớp học khác bắt đầu lúc 09:30 hoặc 09:40.
+  * **Xử lý:** Thuật toán kiểm tra trùng lịch xác định giáo viên hoàn toàn khả dụng cho khung giờ từ 09:30 hoặc 09:40 trở đi, không báo trùng lịch nhầm lẫn.

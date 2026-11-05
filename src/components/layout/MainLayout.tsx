@@ -8,7 +8,7 @@ import { SidebarNav } from './SidebarNav'
 import { getNavigationGroupsForRole } from '@/config/navigation'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useUIStore } from '@/stores/useUIStore'
-import { UserProfileDialog } from '@/components/shared'
+import { UserProfileDialog, CallDialog } from '@/components/shared'
 import { ExplainTourOverlay } from '@/components/explain'
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -59,7 +59,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     activeMenu === 'dashboard' || activeMenu === 'home' || pathname === '/app/dashboard'
 
   return (
-    <div className="ui-main-canvas flex overflow-hidden font-sans bg-background" style={{ height: 'var(--app-height, 100vh)' }}>
+    <div id="station-app-root" className="ui-main-canvas flex overflow-hidden font-sans bg-background" style={{ height: 'var(--app-height, 100vh)' }}>
       <div className="relative flex h-full w-full flex-col bg-background">
         <HeaderBar
           onOpenMobileSidebar={() => setMobileNavOpen(true)}
@@ -91,6 +91,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
       {isDev && DevPanel ? <DevPanel /> : null}
       <UserProfileDialog />
+      <CallDialog />
       <ExplainTourOverlay />
     </div>
   )

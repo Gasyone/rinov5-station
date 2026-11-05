@@ -13,6 +13,7 @@ import {
   sumRegisteredMinutes,
 } from './workRegistrationHelpers'
 import { WorkRegistrationStaffSectionGrid } from './WorkRegistrationStaffSectionGrid'
+import { WorkRegistrationStaffFlatGrid } from './WorkRegistrationStaffFlatGrid'
 import { WorkRegistrationTimeRangePicker } from './WorkRegistrationTimeRangePicker'
 import { WorkRegistrationStaffTable } from './WorkRegistrationStaffTable'
 import type {
@@ -31,6 +32,10 @@ interface WorkRegistrationStaffPanelProps {
   records: WorkRegistrationRecord[]
   employees: WorkRegistrationEmployee[]
   todayKey: string
+  activeBranch?: string
+  selectedShifts?: ShiftSection[]
+  subjectFilter?: string
+  searchQuery?: string
   page: number
   pageSize: number
   totalMinutes: number
@@ -65,6 +70,10 @@ export function WorkRegistrationStaffPanel({
   records,
   employees,
   todayKey,
+  activeBranch,
+  selectedShifts = ['morning', 'afternoon', 'evening'],
+  subjectFilter = 'all',
+  searchQuery = '',
   page,
   pageSize,
   totalMinutes,
@@ -125,8 +134,8 @@ export function WorkRegistrationStaffPanel({
         </div>
       ) : null}
 
-      {/* DANH SÁCH NHÂN VIÊN (GIẢM BỀ RỘNG GỌN GÀNG) + LƯỚI LỊCH (PHẲNG FULL) */}
-      <div className="grid min-h-0 flex-1 gap-2 md:grid-cols-[190px_minmax(0,1fr)] lg:grid-cols-[200px_minmax(0,1fr)]">
+      {/* DANH SÁCH NHÂN VIÊN + LƯỚI LỊCH */}
+      <div className="grid min-h-0 flex-1 gap-2 md:grid-cols-[230px_minmax(0,1fr)] lg:grid-cols-[250px_minmax(0,1fr)]">
         <div className={cn('h-full min-h-0', delegateEmployeeId ? 'hidden md:block' : 'block')}>
           <WorkRegistrationStaffTable
             summaries={filteredSummaries}
@@ -140,18 +149,33 @@ export function WorkRegistrationStaffPanel({
         </div>
 
         <div className={cn('flex-1 min-h-0 flex flex-col', !delegateEmployeeId ? 'hidden md:flex' : 'flex')}>
-          <WorkRegistrationStaffSectionGrid
-            days={weekDays}
-            records={records}
-            employees={employees}
-            todayKey={todayKey}
-            editableEmployeeId={delegateEmployeeId}
-            readonlyWeek={readonlyWeek}
-            priorityRules={priorityRules}
-            onToggleSection={onToggleSection}
-            onRemoveSlots={onRemoveSlots}
-            onOpenSlotDetail={onOpenSlotDetail}
-          />
+          {!delegateEmployeeId ? (
+            <WorkRegistrationStaffFlatGrid
+              days={weekDays}
+              records={records}
+              employees={employees}
+              todayKey={todayKey}
+              activeBranch={activeBranch}
+              selectedShifts={selectedShifts}
+              subjectFilter={subjectFilter}
+              searchQuery={searchQuery}
+              onSelectEmployee={onSetDelegateEmployee}
+              onOpenSlotDetail={onOpenSlotDetail}
+            />
+          ) : (
+            <WorkRegistrationStaffSectionGrid
+              days={weekDays}
+              records={records}
+              employees={employees}
+              todayKey={todayKey}
+              editableEmployeeId={delegateEmployeeId}
+              readonlyWeek={readonlyWeek}
+              priorityRules={priorityRules}
+              onToggleSection={onToggleSection}
+              onRemoveSlots={onRemoveSlots}
+              onOpenSlotDetail={onOpenSlotDetail}
+            />
+          )}
         </div>
       </div>
     </div>

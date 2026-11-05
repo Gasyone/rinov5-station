@@ -37,6 +37,7 @@ export interface StudentMonthlyReport {
   priorTestScore?: number | string | null
   testDocUrl?: string
   testDocName?: string
+  isEndTerm?: boolean // Đánh dấu kỳ báo cáo cuối kỳ (kỳ có phần Nhận xét cuối kỳ / Kiểm tra + Nhận xét)
 
   // Video đặc biệt điểm nhấn của tháng (hiển thị trực tiếp trên báo cáo)
   featuredVideo?: MonthlyFeaturedVideo
@@ -150,8 +151,20 @@ function createSeedReport(
   sectionA1: string = DEFAULT_SECTION_A1_TEXT,
   sectionA2: string = DEFAULT_SECTION_A2_TEXT,
   sectionB1: string = DEFAULT_SECTION_B1_TEXT,
-  weeks: WeekReviewItem[] = DEFAULT_SECTION_B2_WEEKS
+  weeks: WeekReviewItem[] = DEFAULT_SECTION_B2_WEEKS,
+  isEndTerm?: boolean,
+  testScore?: number | string | null,
+  priorTestScore?: number | string | null,
+  testDocUrl?: string,
+  testDocName?: string
 ): StudentMonthlyReport {
+  // Mặc định kỳ hiện tại (Tháng 4/2026) là kỳ Báo cáo cuối kỳ có điểm kiểm tra & nhận xét đánh giá
+  const resolvedIsEndTerm = isEndTerm !== undefined ? isEndTerm : isCurrent
+  const defaultTestScore = resolvedIsEndTerm ? 8.5 : null
+  const defaultPriorTestScore = resolvedIsEndTerm ? 8.0 : null
+  const defaultDocUrl = resolvedIsEndTerm ? 'https://docs.google.com/document/d/learning-result-baohan' : ''
+  const defaultDocName = resolvedIsEndTerm ? 'Phieu_kiem_tra_dinh_ky_Toan.pdf' : ''
+
   return {
     id,
     studentId,
@@ -163,10 +176,11 @@ function createSeedReport(
     dateStr,
     awardBadge,
     teacherName,
-    testScore: 8.5,
-    priorTestScore: 8.0,
-    testDocUrl: 'https://docs.google.com/document/d/learning-result-baohan',
-    testDocName: 'Phieu_kiem_tra_dinh_ky_Toan.pdf',
+    testScore: testScore !== undefined ? testScore : defaultTestScore,
+    priorTestScore: priorTestScore !== undefined ? priorTestScore : defaultPriorTestScore,
+    testDocUrl: testDocUrl !== undefined ? testDocUrl : defaultDocUrl,
+    testDocName: testDocName !== undefined ? testDocName : defaultDocName,
+    isEndTerm: resolvedIsEndTerm,
     sectionA1Content: sectionA1,
     sectionA2Content: sectionA2,
     sectionAContent: `${sectionA1}\n\n${sectionA2}`,
@@ -264,7 +278,11 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     false,
     'Điểm nổi bật: Con tham gia rất sôi nổi các trò chơi ngôn ngữ, phản xạ nghe hiểu câu hỏi của thầy giáo bản ngữ rất nhanh nhẹn.\n\nĐiểm cần lưu ý: Cần rèn thêm tính kiên nhẫn khi đọc hiểu các đoạn văn dài có nhiều từ mới.',
     'Phonics & Speaking: Phát âm chuẩn xác các nguyên âm đôi, ngữ điệu câu hỏi và câu cảm thán rất tự nhiên. Đạt điểm 9.5/10 ở bài kiểm tra định kỳ Unit 3.',
-    'Tháng tới con sẽ thực hiện dự án thuyết trình nhóm "My Dream City" và ôn tập chuyên sâu các thì cơ bản (Hiện tại đơn, Quá khứ đơn).'
+    'Tháng tới con sẽ thực hiện dự án thuyết trình nhóm "My Dream City" và ôn tập chuyên sâu các thì cơ bản (Hiện tại đơn, Quá khứ đơn).',
+    DEFAULT_SECTION_B2_WEEKS,
+    true,
+    9.5,
+    9.0
   ),
   createSeedReport(
     'mr-s14-2_3_2026',
@@ -401,10 +419,11 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     dateStr: '01/04/2026 đến 30/04/2026',
     awardBadge: '', // Trắng để người dùng tự chọn
     teacherName: '', // Trống khi tạo lần đầu
-    testScore: '00', // Mặc định 00
-    priorTestScore: '00', // Mặc định 00
-    testDocUrl: '',
-    testDocName: '',
+    testScore: 8.5,
+    priorTestScore: 8.0,
+    testDocUrl: 'https://docs.google.com/document/d/learning-result-baohan',
+    testDocName: 'Phieu_kiem_tra_dinh_ky_Toan.pdf',
+    isEndTerm: true,
     sectionA1Content: '', // Trắng để người dùng tự điền
     sectionA2Content: '', // Trắng để người dùng tự điền
     sectionAContent: '',
@@ -434,7 +453,13 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     false,
     'Điểm nổi bật: Con đi học đầy đủ và tập trung nghe giảng.\n\nĐiểm cần lưu ý: Cần tự tin hơn khi phát biểu.',
     'Kiến thức & Tư duy: Nắm tốt các phép tính cơ bản trong phạm vi 20.\n\nKỹ năng giải toán: Cần rèn thêm kỹ năng giải toán có lời văn.',
-    'Tháng tới con tiếp tục nâng cao phản xạ tư duy toán học.'
+    'Tháng tới con tiếp tục nâng cao phản xạ tư duy toán học.',
+    DEFAULT_SECTION_B2_WEEKS,
+    true,
+    8.0,
+    7.5,
+    'https://docs.google.com/document/d/learning-result-baohan',
+    'Phieu_kiem_tra_giua_ky_Toan.pdf'
   ),
   createSeedReport(
     'mr-baohan-2_3_2026',
@@ -484,7 +509,11 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     false,
     'Điểm nổi bật: Con tham gia rất sôi nổi các trò chơi ngôn ngữ, phản xạ nghe hiểu câu hỏi của thầy giáo bản ngữ rất nhanh nhẹn.\n\nĐiểm cần lưu ý: Cần rèn thêm tính kiên nhẫn khi đọc hiểu các đoạn văn dài có nhiều từ mới.',
     'Phonics & Speaking: Phát âm chuẩn xác các nguyên âm đôi, ngữ điệu câu hỏi và câu cảm thán rất tự nhiên. Đạt điểm 8.0/10 ở bài kiểm tra định kỳ Unit 4.',
-    'Tháng tới con sẽ thực hiện dự án thuyết trình nhóm "My Dream City" và ôn tập chuyên sâu các thì cơ bản (Hiện tại đơn, Quá khứ đơn).'
+    'Tháng tới con sẽ thực hiện dự án thuyết trình nhóm "My Dream City" và ôn tập chuyên sâu các thì cơ bản (Hiện tại đơn, Quá khứ đơn).',
+    DEFAULT_SECTION_B2_WEEKS,
+    true,
+    9.5,
+    9.0
   ),
   createSeedReport(
     'mr-s29-2_3_2026',
@@ -791,6 +820,19 @@ export function saveStudentMonthlyReport(
     sectionB2Content: data.sectionB2Content || '',
     sectionBContent: data.sectionBContent || `${data.sectionB1Content || ''}\n\nKế hoạch ôn tập 4 tuần bổ trợ tại nhà`,
     isCurrent: data.isCurrent !== undefined ? data.isCurrent : monthOptionValue === '4_5_2026',
+    isEndTerm:
+      data.isEndTerm !== undefined
+        ? data.isEndTerm
+        : Boolean(
+            (data.testScore !== null &&
+              data.testScore !== undefined &&
+              data.testScore !== '' &&
+              data.testScore !== 0 &&
+              data.testScore !== '0' &&
+              data.testScore !== '00') ||
+            (data.testDocUrl && data.testDocUrl.trim() !== '') ||
+            (existingIndex >= 0 && mockMonthlyReports[existingIndex].isEndTerm)
+          ),
     status: 'saved',
     createdAt: existingIndex >= 0 ? mockMonthlyReports[existingIndex].createdAt : nowStr,
     updatedAt: nowStr,

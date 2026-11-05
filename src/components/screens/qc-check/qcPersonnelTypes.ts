@@ -12,6 +12,21 @@ export interface QcTagCriteriaMeta {
 }
 
 export const QC_CRITERIA_TAG_META: Record<QcEvaluationCriteria, QcTagCriteriaMeta> = {
+  class_operations: {
+    abbrev: 'VH',
+    label: 'Vận hành lớp',
+    fullLabel: 'VH - Lỗi vận hành lớp học',
+  },
+  staff_conduct: {
+    abbrev: 'TP',
+    label: 'Tác phong NS',
+    fullLabel: 'TP - Lỗi tác phong nhân sự',
+  },
+  five_star_service: {
+    abbrev: '5S',
+    label: 'Dịch vụ 5 sao',
+    fullLabel: '5S - Lỗi dịch vụ 5 sao',
+  },
   attendance: {
     abbrev: 'ĐD',
     label: 'Điểm danh',
@@ -65,7 +80,8 @@ export interface QcLatestRemediationInfo {
 }
 
 export interface QcPersonnelErrorStats {
-  current30DaysCount: number
+  currentMonthCount?: number
+  current30DaysCount?: number
   currentOpenCount: number
   previousMonthCount: number
   previousMonthOpenCount?: number

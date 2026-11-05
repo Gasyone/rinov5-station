@@ -236,7 +236,7 @@ export function ClassesSessionAttendanceTab({
               <tr>
                 {isTestSession && !isMath ? (
                   <>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 w-[180px] text-xs">Học viên</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 w-[190px] text-xs">Học viên</th>
                     <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[85px] text-xs">Điểm danh</th>
                     <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-xs">Listening</th>
                     <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-xs">Reading</th>
@@ -246,12 +246,12 @@ export function ClassesSessionAttendanceTab({
                   </>
                 ) : (
                   <>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[28%] min-w-[220px] text-xs">Học viên</th>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[14%] min-w-[100px] text-xs">Điểm danh</th>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[13%] min-w-[90px] text-xs">
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[35%] min-w-[240px] text-xs">Học viên</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[15%] min-w-[100px] text-xs">Điểm danh</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[14%] min-w-[90px] text-xs">
                       {isProjectSession ? 'Project' : isTestSession && isMath ? 'KTĐK' : 'BTVN'}
                     </th>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[45%] min-w-[280px] text-xs">Nhận xét</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[36%] min-w-[220px] text-xs">Nhận xét</th>
                   </>
                 )}
               </tr>
@@ -276,6 +276,7 @@ export function ClassesSessionAttendanceTab({
                       key={student.id}
                       student={student}
                       sessionId={sessionId}
+                      sessionDate={sessionDate}
                       isTestSession={isTestSession}
                       isMath={isMath}
                       isProjectSession={isProjectSession}

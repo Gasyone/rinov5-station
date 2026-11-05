@@ -41,7 +41,7 @@ export function BookingTestScheduleHoverCard({
   children,
   openDelay = 150,
   closeDelay = 100,
-  side = 'right',
+  side = 'bottom',
   align = 'start',
 }: BookingTestScheduleHoverCardProps) {
   const isCancelled = booking.status === 'cancelled'

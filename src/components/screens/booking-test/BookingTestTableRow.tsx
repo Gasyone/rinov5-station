@@ -4,15 +4,17 @@ import { useState, useMemo } from 'react'
 import {
   CheckCircle2,
   ExternalLink,
-  FileText,
+  MapPin,
   UserCheck,
   UserPlus,
+  XCircle,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TableCell, TableRow } from '@/components/ui/table'
-import { StatusBadge, ContactCell, PersonnelCell } from '@/components/shared'
+import { StatusBadge, ContactCell, PersonnelHoverCard, ConfirmDialog } from '@/components/shared'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { type BookingTest } from '@/mocks/bookingTests'
 import {
   resolveBookingBranch,
@@ -24,12 +26,14 @@ import { BookingTestLevelPopover } from './BookingTestLevelPopover'
 import { BookingTestScheduleHoverCard } from './BookingTestScheduleHoverCard'
 import {
   applyBookingCheckIn,
-  formatStudentAgeDob,
   formatStudentMetaLine,
   formatTestTimeWithDay,
+  getAvatarColor,
+  getInitials,
   getParentDisplayName,
   getStatusLabel,
   isBookingCheckedIn,
+  isBookingDeclined,
   shouldShowCheckInAction,
 } from './bookingTestHelpers'
 import { SpeakingScore, LwrScore } from './BookingTestScoreDisplay'
@@ -58,6 +62,8 @@ export function BookingTestTableRow({
   onOpenAssessment,
   onUpdateBooking,
 }: BookingTestTableRowProps) {
+  const user = useAuthStore((state) => state.user)
+  const authorName = user?.name ?? 'Người dùng hiện tại'
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false)
   const branchName = resolveBookingBranch(booking.school)
   const branchEmployees = useMemo(
@@ -70,145 +76,176 @@ export function BookingTestTableRow({
   )
 
   const isCheckedIn = isBookingCheckedIn(booking)
+  const isDeclined = isBookingDeclined(booking)
   const canCheckIn = shouldShowCheckInAction(booking)
+  const canCancel =
+    booking.status !== 'cancelled' &&
+    booking.status !== 'completed' &&
+    !isDeclined
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
   const parentDisplayName = getParentDisplayName(booking)
 
-  const isEven = index % 2 === 1
-  const rowBgClass = isEven ? 'bg-muted/30 dark:bg-muted/15' : 'bg-background'
-  const hoverBgClass = 'group-hover:bg-accent/40 dark:group-hover:bg-accent/30'
+  // Zebra striping synchronized with OperationsAlert / StudentsTable standard
+  const isEvenRow = typeof index === 'number' ? index % 2 === 1 : false
+  const stickyBgClass = isSelected
+    ? '!bg-sky-100 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 group-hover:bg-slate-100 dark:group-hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 group-hover:bg-slate-100 dark:group-hover:bg-zinc-800'
+  const rowBgClass = isSelected
+    ? '!bg-sky-50 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 hover:bg-slate-100 dark:hover:bg-zinc-800'
 
-  // Opaque solid background specifically for sticky fixed cells to prevent bleed-through when scrolling
-  const stickyBgClass = isEven
-    ? 'bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] dark:bg-[color-mix(in_srgb,var(--muted)_25%,var(--background))]'
-    : 'bg-background'
-  const stickyHoverClass = 'group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
-
-  const selectedBgClass = isSelected ? 'bg-primary/5 dark:bg-primary/10' : ''
-  const stickySelectedClass = isSelected
-    ? 'bg-[color-mix(in_srgb,var(--primary)_8%,var(--background))]'
-    : stickyBgClass
+  const isMyTeacher = booking.teacher?.trim() === authorName
 
   return (
-    <TableRow
-      className={cn(
-        "group cursor-pointer border-b border-border/60 transition-colors h-[48px] [&>td]:py-1.5 [&>td]:px-2.5",
-        rowBgClass,
-        hoverBgClass,
-        selectedBgClass
-      )}
+    <tr
       onClick={() => onRowClick(booking.id)}
+      className={cn(
+        'group cursor-pointer transition-colors align-middle [&>td]:py-1 [&>td]:px-2 xl:[&>td]:px-2.5 2xl:[&>td]:py-2 border-b-0',
+        rowBgClass
+      )}
     >
-      <TableCell
+      {/* 1. Checkbox */}
+      <td
         className={cn(
-          "sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center px-1 transition-colors",
-          stickySelectedClass,
-          stickyHoverClass
+          'sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center px-1 transition-colors',
+          stickyBgClass
         )}
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onToggle(booking.id, Boolean(checked))}
+          aria-label={`Chọn ${booking.childName}`}
         />
-      </TableCell>
-      <TableCell
+      </td>
+
+      {/* 2. Học viên: Avatar đa sắc + Tên + Check-in icon + Tuổi/DOB */}
+      <td
+        onClick={() => onRowClick(booking.id)}
         className={cn(
-          "sticky left-8 z-30 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden transition-colors",
-          stickySelectedClass,
-          stickyHoverClass
+          'sticky left-8 z-30 w-[220px] min-w-[200px] xl:w-[240px] 2xl:w-[260px] px-2 xl:px-2.5 transition-colors cursor-pointer',
+          stickyBgClass
         )}
       >
-        <div className="relative z-10 max-w-full overflow-hidden pr-2 group-hover:pr-14">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-medium text-foreground">
-              {booking.childName.charAt(0)}
+        <div
+          className={cn(
+            'relative flex items-center justify-between gap-2 min-w-0 pr-1',
+            canCheckIn && canCancel
+              ? 'pr-[92px] group-hover:pr-[126px]'
+              : canCheckIn
+                ? 'pr-[92px]'
+                : canCancel
+                  ? 'group-hover:pr-8'
+                  : ''
+          )}
+        >
+          <div className="flex items-center gap-2 2xl:gap-2.5 min-w-0 flex-1">
+            <div
+              className={cn(
+                'h-6.5 w-6.5 2xl:h-8 2xl:w-8 rounded flex items-center justify-center text-xs 2xl:text-sm font-medium shrink-0 hover:opacity-80 transition-opacity',
+                getAvatarColor(booking.id)
+              )}
+            >
+              {getInitials(booking.childName)}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <p className="truncate text-xs font-semibold text-foreground leading-tight" title={booking.childName}>
+                <p
+                  className="font-medium text-foreground text-xs 2xl:text-sm truncate hover:underline hover:text-primary leading-tight cursor-pointer"
+                  title={booking.childName}
+                >
                   {booking.childName}
                 </p>
-                {isCheckedIn && (
-                  <span title="Đã đến" className="inline-flex shrink-0">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 fill-emerald-100" />
+                {isCheckedIn ? (
+                  <span title="Đã check-in" className="inline-flex shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 fill-emerald-100 dark:fill-emerald-950" />
                   </span>
-                )}
+                ) : isDeclined ? (
+                  <span title="Từ chối đến" className="inline-flex shrink-0">
+                    <XCircle className="h-4 w-4 text-rose-500 fill-rose-100 dark:fill-rose-950" />
+                  </span>
+                ) : null}
               </div>
-              <div className="flex min-w-0 items-center gap-1.5 mt-0.5">
-                <span
-                  className="truncate text-xs text-muted-foreground leading-tight"
-                  title={`Thông tin học viên: ${formatStudentMetaLine(booking)}`}
-                >
-                  {formatStudentMetaLine(booking)}
-                </span>
-              </div>
+              <p
+                className="text-xs text-muted-foreground font-normal leading-none mt-0.5 2xl:mt-1 truncate"
+                title={`Thông tin học viên: ${formatStudentMetaLine(booking)}`}
+              >
+                {formatStudentMetaLine(booking)}
+              </p>
             </div>
           </div>
 
+          {/* Quick row actions: Check-in luôn hiển thị, Hủy khi hover */}
           <div
-            className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 group-hover:flex"
+            className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pl-1 bg-inherit"
             onClick={(event) => event.stopPropagation()}
           >
             {canCheckIn && (
               <Button
-                variant="ghost"
-                size="icon-xs"
+                type="button"
+                variant="outline"
+                size="sm"
                 title="Check-in (Xác nhận đến)"
-                aria-label="Check-in học viên"
-                onClick={() =>
+                aria-label={`Check-in cho ${booking.childName}`}
+                onClick={() => {
                   onUpdateBooking(booking.id, (current) => applyBookingCheckIn(current))
-                }
-                className="h-6 w-6 p-0 rounded-md"
+                  toast.success(`Đã check-in cho học viên ${booking.childName}`)
+                }}
+                className="h-6.5 px-2 text-xs font-normal border-emerald-500/30 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-500/50 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60 cursor-pointer shadow-none gap-1.5 rounded shrink-0 [&_svg]:!size-4"
               >
-                <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                <UserCheck className="size-4 shrink-0 text-emerald-600" />
+                <span>Check-in</span>
               </Button>
             )}
-            {booking.subject === 'english' && booking.teacher?.trim() && (booking.status === 'checkin' || booking.status === 'assessing') && (
+            {canCancel && (
               <Button
+                type="button"
                 variant="ghost"
-                size="icon-xs"
-                title="Mở đánh giá"
-                aria-label={`Mở đánh giá cho ${booking.childName}`}
-                onClick={() => onOpenAssessment(booking.id)}
-                className="h-6 w-6 p-0 rounded-md"
+                title="Hủy ca test / Báo vắng"
+                aria-label={`Hủy ca test cho ${booking.childName}`}
+                onClick={() => setConfirmCancelOpen(true)}
+                className="size-7.5 p-0 rounded-full text-rose-500 hover:text-rose-600 hover:bg-rose-100/80 dark:hover:bg-rose-950/60 cursor-pointer hidden group-hover:inline-flex items-center justify-center shrink-0 [&_svg]:!size-5"
               >
-                <FileText className="h-3.5 w-3.5 text-primary" />
-              </Button>
-            )}
-            {booking.subject !== 'math' && !booking.teacher?.trim() && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                title="Gán giáo viên"
-                aria-label={`Gán giáo viên cho ${booking.childName}`}
-                onClick={() => setTeacherPickerOpen(true)}
-                className="h-6 w-6 p-0 rounded-md text-amber-500 hover:text-amber-600"
-              >
-                <UserPlus className="h-3.5 w-3.5" />
+                <XCircle className="size-5 text-rose-500" />
               </Button>
             )}
           </div>
         </div>
-      </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
+      </td>
+
+      {/* 3. Liên hệ: Phụ huynh + SĐT đã che */}
+      <td
+        className="w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2 xl:px-2.5"
+        onClick={(event) => event.stopPropagation()}
+      >
         <ContactCell
           name={parentDisplayName}
           phone={booking.phone}
           studentName={booking.childName}
           masked={true}
-          className="gap-0"
           showPhoneIcon={false}
           showCallButton={false}
           showFamilyIcon={false}
+          nameClassName="text-xs 2xl:text-sm font-normal text-foreground"
+          phoneClassName="text-xs 2xl:text-xs font-mono text-muted-foreground"
           additionalContacts={
             booking.familyMembers && booking.familyMembers.length > 1
               ? booking.familyMembers.map((m) => ({ name: m.name, phone: m.phone }))
               : undefined
           }
         />
-      </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
-        <BookingTestScheduleHoverCard booking={booking} side="right" align="start">
+      </td>
+
+      {/* 4. Lịch test: Ngày giờ & Chương trình */}
+      <td
+        className="w-[175px] min-w-[160px] xl:w-[190px] 2xl:w-[210px] px-2 xl:px-2.5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <BookingTestScheduleHoverCard booking={booking} side="bottom" align="start">
           <div
             onClick={() => {
               window.open(
@@ -216,7 +253,7 @@ export function BookingTestTableRow({
                 '_blank'
               )
             }}
-            className="group/sch min-w-0 space-y-0.5 cursor-pointer text-left"
+            className="group/sch min-w-0 flex flex-col gap-0.5 2xl:gap-1 cursor-pointer text-left w-fit max-w-full"
           >
             <p
               className="truncate text-xs font-normal text-sky-600 dark:text-sky-400 group-hover/sch:text-sky-700 dark:group-hover/sch:text-sky-300 group-hover/sch:underline leading-tight flex items-center gap-1"
@@ -240,54 +277,104 @@ export function BookingTestTableRow({
             </p>
           </div>
         </BookingTestScheduleHoverCard>
-      </TableCell>
-      <TableCell>
+      </td>
+
+      {/* 5. Speaking & LWR: Điểm số */}
+      <td className="w-[195px] min-w-[180px] xl:w-[210px] 2xl:w-[230px] px-2 xl:px-2.5">
         {booking.subject === 'english' ? (
           <div className="min-w-0 space-y-1">
-            <SpeakingScore result={booking.testResult} compact />
+            <SpeakingScore
+              result={booking.testResult}
+              compact
+              onOpenAssessment={() => onOpenAssessment(booking.id)}
+            />
             <LwrScore result={booking.testResult} compact />
           </div>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground text-xs font-mono">-</span>
         )}
-      </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
+      </td>
+
+      {/* 6. Kết quả: Level đặt & Nhận xét */}
+      <td
+        className="w-[125px] min-w-[115px] xl:w-[135px] 2xl:w-[145px] px-2"
+        onClick={(event) => event.stopPropagation()}
+      >
         <BookingTestLevelPopover
           booking={booking}
           onUpdateBooking={onUpdateBooking}
         />
-      </TableCell>
-      <TableCell className="w-28 min-w-28 max-w-32">
+      </td>
+
+      {/* 7. Trạng thái: Badge duy nhất */}
+      <td className="w-[130px] min-w-[120px] xl:w-[140px] 2xl:w-[155px] px-2 xl:px-2.5 whitespace-nowrap">
         <StatusBadge
           status={booking.status}
           label={getStatusLabel(booking.status)}
-          className="font-normal whitespace-nowrap"
+          className="text-xs px-2 py-0.5 h-5 font-normal shrink-0 whitespace-nowrap leading-none"
         />
-      </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
-        <div className="space-y-0.5 min-w-0">
-          <PersonnelCell
-            items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
-            size="xs"
-            mode="single"
-            showRole={false}
-          />
-          <p
-            className="truncate text-xs italic text-muted-foreground leading-tight max-w-[180px]"
-            title={booking.notes?.at(-1)?.text ?? booking.msg ?? undefined}
+      </td>
+
+      {/* 8. Phụ trách: Người phụ trách + Cơ sở */}
+      <td
+        className="w-[170px] min-w-[155px] xl:w-[190px] 2xl:w-[210px] px-2 xl:px-2.5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex flex-col gap-0.5 2xl:gap-1 text-left">
+          {/* Người phụ trách */}
+          {booking.teacher?.trim() ? (
+            <PersonnelHoverCard
+              person={{
+                name: booking.teacher,
+                role: 'Phụ trách đánh giá',
+                phone: '0987 654 321',
+                email: `${booking.teacher.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`,
+              }}
+            >
+              <div
+                onClick={() => setTeacherPickerOpen(true)}
+                className="inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors w-fit leading-tight text-xs 2xl:text-sm text-foreground font-normal truncate max-w-[150px]"
+                title={`Người phụ trách: ${booking.teacher} (Bấm để đổi)`}
+              >
+                <span className="truncate">{booking.teacher}</span>
+                {isMyTeacher && (
+                  <span className="text-[10px] text-purple-600 dark:text-purple-400 font-normal shrink-0">
+                    (bạn)
+                  </span>
+                )}
+              </div>
+            </PersonnelHoverCard>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={() => setTeacherPickerOpen(true)}
+              className="h-5.5 px-2 text-xs font-normal border-primary/40 text-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/60 cursor-pointer shadow-3xs gap-1 rounded w-fit"
+              title="Gán người phụ trách"
+            >
+              <UserPlus className="h-3 w-3 shrink-0" />
+              <span>Gán phụ trách</span>
+            </Button>
+          )}
+
+          {/* Thông tin cơ sở */}
+          <div
+            className="flex items-center gap-1 text-xs text-muted-foreground leading-tight truncate"
+            title={booking.school || 'Cơ sở'}
           >
-            {booking.notes?.at(-1)?.text ?? booking.msg ?? '-'}
-          </p>
+            <MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+            <span className="truncate">{booking.school || 'Cơ sở'}</span>
+          </div>
         </div>
 
-        {booking.subject !== 'math' && (
-          <BookingTestEmployeePickerDialog
-            open={teacherPickerOpen}
-            employees={branchEmployees}
-            allRosterEmployees={allRosterEmployees}
-            branchName={branchName}
-            selectedName={booking.teacher}
-            bookings={bookings}
+        <BookingTestEmployeePickerDialog
+          open={teacherPickerOpen}
+          employees={branchEmployees}
+          allRosterEmployees={allRosterEmployees}
+          branchName={branchName}
+          selectedName={booking.teacher}
+          bookings={bookings}
             bookingTime={booking.testTime}
             currentBookingId={booking.id}
             onOpenChange={setTeacherPickerOpen}
@@ -300,8 +387,24 @@ export function BookingTestTableRow({
               setTeacherPickerOpen(false)
             }}
           />
-        )}
-      </TableCell>
-    </TableRow>
+
+          <ConfirmDialog
+            open={confirmCancelOpen}
+            onOpenChange={setConfirmCancelOpen}
+            title={`Hủy ca kiểm tra của ${booking.childName}?`}
+            description="Ca kiểm tra này sẽ chuyển sang trạng thái Đã hủy và học viên được ghi nhận vắng/từ chối đến."
+            confirmLabel="Hủy ca test"
+            variant="destructive"
+            onConfirm={() => {
+              onUpdateBooking(booking.id, (current) => ({
+                ...current,
+                status: 'cancelled',
+                attendance: 'declined',
+              }))
+              toast.success(`Đã hủy ca test cho ${booking.childName}`)
+            }}
+          />
+        </td>
+    </tr>
   )
 }

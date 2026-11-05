@@ -2,15 +2,9 @@
 
 import { CalendarDays } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { EmptyState } from '@/components/shared'
+import { DataTableFrame, DataTablePagination } from '@/components/data-table'
+import { cn } from '@/lib/utils'
 import type { BookingTest } from '@/mocks/bookingTests'
 import { BookingTestTableRow } from './BookingTestTableRow'
 
@@ -25,21 +19,15 @@ interface BookingTestTableProps {
   onUpdateBooking: (bookingId: string, updater: (booking: BookingTest) => BookingTest) => void
   onCopy: (text: string, key: string) => Promise<void>
   onCall: (phone?: string) => void
+  className?: string
+  pagination?: {
+    page: number
+    total: number
+    pageSize: number
+    onPageChange: (page: number) => void
+    onPageSizeChange: (size: number) => void
+  }
 }
-
-const COLUMN_DEFS: Array<{ label: string; className: string; sticky?: boolean }> = [
-  {
-    label: 'Học viên',
-    className: 'sticky top-0 left-8 z-50 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden bg-muted',
-    sticky: true,
-  },
-  { label: 'Liên hệ', className: 'min-w-40 sticky top-0 z-30 bg-muted' },
-  { label: 'Lịch test', className: 'min-w-44 sticky top-0 z-30 bg-muted' },
-  { label: 'Speaking & LWR', className: 'min-w-52 sticky top-0 z-30 bg-muted' },
-  { label: 'Kết quả', className: 'min-w-36 sticky top-0 z-30 bg-muted' },
-  { label: 'Trạng thái', className: 'w-28 min-w-28 max-w-32 sticky top-0 z-30 bg-muted' },
-  { label: 'Phụ trách', className: 'min-w-52 sticky top-0 z-30 bg-muted' },
-]
 
 export function BookingTestTable({
   bookings,
@@ -52,61 +40,95 @@ export function BookingTestTable({
   onUpdateBooking,
   onCopy,
   onCall,
+  className,
+  pagination,
 }: BookingTestTableProps) {
   const pageIds = bookings.map((booking) => booking.id)
   const isPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id))
 
+  if (bookings.length === 0) {
+    return (
+      <EmptyState
+        icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
+        title="Không tìm thấy dữ liệu"
+        description="Điều chỉnh tìm kiếm hoặc bộ lọc để hiển thị kết quả."
+        className="py-10 border border-border rounded-lg bg-card"
+      />
+    )
+  }
+
   return (
-    <Table
-      containerClassName="min-w-full overflow-visible align-top"
-      className="min-w-[1350px]"
-    >
-      <TableHeader className="sticky top-0 z-40 bg-muted border-b border-border/80 shadow-2xs">
-        <TableRow className="border-b-0 bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground">
-          <TableHead className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 overflow-hidden bg-muted text-center px-1">
-            <Checkbox
-              checked={isPageSelected}
-              onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
-            />
-          </TableHead>
-          {COLUMN_DEFS.map((col) => (
-            <TableHead key={col.label} className={col.className}>
-              {col.label}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody className="[&_tr]:border-b-0">
-        {bookings.length === 0 ? (
-          <TableRow className="border-b-0">
-            <TableCell colSpan={COLUMN_DEFS.length + 1} className="h-48 text-center">
-              <EmptyState
-                icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
-                title="Không có lịch test phù hợp."
-                description="Điều chỉnh tìm kiếm, môn học, trạng thái hoặc bộ lọc."
-                className="py-10"
+    <div className={cn('flex flex-col h-full min-h-0', className)}>
+      <DataTableFrame className="flex-1 min-h-0">
+        <table className="w-full min-w-max text-xs text-left border-separate border-spacing-0">
+          <thead className="sticky top-0 z-40 bg-muted">
+            <tr className="bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground [&>th]:border-b [&>th]:border-border/80 [&>th]:whitespace-nowrap">
+              <th className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 text-center px-1 bg-muted">
+                <Checkbox
+                  checked={isPageSelected}
+                  onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
+                  aria-label="Chọn tất cả"
+                />
+              </th>
+              <th className="sticky top-0 left-8 z-50 w-[220px] min-w-[200px] xl:w-[240px] 2xl:w-[260px] px-2.5 bg-muted text-left border-none">
+                Học viên
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2.5 text-left">
+                Liên hệ
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[175px] min-w-[160px] xl:w-[190px] 2xl:w-[210px] px-2.5 text-left">
+                Lịch test
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[195px] min-w-[180px] xl:w-[210px] 2xl:w-[230px] px-2.5 text-left">
+                Speaking & LWR
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[125px] min-w-[115px] xl:w-[135px] 2xl:w-[145px] px-2 text-left">
+                Kết quả
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[130px] min-w-[120px] xl:w-[140px] 2xl:w-[155px] px-2.5 text-left">
+                Trạng thái
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[170px] min-w-[155px] xl:w-[190px] 2xl:w-[210px] px-2.5 text-left">
+                Phụ trách
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map((booking, index) => (
+              <BookingTestTableRow
+                key={booking.id}
+                booking={booking}
+                bookings={bookings}
+                index={index}
+                isSelected={selectedIds.has(booking.id)}
+                copiedKey={copiedKey}
+                onToggle={onToggleOne}
+                onRowClick={onRowClick}
+                onOpenAssessment={onOpenAssessment}
+                onUpdateBooking={onUpdateBooking}
+                onCopy={onCopy}
+                onCall={onCall}
               />
-            </TableCell>
-          </TableRow>
-        ) : (
-          bookings.map((booking, index) => (
-            <BookingTestTableRow
-              key={booking.id}
-              booking={booking}
-              bookings={bookings}
-              index={index}
-              isSelected={selectedIds.has(booking.id)}
-              copiedKey={copiedKey}
-              onToggle={onToggleOne}
-              onRowClick={onRowClick}
-              onOpenAssessment={onOpenAssessment}
-              onUpdateBooking={onUpdateBooking}
-              onCopy={onCopy}
-              onCall={onCall}
-            />
-          ))
-        )}
-      </TableBody>
-    </Table>
+            ))}
+          </tbody>
+        </table>
+      </DataTableFrame>
+
+      {pagination ? (
+        <div className="shrink-0 pt-1 pb-0">
+          <DataTablePagination
+            page={pagination.page}
+            total={pagination.total}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.onPageChange}
+            onPageSizeChange={pagination.onPageSizeChange}
+            selectedCount={selectedIds.size}
+            onClearSelection={() => onToggleAll(false, pageIds)}
+            size="sm"
+            className="!bg-transparent border-0 border-none shadow-none px-0 py-0"
+          />
+        </div>
+      ) : null}
+    </div>
   )
 }

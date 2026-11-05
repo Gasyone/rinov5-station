@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, Info, AlertCircle, AlertTriangle, Flame } from 'lucide-react'
+import { ExternalLink, Info, AlertCircle, AlertTriangle, Flame, Video, FileText } from 'lucide-react'
 import type { QcIncident } from '@/mocks/qcChecks'
 import {
   QC_TARGET_GROUP_LABELS,
@@ -153,25 +153,62 @@ export function QcIncidentIssuePanel({ incident, onZoomImage }: QcIncidentIssueP
         </p>
       </div>
 
-      {/* Ảnh bằng chứng phẳng, click trực tiếp để mở ảnh */}
-      {incident.evidenceImage && (
-        <div
-          className="relative h-24 sm:h-28 w-full rounded-md overflow-hidden cursor-pointer group"
-          onClick={() => onZoomImage(incident.evidenceImage || '')}
-          title="Bấm để mở ảnh"
-        >
-          <img
-            src={incident.evidenceImage}
-            alt="Bằng chứng hiện trường"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-          />
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-medium">
-            Bấm để mở ảnh
+      {/* Minh chứng vi phạm: File video hoặc ảnh */}
+      {incident.evidence?.toLowerCase().endsWith('.mp4') ? (
+        <div className="space-y-1">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            Minh chứng (Trích xuất camera CCTV):
+          </span>
+          <div className="p-2.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-100 flex items-start gap-2.5">
+            <Video className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-xs font-medium text-zinc-200 break-all">
+                {incident.evidence}
+              </p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Đoạn ghi hình giám sát từ camera tại phòng học / sảnh cơ sở
+              </p>
+            </div>
           </div>
         </div>
-      )}
+      ) : incident.evidenceImage ? (
+        <div className="space-y-1">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            Minh chứng hình ảnh:
+          </span>
+          <div
+            className="relative h-24 sm:h-28 w-full rounded-md overflow-hidden cursor-pointer group border border-border"
+            onClick={() => onZoomImage(incident.evidenceImage || '')}
+            title="Bấm để mở ảnh"
+          >
+            <img
+              src={incident.evidenceImage}
+              alt="Bằng chứng hiện trường"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-medium">
+              Bấm để mở ảnh
+            </div>
+          </div>
+          {incident.evidence && (
+            <p className="font-mono text-[11px] text-muted-foreground truncate">
+              {incident.evidence}
+            </p>
+          )}
+        </div>
+      ) : incident.evidence ? (
+        <div className="space-y-1">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            Minh chứng đính kèm:
+          </span>
+          <div className="p-2 rounded-md bg-muted/40 border border-border/50 text-xs flex items-center gap-2">
+            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="font-mono text-[11px] text-foreground truncate">{incident.evidence}</span>
+          </div>
+        </div>
+      ) : null}
 
-      {incident.evidenceLink && (
+      {incident.evidenceLink && !incident.evidence?.toLowerCase().endsWith('.mp4') && (
         <div>
           <a
             href={incident.evidenceLink}

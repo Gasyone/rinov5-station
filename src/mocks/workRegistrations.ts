@@ -162,14 +162,31 @@ export function getWorkWeekDays(weekStart: Date): Date[] {
   return WORK_WEEKDAYS.map((day) => addWorkDays(weekStart, day.index))
 }
 
+export const WORK_REGISTRATION_MATH_TEACHER_IDS = new Set([
+  // RinoEdu Smart City (13 NS: 7 Toán / 6 Tiếng Anh)
+  'sc2', 'sc6', 'e1', 'e5', 'e9', 'sc3', 'sc4',
+  // RinoEdu Nguyễn Tuân (13 NS: 6 Toán / 7 Tiếng Anh)
+  'e3', 'nt4', 'nt1', 'nt3', 'e6', 'tg_nt1',
+  // RinoEdu Linh Đàm (14 NS: 7 Toán / 7 Tiếng Anh)
+  'ld2', 'ld6', 'ld1', 'ld3', 'ld4', 'e10', 'tg_ld1',
+  // RinoEdu Cầu Giấy (5 NS: 3 Toán / 2 Tiếng Anh)
+  'cg2', 'cg5', 'cg3',
+])
+
 export function getWorkRegistrationEmployees(): WorkRegistrationEmployee[] {
   return mockEmployees
     .filter((employee) => employee.status !== 'resigned')
-    .map((employee, index) => ({
-      ...employee,
-      code: `EMP-${String(index + 1).padStart(3, '0')}`,
-      subjects: index % 2 === 0 ? ['IELTS', 'TOEIC'] : ['Giao tiếp', 'Kids'],
-    }))
+    .map((employee, index) => {
+      // Tab Lịch làm việc 100% là giáo viên - phân bổ môn Toán hoặc Tiếng Anh:
+      const isMath = WORK_REGISTRATION_MATH_TEACHER_IDS.has(employee.id)
+      const subjects = isMath ? ['Toán'] : ['Tiếng Anh']
+
+      return {
+        ...employee,
+        code: 'EMP-' + String(index + 1).padStart(3, '0'),
+        subjects,
+      }
+    })
 }
 
 const employeeBranch = (employeeId: string) =>
@@ -216,8 +233,11 @@ const recordTemplates: Array<{
   { employeeId: 'tg_nt2', dayOffset: 0, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Cả ca Digi
   { employeeId: 'nt4', dayOffset: 0, slotIds: slotRange('evening-1830', 5), status: 'registered' }, // 18:30 - 21:00
   { employeeId: 't4', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'ld1', dayOffset: 0, slotIds: slotRange('morning-0830', 4), status: 'registered' },
   { employeeId: 't5', dayOffset: 0, slotIds: slotRange('afternoon-1300', 9), status: 'registered' },
+  { employeeId: 'tg_ld2', dayOffset: 0, slotIds: [...slotRange('afternoon-1330', 3), ...slotRange('afternoon-1530', 4)], status: 'registered' },
   { employeeId: 'tg_ld1', dayOffset: 0, slotIds: slotRange('evening-1730', 9), status: 'registered' },
+  { employeeId: 'ld2', dayOffset: 0, slotIds: [...slotRange('evening-1730', 4), ...slotRange('evening-2000', 4)], status: 'registered' },
 
   // Thứ 3 (dayOffset: 1)
   { employeeId: 'e1', dayOffset: 1, slotIds: slotRange('morning-0830', 6), status: 'registered' }, // 08:30 - 11:30
@@ -226,7 +246,7 @@ const recordTemplates: Array<{
   { employeeId: 'e3', dayOffset: 1, slotIds: slotRange('afternoon-1300', 9), status: 'registered' },
   { employeeId: 't6', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' },
   { employeeId: 'e5', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' },
-  { employeeId: 'sc2', dayOffset: 1, slotIds: slotRange('morning-0800', 4), status: 'registered' }, // 08:00 - 10:00 (Giờ lẻ)
+  { employeeId: 'sc2', dayOffset: 1, slotIds: [...slotRange('morning-0800', 2), ...slotRange('morning-1000', 2)], status: 'registered' }, // 08:00 - 09:00 & 10:00 - 11:00 (2 khoảng rời nhau)
   { employeeId: 'sc4', dayOffset: 1, slotIds: slotRange('morning-0830', 4), status: 'registered' }, // 08:30 - 10:30 (Giờ lẻ)
   { employeeId: 'e4', dayOffset: 1, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Cả ca chiều
   { employeeId: 'e5', dayOffset: 1, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Cả ca chiều
@@ -237,9 +257,20 @@ const recordTemplates: Array<{
   { employeeId: 'tg_sc1', dayOffset: 1, slotIds: slotRange('evening-1830', 5), status: 'registered' }, // 18:30 - 21:00 (Giờ lẻ)
   { employeeId: 'tg_sc2', dayOffset: 1, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 't2', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't3', dayOffset: 1, slotIds: [...slotRange('morning-0800', 2), ...slotRange('morning-1000', 2)], status: 'registered' }, // 08:00 - 09:00 & 10:00 - 11:00 (2 khoảng rời nhau)
   { employeeId: 'nt4', dayOffset: 1, slotIds: slotRange('morning-0800', 4), status: 'registered' }, // 08:00 - 10:00
   { employeeId: 't3', dayOffset: 1, slotIds: slotRange('afternoon-1300', 9), status: 'registered' },
   { employeeId: 'nt1', dayOffset: 1, slotIds: slotRange('evening-1800', 6), status: 'registered' }, // 18:00 - 21:00
+  // Linh Đàm (Thứ 3)
+  { employeeId: 't5', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Full ca sáng
+  { employeeId: 'tg_ld1', dayOffset: 1, slotIds: slotRange('morning-0800', 4), status: 'registered' }, // 08:00 - 10:00
+  { employeeId: 'ld6', dayOffset: 1, slotIds: slotRange('morning-0800', 6), status: 'registered' }, // 08:00 - 11:00
+  { employeeId: 't5', dayOffset: 1, slotIds: slotRange('afternoon-1330', 6), status: 'registered' }, // 13:30 - 16:30
+  { employeeId: 'ld1', dayOffset: 1, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Full ca chiều
+  { employeeId: 't4', dayOffset: 1, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
+  { employeeId: 'ld1', dayOffset: 1, slotIds: slotRange('evening-1800', 5), status: 'registered' }, // 18:00 - 20:30
+  { employeeId: 'ld2', dayOffset: 1, slotIds: [...slotRange('evening-1730', 4), ...slotRange('evening-2000', 4)], status: 'registered' }, // 17:30 - 19:30 & 20:00 - 22:00 (nhiều khung giờ trong ca!)
+  { employeeId: 'tg_ld2', dayOffset: 1, slotIds: slotRange('evening-1830', 5), status: 'registered' }, // 18:30 - 21:00
 
   // Thứ 4 (dayOffset: 2)
   { employeeId: 'e1', dayOffset: 2, slotIds: slotRange('morning-0800', 6), status: 'registered' }, // 08:00 - 11:00
@@ -260,6 +291,14 @@ const recordTemplates: Array<{
   { employeeId: 'tg_sc1', dayOffset: 2, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 't1', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' },
   { employeeId: 'tg_nt1', dayOffset: 2, slotIds: slotRange('evening-1730', 9), status: 'registered' },
+  // Linh Đàm (Thứ 4)
+  { employeeId: 't4', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Full ca sáng
+  { employeeId: 'tg_ld2', dayOffset: 2, slotIds: [...slotRange('morning-0800', 3), ...slotRange('morning-1000', 4)], status: 'registered' }, // 08:00 - 09:30 & 10:00 - 12:00 (nhiều khung giờ)
+  { employeeId: 'ld2', dayOffset: 2, slotIds: slotRange('morning-0830', 4), status: 'registered' }, // 08:30 - 10:30
+  { employeeId: 'ld1', dayOffset: 2, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Full ca chiều
+  { employeeId: 'tg_ld1', dayOffset: 2, slotIds: slotRange('afternoon-1400', 5), status: 'registered' }, // 14:00 - 16:30
+  { employeeId: 't5', dayOffset: 2, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
+  { employeeId: 'ld6', dayOffset: 2, slotIds: [...slotRange('evening-1800', 4), ...slotRange('evening-2030', 3)], status: 'registered' }, // 18:00 - 20:00 & 20:30 - 22:00 (nhiều khung giờ)
 
   // Thứ 5 (dayOffset: 3)
   { employeeId: 'e1', dayOffset: 3, slotIds: slotRange('afternoon-1330', 6), status: 'registered' }, // 13:30 - 16:30
@@ -277,6 +316,13 @@ const recordTemplates: Array<{
   { employeeId: 't6', dayOffset: 3, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 'e9', dayOffset: 3, slotIds: slotRange('evening-1800', 5), status: 'registered' }, // 18:00 - 20:30 (Giờ lẻ)
   { employeeId: 'tg_sc2', dayOffset: 3, slotIds: slotRange('evening-1730', 9), status: 'registered' },
+  // Linh Đàm (Thứ 5)
+  { employeeId: 'ld1', dayOffset: 3, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Full ca sáng
+  { employeeId: 't5', dayOffset: 3, slotIds: slotRange('morning-0830', 5), status: 'registered' }, // 08:30 - 11:00
+  { employeeId: 't4', dayOffset: 3, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Full ca chiều
+  { employeeId: 'tg_ld3', dayOffset: 3, slotIds: slotRange('afternoon-1330', 6), status: 'registered' }, // 13:30 - 16:30
+  { employeeId: 'tg_ld1', dayOffset: 3, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
+  { employeeId: 'ld2', dayOffset: 3, slotIds: slotRange('evening-1800', 6), status: 'registered' }, // 18:00 - 21:00
 
   // Thứ 6 (dayOffset: 4)
   { employeeId: 'e1', dayOffset: 4, slotIds: slotRange('morning-0900', 5), status: 'registered' }, // 09:00 - 11:30
@@ -294,6 +340,12 @@ const recordTemplates: Array<{
   { employeeId: 't6', dayOffset: 4, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 'sc6', dayOffset: 4, slotIds: slotRange('evening-1800', 6), status: 'registered' }, // 18:00 - 21:00 (Giờ lẻ)
   { employeeId: 'tg_sc1', dayOffset: 4, slotIds: slotRange('evening-1730', 9), status: 'registered' },
+  // Linh Đàm (Thứ 6)
+  { employeeId: 'ld1', dayOffset: 4, slotIds: [...slotRange('morning-0800', 3), ...slotRange('morning-1000', 4)], status: 'registered' }, // 08:00 - 09:30 & 10:00 - 12:00 (nhiều khung giờ)
+  { employeeId: 't5', dayOffset: 4, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Full ca chiều
+  { employeeId: 'tg_ld2', dayOffset: 4, slotIds: [...slotRange('afternoon-1300', 3), ...slotRange('afternoon-1530', 4)], status: 'registered' }, // 13:00 - 14:30 & 15:30 - 17:30 (nhiều khung giờ)
+  { employeeId: 't4', dayOffset: 4, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
+  { employeeId: 'ld6', dayOffset: 4, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
 
   // Thứ 7 & CN (dayOffset: 5 & 6)
   { employeeId: 'e1', dayOffset: 5, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // 08:00 - 12:00
@@ -312,6 +364,14 @@ const recordTemplates: Array<{
   { employeeId: 'sc1', dayOffset: 5, slotIds: slotRange('evening-1800', 6), status: 'registered' }, // 18:00 - 21:00 (Giờ lẻ)
   { employeeId: 'tg_sc1', dayOffset: 5, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 'tg_sc2', dayOffset: 5, slotIds: slotRange('evening-1730', 9), status: 'registered' },
+  // Linh Đàm (Thứ 7)
+  { employeeId: 't4', dayOffset: 5, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Full ca sáng
+  { employeeId: 't5', dayOffset: 5, slotIds: [...slotRange('morning-0830', 3), ...slotRange('morning-1030', 3)], status: 'registered' }, // 08:30 - 10:00 & 10:30 - 12:00 (nhiều khung giờ)
+  { employeeId: 'ld2', dayOffset: 5, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Full ca sáng
+  { employeeId: 'tg_ld1', dayOffset: 5, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Full ca chiều
+  { employeeId: 'ld5', dayOffset: 5, slotIds: slotRange('afternoon-1330', 5), status: 'registered' }, // 13:30 - 16:00
+  { employeeId: 'tg_ld2', dayOffset: 5, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
+  { employeeId: 'ld1', dayOffset: 5, slotIds: slotRange('evening-1800', 6), status: 'registered' }, // 18:00 - 21:00
 
   { employeeId: 'e1', dayOffset: 6, slotIds: slotRange('morning-0830', 6), status: 'registered' }, // 08:30 - 11:30
   { employeeId: 'e3', dayOffset: 6, slotIds: slotRange('morning-0800', 8), status: 'registered' },
@@ -323,6 +383,12 @@ const recordTemplates: Array<{
   { employeeId: 'e4', dayOffset: 6, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 't6', dayOffset: 6, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 'tg_sc2', dayOffset: 6, slotIds: slotRange('evening-1730', 9), status: 'registered' },
+  // Linh Đàm (Chủ nhật)
+  { employeeId: 'tg_ld1', dayOffset: 6, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Full ca sáng
+  { employeeId: 'ld1', dayOffset: 6, slotIds: [...slotRange('morning-0830', 3), ...slotRange('morning-1030', 3)], status: 'registered' }, // 08:30 - 10:00 & 10:30 - 12:00 (nhiều khung giờ)
+  { employeeId: 't4', dayOffset: 6, slotIds: slotRange('afternoon-1300', 9), status: 'registered' }, // Full ca chiều
+  { employeeId: 't5', dayOffset: 6, slotIds: slotRange('evening-1730', 9), status: 'registered' }, // Full ca tối
+  { employeeId: 'ld2', dayOffset: 6, slotIds: slotRange('evening-1800', 5), status: 'registered' }, // 18:00 - 20:30
 ]
 
 function slotRange(startSlotId: string, count: number): string[] {

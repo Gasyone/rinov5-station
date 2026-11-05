@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
   Send,
   AlertCircle,
   Clock,
+  Building2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { SupportTicket, TicketInteractionLog } from '@/mocks/tickets'
@@ -66,7 +67,7 @@ export function SupportTicketsDetailDialog({
   onAddInteraction,
 }: SupportTicketsDetailDialogProps) {
   const [newChannel, setNewChannel] = useState<TicketInteractionLog['channel']>('phone')
-  const [newStaffName, setNewStaffName] = useState('CSM Minh Phương')
+  const [newStaffName, setNewStaffName] = useState('AnhNTN33')
   const [newNotes, setNewNotes] = useState('')
 
   if (!ticket) return null
@@ -102,7 +103,7 @@ export function SupportTicketsDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-card">
+      <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto bg-card">
         <DialogHeader className="border-b pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
             <div className="flex items-center gap-2">
@@ -143,10 +144,39 @@ export function SupportTicketsDetailDialog({
 
         <div className="space-y-4 py-2">
           {/* Thông tin chính */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-muted/30 p-3 rounded-lg border text-xs">
-            <InfoField label="Học viên" value={`${ticket.studentName} (${ticket.studentCode})`} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-muted/30 p-3 rounded-lg border text-xs">
             <InfoField
-              label="Phân loại"
+              label="Học viên"
+              value={`${ticket.studentName} (${ticket.studentCode})`}
+            />
+            <InfoField
+              label="Số điện thoại"
+              value={
+                ticket.studentPhone ? (
+                  <a
+                    href={`tel:${ticket.studentPhone}`}
+                    className="text-primary hover:underline font-mono inline-flex items-center gap-1"
+                    title="Gọi cho học viên/phụ huynh"
+                  >
+                    <Phone className="h-3 w-3" />
+                    {ticket.studentPhone}
+                  </a>
+                ) : (
+                  '-'
+                )
+              }
+            />
+            <InfoField
+              label="Cơ sở tiếp nhận"
+              value={
+                <span className="inline-flex items-center gap-1 text-foreground">
+                  <Building2 className="h-3 w-3 text-muted-foreground" />
+                  {ticket.branch ?? 'Cơ sở chính'}
+                </span>
+              }
+            />
+            <InfoField
+              label="Phân loại nghiệp vụ"
               value={CATEGORY_LABELS[ticket.category] ?? ticket.category}
             />
             <InfoField
@@ -166,7 +196,7 @@ export function SupportTicketsDetailDialog({
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
               Mô tả chi tiết sự việc / yêu cầu
             </h4>
-            <div className="p-3 rounded-md bg-muted/20 border text-xs text-foreground leading-relaxed">
+            <div className="p-3 rounded-md bg-muted/20 border text-xs text-foreground leading-relaxed whitespace-pre-line">
               {ticket.description}
             </div>
           </div>

@@ -13,11 +13,15 @@ import {
   QC_ERROR_SEVERITY_LABELS,
   QC_ERROR_STATUS_LABELS,
 } from '@/mocks/qcChecks'
+import { formatStaffName } from './qcPersonnelHelpers'
+import type { QcPersonnelGroup } from './qcPersonnelTypes'
 
 export const BRANCH_OPTIONS = [
-  'RinoEdu Nguyễn Tuân',
-  'RinoEdu Linh Đàm',
-  'RinoEdu Smart City',
+  '170 Nguyễn Tuân',
+  'Linh Đàm',
+  'Vin SA1',
+  'Tonkin',
+  'KDV',
 ]
 
 export function formatShortDate(dateStr?: string, includeYear = true): string {
@@ -283,4 +287,57 @@ export function matchesIncidentSearch(inc: QcIncident, query: string): boolean {
     inc.assignee.toLowerCase().includes(q)
   )
 }
+
+export function getRelatedDetailIncidents(
+  detailIncident: QcIncident | null,
+  currentPersonnelGroup: QcPersonnelGroup | null,
+  incidents: QcIncident[],
+  mockIncidents: QcIncident[]
+): QcIncident[] {
+  if (!detailIncident) return []
+  const map = new Map<string, QcIncident>()
+
+  // 1. Luôn đưa toàn bộ incidents của personnelGroup đang xem vào trước tiên
+  if (currentPersonnelGroup?.incidents) {
+    currentPersonnelGroup.incidents.forEach((inc) => {
+      map.set(inc.id, inc)
+    })
+  }
+
+  if (!map.has(detailIncident.id)) {
+    map.set(detailIncident.id, detailIncident)
+  }
+
+  const cleanTargetName = formatStaffName(
+    currentPersonnelGroup?.cleanName ||
+    detailIncident.teacherName ||
+    detailIncident.assignee ||
+    detailIncident.csmName
+  )
+  const branch = currentPersonnelGroup?.branch || detailIncident.branch
+
+  // Bổ sung dữ liệu sự cố từ mock data & incidents cùng nhân sự
+  mockIncidents.forEach((i) => {
+    const name = formatStaffName(i.teacherName || i.assignee || i.csmName)
+    if (name === cleanTargetName && (!branch || i.branch === branch)) {
+      map.set(i.id, i)
+    }
+  })
+
+  incidents.forEach((i) => {
+    const name = formatStaffName(i.teacherName || i.assignee || i.csmName)
+    if (name === cleanTargetName && (!branch || i.branch === branch)) {
+      map.set(i.id, i)
+    }
+  })
+
+  const results = Array.from(map.values())
+  results.sort((a, b) => {
+    const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    if (timeDiff !== 0) return timeDiff
+    return a.id.localeCompare(b.id)
+  })
+  return results.length > 0 ? results : [detailIncident]
+}
+
 

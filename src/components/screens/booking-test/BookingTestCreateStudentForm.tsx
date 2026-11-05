@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
-import { ExternalLink, MapPin, Plus } from 'lucide-react'
+import React, { useState } from 'react'
+import { Check, Copy, ExternalLink, MapPin, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import { FieldLabel } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { InlineSelect, type ToolbarSelectOption } from '@/components/controls'
@@ -67,6 +68,30 @@ export function BookingTestCreateStudentForm({
   className,
 }: BookingTestCreateStudentFormProps) {
   const selectedChild = selectedContactObj?.children.find((c) => c.id === childId)
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null)
+
+  const handleCopyPhone = async (phoneToCopy: string) => {
+    if (!phoneToCopy || phoneToCopy === '---') return
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(phoneToCopy)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = phoneToCopy
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+      }
+      setCopiedPhone(phoneToCopy)
+      setTimeout(() => setCopiedPhone(null), 2000)
+      toast.success(`Đã sao chép số điện thoại: ${phoneToCopy}`)
+    } catch {
+      toast.error('Không thể sao chép số điện thoại')
+    }
+  }
 
   return (
     <div
@@ -92,7 +117,27 @@ export function BookingTestCreateStudentForm({
                     ({leadInfo.parentRole || 'Mẹ'})
                   </span>
                 </span>
-                <span className="text-muted-foreground font-medium text-xs tabular-nums">{leadInfo.phone}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground font-normal text-xs tabular-nums">{leadInfo.phone}</span>
+                  {leadInfo.phone && leadInfo.phone !== '---' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleCopyPhone(leadInfo.phone)
+                      }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                      title="Sao chép số điện thoại phụ huynh"
+                    >
+                      {copiedPhone === leadInfo.phone ? (
+                        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
               {leadInfo.address && (
                 <div className="flex items-center justify-between gap-1.5 text-xs text-muted-foreground/80">
@@ -137,13 +182,13 @@ export function BookingTestCreateStudentForm({
               <div className="space-y-1 text-xs">
                 <div className="flex items-start justify-between gap-1">
                   <span className="text-muted-foreground shrink-0">Trường:</span>
-                  <span className="font-medium text-foreground text-right truncate">
+                  <span className="font-normal text-muted-foreground text-right truncate">
                     {leadInfo.currentSchool || 'Tiểu học Lương Định Của (Quận 3)'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-muted-foreground shrink-0">Học lực:</span>
-                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                  <span className="font-normal text-muted-foreground text-right">
                     {leadInfo.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu'}
                   </span>
                 </div>
@@ -234,13 +279,13 @@ export function BookingTestCreateStudentForm({
                   </div>
                   <div className="flex items-start justify-between gap-2 text-xs">
                     <span className="text-muted-foreground shrink-0">Trường:</span>
-                    <span className="font-medium text-foreground text-right truncate">
+                    <span className="font-normal text-muted-foreground text-right truncate">
                       {selectedChild.currentSchool || 'Tiểu học Lương Định Của (Quận 3)'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-2 text-xs">
                     <span className="text-muted-foreground shrink-0">Học lực:</span>
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                    <span className="font-normal text-muted-foreground text-right">
                       {selectedChild.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu'}
                     </span>
                   </div>

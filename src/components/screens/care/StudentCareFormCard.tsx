@@ -711,12 +711,7 @@ export function StudentCareFormCard({
                         setChatChannel('telephone')
                         if (setCallOutcome) setCallOutcome('nghe_may')
                         setIsCallActive(true)
-                        startCall({
-                          studentId: student?.studentId || 's1',
-                          studentName: student?.studentName || 'Alex (Nguyễn An)',
-                          parentPhone: activeContactPhone,
-                          parentName: formatContactDisplayName(selectedContact.name, selectedContact.relationship),
-                        })
+                        toast.info(`Đang kết nối cuộc gọi tới ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})...`)
                       }}
                       className={cn(
                         'h-6 px-2.5 text-xs font-medium rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-xs shrink-0',
@@ -1026,12 +1021,7 @@ export function StudentCareFormCard({
                         setChatChannel('telephone')
                         if (setCallOutcome) setCallOutcome('nghe_may')
                         setIsCallActive(true)
-                        startCall({
-                          studentId: student?.studentId || 's1',
-                          studentName: student?.studentName || 'Alex (Nguyễn An)',
-                          parentPhone: activeContactPhone,
-                          parentName: formatContactDisplayName(selectedContact.name, selectedContact.relationship),
-                        })
+                        toast.info(`Đang kết nối cuộc gọi tới ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})...`)
                       }}
                       className={cn(
                         'h-6 px-2.5 text-xs font-medium rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-xs shrink-0',

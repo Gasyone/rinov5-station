@@ -1,9 +1,10 @@
 import type { ScheduleGridItem } from '@/components/screens/schedule/ScheduleTimeGrid'
-import type { LessonContent } from '@/mocks/calendarSchedule'
+import type { ClassSession, LessonContent } from '@/mocks/calendarSchedule'
 
 export interface UnifiedSlot extends ScheduleGridItem {
   id: string
   scheduleType: 'class' | 'event'
+  rawClassSession?: ClassSession
   title: string
   subtitle: string
   className?: string
@@ -50,5 +51,3 @@ export interface MyScheduleFilters {
   roomFilters: string[]
   conditionFilters: string[]
 }
-
-export type ScheduleLayoutType = 'matrix' | 'schedule_1d'

@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { mockLeads } from '@/mocks/crmLeads'
 import type { BookingTest } from '@/mocks/bookingTests'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 interface BookingTestSuccessSummaryViewProps {
   booking: BookingTest
@@ -42,11 +43,44 @@ export function BookingTestSuccessSummaryView({
   schoolAddress,
   dateLabel,
   timeRange,
-  onCreateAnother,
+  onCreateAnother: _onCreateAnother,
 }: BookingTestSuccessSummaryViewProps) {
   const router = useRouter()
+  const user = useAuthStore((s) => s.user)
   const [isCopied, setIsCopied] = useState(false)
+  const [isPhoneCopied, setIsPhoneCopied] = useState(false)
   const displayPhone = booking.phone || '---'
+
+  const displayCreator =
+    booking.createdBy && booking.createdBy !== 'Người dùng hiện tại' && booking.createdBy !== 'Demo User'
+      ? booking.createdBy
+      : user?.name && user.name !== 'Người dùng hiện tại' && user.name !== 'Demo User'
+      ? user.name
+      : (leadId ? mockLeads.find((l) => l.id === leadId)?.assignedTo : undefined) ||
+        'Trần Thị Mai (Tư vấn tuyển sinh)'
+
+  const handleCopyPhone = async (phoneToCopy: string) => {
+    if (!phoneToCopy || phoneToCopy === '---') return
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(phoneToCopy)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = phoneToCopy
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+      }
+      setIsPhoneCopied(true)
+      setTimeout(() => setIsPhoneCopied(false), 2000)
+      toast.success(`Đã sao chép số điện thoại: ${phoneToCopy}`)
+    } catch {
+      toast.error('Không thể sao chép số điện thoại')
+    }
+  }
 
   // Xác định vai trò phụ huynh (Bố / Mẹ / Phụ huynh)
   const resolvedRole =
@@ -75,8 +109,8 @@ export function BookingTestSuccessSummaryView({
   const displayTeacher = booking.teacher || booking.tester || 'Bộ phận chuyên môn phân công'
   const displayLevel = booking.testResult?.level || booking.expectedLevel || 'Chưa phân cấp'
 
-  // Biên soạn nội dung tin nhắn Zalo chuẩn bị gửi cho phụ huynh (gọn gàng, dễ đọc)
-  const zaloMessage = [
+  // Biên soạn nội dung tin nhắn Zalo chuẩn bị gửi cho phụ huynh (gọn gàng, dễ đọc, có thể chỉnh sửa)
+  const defaultZaloMessage = React.useMemo(() => [
     `🌟 XÁC NHẬN LỊCH ĐÁNH GIÁ NĂNG LỰC - RINOEDU 🌟`,
     `Kính gửi Quý phụ huynh ${displayParentName !== 'Chưa gán' ? displayParentName : (booking.familyName || booking.familyMembers?.[0]?.name || '')},`,
     `Hệ thống RinoEdu xin gửi xác nhận thông tin lịch hẹn đánh giá năng lực của con:`,
@@ -90,15 +124,17 @@ export function BookingTestSuccessSummaryView({
     ``,
     `👉 Lưu ý: Ba/Mẹ vui lòng đưa bé đến trước giờ hẹn 10 - 15 phút để bé làm quen phòng học và chuẩn bị tâm lý thoải mái nhất nhé ạ.`,
     `RinoEdu trân trọng cảm ơn Ba/Mẹ! ❤️`,
-  ].join('\n')
+  ].join('\n'), [displayParentName, booking, displayLevel, displayTime, displayDate, schoolAddress, displayTeacher])
+
+  const [messageContent, setMessageContent] = useState(defaultZaloMessage)
 
   const handleCopyZalo = async () => {
     try {
       if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(zaloMessage)
+        await navigator.clipboard.writeText(messageContent)
       } else {
         const textArea = document.createElement('textarea')
-        textArea.value = zaloMessage
+        textArea.value = messageContent
         textArea.style.position = 'fixed'
         textArea.style.opacity = '0'
         document.body.appendChild(textArea)
@@ -140,7 +176,7 @@ export function BookingTestSuccessSummaryView({
           </div>
         </div>
 
-        {/* Mã phiếu & Action copy Zalo nhanh */}
+        {/* Mã phiếu & Action về danh sách */}
         <div className="flex items-center gap-2.5 self-stretch sm:self-auto justify-between sm:justify-end border-t sm:border-t-0 pt-1.5 sm:pt-0 border-emerald-200/60 shrink-0">
           <div className="text-left sm:text-right">
             <span className="text-[9.5px] uppercase tracking-wider text-muted-foreground block font-medium leading-none">
@@ -158,24 +194,6 @@ export function BookingTestSuccessSummaryView({
             className="h-7 px-2.5 text-xs font-medium border-emerald-300 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950 cursor-pointer shadow-xs shrink-0"
           >
             Về danh sách
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleCopyZalo}
-            className="h-7 px-2.5 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs shrink-0"
-          >
-            {isCopied ? (
-              <>
-                <Check className="h-3.5 w-3.5" />
-                <span>Đã sao chép</span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5" />
-                <span>Sao chép Zalo</span>
-              </>
-            )}
           </Button>
         </div>
       </div>
@@ -282,7 +300,7 @@ export function BookingTestSuccessSummaryView({
                   onClick={() => router.push(`/app/crm_leads/${leadId}`)}
                   className="h-6 px-2 text-xs font-semibold gap-1 text-primary hover:text-primary hover:bg-primary/10 border-primary/30 cursor-pointer shadow-2xs"
                 >
-                  <span>Xem chi tiết hồ sơ Lead</span>
+                  <span>Xem hồ sơ Lead</span>
                   <ExternalLink className="h-3 w-3" />
                 </Button>
               ) : (
@@ -331,12 +349,30 @@ export function BookingTestSuccessSummaryView({
                   <span className="font-mono font-medium text-foreground text-xs">
                     {displayPhone}
                   </span>
+                  {displayPhone && displayPhone !== '---' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleCopyPhone(displayPhone)
+                      }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                      title="Sao chép số điện thoại"
+                    >
+                      {isPhoneCopied ? (
+                        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
               <div className="pt-1.5 border-t border-border/40 text-xs text-muted-foreground flex items-center justify-between gap-2">
                 <span className="truncate">
-                  Người tạo: <strong className="font-medium text-foreground">{booking.createdBy || 'Người dùng hiện tại'}</strong>
+                  Người tạo: <strong className="font-medium text-foreground">{displayCreator}</strong>
                 </span>
                 <span className="font-medium text-amber-600 dark:text-amber-400 shrink-0">
                   Chờ đến hẹn
@@ -350,18 +386,21 @@ export function BookingTestSuccessSummaryView({
         <div className="lg:col-span-7 flex flex-col">
           <div className="rounded-lg border border-border/80 bg-card p-3.5 space-y-2.5 shadow-2xs flex flex-col h-full">
             <div className="flex items-center justify-between border-b border-border/60 pb-1.5">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <MessageSquare className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                <h3 className="font-bold text-xs text-foreground">
+                <h3 className="font-bold text-xs text-foreground truncate">
                   Mẫu tin nhắn Zalo gửi Phụ huynh
                 </h3>
+                <span className="text-[10px] text-muted-foreground font-normal hidden sm:inline">
+                  (Có thể chỉnh sửa)
+                </span>
               </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleCopyZalo}
-                className="h-6 px-2 text-xs font-semibold gap-1 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-300 dark:text-emerald-300 dark:hover:bg-emerald-950/40 cursor-pointer"
+                className="h-6 px-2 text-xs font-semibold gap-1 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-300 dark:text-emerald-300 dark:hover:bg-emerald-950/40 cursor-pointer shrink-0"
               >
                 {isCopied ? (
                   <>
@@ -377,9 +416,12 @@ export function BookingTestSuccessSummaryView({
               </Button>
             </div>
 
-            <div className="relative rounded-lg bg-muted/40 border border-border/60 p-3 sm:p-3.5 font-mono text-[11.5px] sm:text-xs text-foreground leading-relaxed whitespace-pre-line select-all flex-1 min-h-[320px] sm:min-h-[340px]">
-              {zaloMessage}
-            </div>
+            <textarea
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
+              className="w-full flex-1 rounded-lg bg-muted/40 border border-border/60 p-3 sm:p-3.5 font-mono text-[11.5px] sm:text-xs text-foreground leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 min-h-[320px] sm:min-h-[340px] resize-y"
+              placeholder="Nhập nội dung tin nhắn gửi Zalo cho phụ huynh..."
+            />
           </div>
         </div>
       </div>
