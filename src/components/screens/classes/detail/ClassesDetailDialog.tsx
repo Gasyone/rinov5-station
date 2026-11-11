@@ -33,7 +33,7 @@ export function ClassesDetailDialog({
   onSave,
   onStatusChange,
 }: ClassesDetailDialogProps) {
-  if (!cls) return null
+  if (!cls || !open) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

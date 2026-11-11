@@ -10,30 +10,35 @@ import {
   type SemesterStudentEval,
   splitStudentName,
 } from './classesSemesterEvaluationHelpers'
+import { SEMESTER_EVAL_I18N, type EvaluationLang } from './classesSemesterEvaluationI18n'
 
 interface ClassesSemesterEvaluationTableProps {
   displayedStudents: RosterStudent[]
   evalMap: Record<string, SemesterStudentEval>
   onEditStudent: (studentId: string) => void
+  lang?: EvaluationLang
 }
 
 export function ClassesSemesterEvaluationTable({
   displayedStudents,
   evalMap,
   onEditStudent,
+  lang = 'vi',
 }: ClassesSemesterEvaluationTableProps) {
+  const t = SEMESTER_EVAL_I18N[lang]
+
   return (
     <div className="flex-1 overflow-auto p-3.5 sm:p-4 bg-white dark:bg-zinc-950">
       <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-2xs">
         <table className="w-full text-xs text-left border-collapse">
           <thead className="bg-zinc-50 dark:bg-zinc-800/50 sticky top-0 border-b border-zinc-200 dark:border-zinc-800 z-10">
             <tr>
-              <th className="py-2.5 px-3.5 font-bold text-zinc-600 dark:text-zinc-400">Student Name</th>
-              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Attitude / Ý thức</th>
-              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Knowledge / Kiến thức</th>
-              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Skills / Kỹ năng</th>
-              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Interaction / Tương tác</th>
-              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400 text-center w-[90px]">Action</th>
+              <th className="py-2.5 px-3.5 font-bold text-zinc-600 dark:text-zinc-400">{t.tableColStudent}</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">{t.tableColAttitude}</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">{t.tableColKnowledge}</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">{t.tableColSkills}</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">{t.tableColInteraction}</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400 text-center w-[90px]">{t.tableColAction}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">

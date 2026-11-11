@@ -113,7 +113,6 @@ export function StudentCareChatFeed({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const [lastStudentId, setLastStudentId] = useState<string | null>(null)
   const [completedTopics] = useState<string[]>([])
   
   // States for Pinned Tags design
@@ -125,14 +124,6 @@ export function StudentCareChatFeed({
   const [isFormCollapsed, setIsFormCollapsed] = useState(false)
   const [showAllTags, setShowAllTags] = useState(false)
   const [careMode, setCareMode] = useState<CareMode>(initialMode || 'regular')
-  const [prevInitialMode, setPrevInitialMode] = useState(initialMode)
-  const [prevStudentId, setPrevStudentId] = useState(student.studentId)
-
-  if (initialMode !== prevInitialMode || student.studentId !== prevStudentId) {
-    setPrevInitialMode(initialMode)
-    setPrevStudentId(student.studentId)
-    setCareMode(initialMode || 'regular')
-  }
 
   const isCaredStatus = student ? isCared(student) : false
 
@@ -164,11 +155,6 @@ export function StudentCareChatFeed({
     }
   }, [showParentOpinion, expandedTopicCode, isFormCollapsed])
 
-  // Reset student states when student changes
-  if (student.studentId !== lastStudentId) {
-    setLastStudentId(student.studentId)
-    setExpandedTopicCode(null)
-  }
 
   const generatedTopics = useMemo(() => {
     return getCareTopicsForStudent(student)

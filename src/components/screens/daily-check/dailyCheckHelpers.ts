@@ -263,34 +263,61 @@ export function buildDynamicSubmissions({
 
       if (isToday) {
         // Today morning evaluation
-        const daytimeItems: DailyAreaResult[] = activeMorningItems.map((it) => {
+        const evaluatedItems = activeMorningItems.filter((it) => {
           const key = `${branch}-dau_ca-${it.detail}`
-          const manual = manualEvals[key]
-
-          // Default fallback for other branches is pass, but CS1 Linh Đàm starts pending if not yet checked
-          const status: DailyItemEvaluation = manual
-            ? manual
-            : branch === 'CS1 Linh Đàm'
-            ? 'pass' // when user has checked or defaulted
-            : 'pass'
-
-          const evidenceKey = `${branch}-dau_ca-2026-10-29-${it.detail}`
-          const photos = itemEvidence[evidenceKey] || []
-
-          return {
-            key: it.stt,
-            name: it.detail,
-            status,
-            photos,
-            note: status === 'fail' ? 'Cần kiểm tra khắc phục tiêu chuẩn' : undefined,
-          }
+          return manualEvals[key] !== undefined
         })
 
-        // For CS1 Linh Đàm, check if user actually interacted with manualEvals
-        const hasCS1Evaluated = Object.keys(manualEvals).some((k) => k.startsWith(`${branch}-dau_ca`))
-        const shouldIncludeTodayMorning = branch !== 'CS1 Linh Đàm' || hasCS1Evaluated
+        // For branches with manual evaluations or other branches in demo
+        if (branch === 'CS1 Linh Đàm') {
+          if (evaluatedItems.length > 0) {
+            const daytimeItems: DailyAreaResult[] = evaluatedItems.map((it) => {
+              const key = `${branch}-dau_ca-${it.detail}`
+              const status: DailyItemEvaluation = manualEvals[key]!
+              const evidenceKey = `${branch}-dau_ca-2026-10-29-${it.detail}`
+              const photos = itemEvidence[evidenceKey] || []
+              return {
+                key: it.stt,
+                name: it.detail,
+                status,
+                photos,
+                note: status === 'fail' ? 'Cần kiểm tra khắc phục tiêu chuẩn' : undefined,
+              }
+            })
+            const failedItemsCount = daytimeItems.filter((i) => i.status === 'fail').length
+            const passCount = daytimeItems.length - failedItemsCount
+            const passRate = daytimeItems.length > 0 ? Math.round((passCount / daytimeItems.length) * 100) : 100
 
-        if (shouldIncludeTodayMorning) {
+            result.push({
+              id: `chk_${branch.replace(/\s+/g, '_')}_dau_ca_20261029`,
+              timestamp: '2026-10-29 08:15:00',
+              date: '2026-10-29',
+              branch,
+              staffName: currentStaffName,
+              shift: 'dau_ca',
+              status: failedItemsCount === 0 ? 'on_time' : 'late',
+              daytimeItems,
+              closingItems: [],
+              passRate,
+              failedItemsCount,
+            })
+          }
+        } else {
+          // Other branches: demo fallback
+          const daytimeItems: DailyAreaResult[] = activeMorningItems.map((it) => {
+            const key = `${branch}-dau_ca-${it.detail}`
+            const manual = manualEvals[key]
+            const status: DailyItemEvaluation = manual || 'pass'
+            const evidenceKey = `${branch}-dau_ca-2026-10-29-${it.detail}`
+            const photos = itemEvidence[evidenceKey] || []
+            return {
+              key: it.stt,
+              name: it.detail,
+              status,
+              photos,
+              note: status === 'fail' ? 'Cần kiểm tra khắc phục tiêu chuẩn' : undefined,
+            }
+          })
           const failedItemsCount = daytimeItems.filter((i) => i.status === 'fail').length
           const passCount = daytimeItems.length - failedItemsCount
           const passRate = daytimeItems.length > 0 ? Math.round((passCount / daytimeItems.length) * 100) : 100
@@ -364,36 +391,74 @@ export function buildDynamicSubmissions({
       )
 
       if (isToday) {
-        // Today evening: only include if evaluated in Tự đánh giá
-        const hasEvaluatedNight = Object.keys(manualEvals).some((k) => k.startsWith(`${branch}-cuoi_ca`))
-        if (hasEvaluatedNight) {
-          const closingItems: DailyClosingResult[] = activeClosingTasks.map((t) => {
-            const key = `${branch}-cuoi_ca-${t.name}`
-            const isPass = manualEvals[key] === 'pass'
-            return {
-              id: t.id,
-              name: t.name,
-              status: isPass ? 'done' : 'not_done',
-              note: !isPass ? 'Chưa hoàn tất công việc cuối ca' : undefined,
-            }
-          })
-          const failedItemsCount = closingItems.filter((i) => i.status === 'not_done').length
-          const passCount = closingItems.length - failedItemsCount
-          const passRate = closingItems.length > 0 ? Math.round((passCount / closingItems.length) * 100) : 100
+        // Today evening: only include evaluated tasks for this branch
+        const branchEveningEvaluated = activeClosingTasks.filter((t) => {
+          const key = `${branch}-cuoi_ca-${t.name}`
+          return manualEvals[key] !== undefined
+        })
 
-          result.push({
-            id: `chk_${branch.replace(/\s+/g, '_')}_cuoi_ca_20261029`,
-            timestamp: '2026-10-29 20:30:00',
-            date: '2026-10-29',
-            branch,
-            staffName: currentStaffName,
-            shift: 'cuoi_ca',
-            status: failedItemsCount === 0 ? 'on_time' : 'late',
-            daytimeItems: [],
-            closingItems,
-            passRate,
-            failedItemsCount,
-          })
+        if (branch === 'CS1 Linh Đàm') {
+          if (branchEveningEvaluated.length > 0) {
+            const closingItems: DailyClosingResult[] = branchEveningEvaluated.map((t) => {
+              const key = `${branch}-cuoi_ca-${t.name}`
+              const isPass = manualEvals[key] === 'pass'
+              return {
+                id: t.id,
+                name: t.name,
+                status: isPass ? 'done' : 'not_done',
+                note: !isPass ? 'Chưa hoàn tất công việc cuối ca' : undefined,
+              }
+            })
+            const failedItemsCount = closingItems.filter((i) => i.status === 'not_done').length
+            const passCount = closingItems.length - failedItemsCount
+            const passRate = closingItems.length > 0 ? Math.round((passCount / closingItems.length) * 100) : 100
+
+            result.push({
+              id: `chk_${branch.replace(/\s+/g, '_')}_cuoi_ca_20261029`,
+              timestamp: '2026-10-29 20:30:00',
+              date: '2026-10-29',
+              branch,
+              staffName: currentStaffName,
+              shift: 'cuoi_ca',
+              status: failedItemsCount === 0 ? 'on_time' : 'late',
+              daytimeItems: [],
+              closingItems,
+              passRate,
+              failedItemsCount,
+            })
+          }
+        } else {
+          // Other branches
+          const hasEvaluatedNight = Object.keys(manualEvals).some((k) => k.startsWith(`${branch}-cuoi_ca`))
+          if (hasEvaluatedNight) {
+            const closingItems: DailyClosingResult[] = activeClosingTasks.map((t) => {
+              const key = `${branch}-cuoi_ca-${t.name}`
+              const isPass = manualEvals[key] !== 'fail'
+              return {
+                id: t.id,
+                name: t.name,
+                status: isPass ? 'done' : 'not_done',
+                note: !isPass ? 'Chưa hoàn tất công việc cuối ca' : undefined,
+              }
+            })
+            const failedItemsCount = closingItems.filter((i) => i.status === 'not_done').length
+            const passCount = closingItems.length - failedItemsCount
+            const passRate = closingItems.length > 0 ? Math.round((passCount / closingItems.length) * 100) : 100
+
+            result.push({
+              id: `chk_${branch.replace(/\s+/g, '_')}_cuoi_ca_20261029`,
+              timestamp: '2026-10-29 20:30:00',
+              date: '2026-10-29',
+              branch,
+              staffName: currentStaffName,
+              shift: 'cuoi_ca',
+              status: failedItemsCount === 0 ? 'on_time' : 'late',
+              daytimeItems: [],
+              closingItems,
+              passRate,
+              failedItemsCount,
+            })
+          }
         }
       } else {
         // Past days (T2, T3, T4)

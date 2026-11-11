@@ -7,7 +7,6 @@ import {
   type DailyCheckShift,
 } from '@/mocks/dailyCheck'
 import { buildDynamicSubmissions } from './dailyCheckHelpers'
-import { DailyCheckBranchOverviewStrip } from './DailyCheckBranchOverviewStrip'
 import { DailyCheckExecutionView } from './DailyCheckExecutionView'
 import { DailyCheckCatalogDialog } from './DailyCheckCatalogDialog'
 import type { SkippedCriterionItem } from './DailyCheckSkippedSection'
@@ -43,15 +42,7 @@ export function DailyCheckScreen() {
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-2 px-2 py-2 lg:px-3 text-left">
-      {/* ─── SECTION 1: DẢI GIÁM SÁT 5 CƠ SỞ TRÊN CÙNG (NHẤT THỂ HÓA 1 MÀN HÌNH, THU GỌN ĐƯỢC) ─── */}
-      <DailyCheckBranchOverviewStrip
-        submissions={computedSubmissions}
-        selectedBranch={executionBranch}
-        onSelectBranch={setExecutionBranch}
-        currentDateStr="2026-10-29"
-      />
-
-      {/* ─── SECTION 2: BẢNG MA TRẬN THỰC THI & TIÊU CHUẨN 9 KHU VỰC ─── */}
+      {/* ─── BẢNG MA TRẬN THỰC THI & TIÊU CHUẨN 9 KHU VỰC ─── */}
       <div className="flex-1 min-h-0 flex flex-col">
         <DailyCheckExecutionView
           submissions={computedSubmissions}

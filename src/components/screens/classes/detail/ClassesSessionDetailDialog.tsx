@@ -390,16 +390,18 @@ export function ClassesSessionDetailDialog({
               <Play className="h-3 w-3 fill-current shrink-0" />
               <span>Vào ca dạy (Live)</span>
             </Button>
-            {isTestSession && !isMath && (
+            {(isTestSession || session.hasSemesterEvaluation) && (!isMath || session.hasSemesterEvaluation) && (
               <Button
                 type="button"
                 size="xs"
                 onClick={() => setIsSemesterEvalOpen(true)}
                 disabled={session.status === 'cancelled' || session.status === 'absent'}
-                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-xs rounded-md cursor-pointer mr-0.5"
+                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2.5 h-6.5 text-xs rounded-md cursor-pointer mr-0.5"
+                title="Mở giao diện Đánh giá cuối kỳ học viên"
               >
-                <ClipboardCheck className="h-3 w-3 shrink-0" />
-                Semester Eval ({completedEvalCount}/{activeRoster.length})
+                <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />
+                <span>Đánh giá cuối kỳ</span>
+                <span className="text-[11px] opacity-90 font-medium">({completedEvalCount}/{activeRoster.length})</span>
               </Button>
             )}
 

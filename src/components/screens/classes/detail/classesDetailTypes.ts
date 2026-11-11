@@ -74,6 +74,7 @@ export interface RoadmapSession {
   cancelDescription?: string
   type?: string
   projectUrl?: string
+  hasSemesterEvaluation?: boolean
 }
 
 export interface ClassNote {

@@ -1,6 +1,7 @@
 'use client'
 
 import { type Dispatch, type SetStateAction } from 'react'
+import { toast } from 'sonner'
 import type { BookingTest } from '@/mocks/bookingTests'
 import {
   applyBookingCheckIn,
@@ -16,7 +17,6 @@ import {
 } from './bookingTestAssessmentStorage'
 import {
   buildSampleAssessmentDraft,
-  hasAssessmentDraftContent,
 } from './bookingTestAssessmentSamples'
 import type { AssessmentDraft } from './bookingTestTypes'
 
@@ -100,12 +100,38 @@ export function useBookingTestActions(deps: ActionDeps) {
 
     const storedDraft = readStoredAssessmentDraft(bookingId)
     const sampleDraft = buildSampleAssessmentDraft(next)
-    deps.setAssessmentDraft(
-      (storedDraft && hasAssessmentDraftContent(storedDraft) ? storedDraft : null) ??
-        sampleDraft ??
-        storedDraft ??
-        buildEmptyAssessmentDraft(next)
+
+    // Kiểm tra draft đã lưu có đầy đủ tiêu chí điểm và nhận xét hay không
+    const isStoredComplete = Boolean(
+      storedDraft &&
+      Object.keys(storedDraft.scoreSelections || {}).length >= 8 &&
+      Object.values(storedDraft.scoreSelections || {}).some((v) => typeof v === 'number') &&
+      Object.keys(storedDraft.feedbackAnswers || {}).length > 0
     )
+
+    const initialDraft: AssessmentDraft =
+      (isStoredComplete ? storedDraft : null) ??
+      sampleDraft ??
+      storedDraft ??
+      buildEmptyAssessmentDraft(next)
+
+    // Đảm bảo luôn nạp đầy đủ điểm tiêu chí và nhận xét chi tiết nếu ca đã được đánh giá
+    if (sampleDraft) {
+      if (!initialDraft.generalComment) {
+        initialDraft.generalComment = sampleDraft.generalComment || sampleDraft.oldForm?.generalComment || ''
+      }
+      if (Object.keys(initialDraft.feedbackAnswers || {}).length === 0) {
+        initialDraft.feedbackAnswers = sampleDraft.feedbackAnswers
+      }
+      if (!initialDraft.weaknesses || initialDraft.weaknesses.length === 0) {
+        initialDraft.weaknesses = sampleDraft.weaknesses
+      }
+      if (Object.keys(initialDraft.scoreSelections || {}).length === 0) {
+        initialDraft.scoreSelections = sampleDraft.scoreSelections
+      }
+    }
+
+    deps.setAssessmentDraft(initialDraft)
     deps.setAssessmentBookingId(bookingId)
   }
 
@@ -115,21 +141,59 @@ export function useBookingTestActions(deps: ActionDeps) {
     if (!deps.assessmentBooking) return
     const draft = deps.assessmentDraft
     const summary = summarizeAssessmentDraft(draft)
-    writeStoredAssessmentDraft(deps.assessmentBooking.id, draft)
+    const nextSpeaking =
+      summary.answeredCount > 0
+        ? summary.speaking
+        : draft.speaking || deps.assessmentBooking.testResult?.speaking
+    const nextLevel =
+      draft.level || summary.level || deps.assessmentBooking.testResult?.level
+    const nextSpeakingScore =
+      deps.assessmentBooking.testResult?.speakingScore ||
+      (summary.answeredCount > 0
+        ? summary.answeredCount >= 7
+          ? '1.5'
+          : summary.answeredCount >= 5
+            ? '1.0'
+            : '0.5'
+        : '0')
+
+    const commentText = draft.generalComment || draft.oldForm?.generalComment || ''
+    const updatedDraft: AssessmentDraft = {
+      ...draft,
+      speaking: nextSpeaking || '',
+      level: nextLevel || '',
+      generalComment: commentText,
+    }
+    writeStoredAssessmentDraft(deps.assessmentBooking.id, updatedDraft)
 
     updateBooking(deps.assessmentBooking.id, (booking) => {
+      const existingNotes = booking.notes || []
+      const updatedNotes = commentText
+        ? [
+            ...existingNotes.filter((n) => n.author !== deps.authorName),
+            {
+              text: commentText,
+              author: deps.authorName,
+              timestamp: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            },
+          ]
+        : existingNotes
+
       const updated: BookingTest = {
         ...booking,
         status: booking.status === 'booked_assessment' ? 'checkin' : booking.status,
         attendance: 'confirmed',
         isInterviewed: true,
         isTested: true,
+        notes: updatedNotes,
+        msg: commentText || booking.msg,
         resultLink: booking.resultLink || getBookingResultHref(booking.id),
         testResult: {
           ...booking.testResult,
-          level: draft.level || summary.level || booking.testResult?.level,
+          level: nextLevel,
           subLevel: draft.subLevel || booking.testResult?.subLevel,
-          speaking: draft.speaking || summary.speaking || booking.testResult?.speaking,
+          speaking: nextSpeaking,
+          speakingScore: nextSpeakingScore,
           lwr: draft.lwr || booking.testResult?.lwr,
           path: draft.path || booking.testResult?.path,
         },
@@ -137,6 +201,7 @@ export function useBookingTestActions(deps: ActionDeps) {
       writeStoredBookingResult(updated)
       return updated
     })
+    toast.success(`Đã cập nhật kết quả đánh giá cho ${deps.assessmentBooking.childName}`)
     deps.setAssessmentBookingId('')
   }
 

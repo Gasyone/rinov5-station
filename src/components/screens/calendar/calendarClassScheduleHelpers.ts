@@ -151,6 +151,7 @@ export function filterSessions(
         if (cond === 'opening') return Boolean(session.isOpeningDay)
         if (cond === 'has_assistant') return Boolean(session.assistantTeacher)
         if (cond === 'cancelled') return session.status === 'cancelled'
+        if (cond === 'semester_eval') return Boolean(session.hasSemesterEvaluation)
         return false
       })
       if (!matches) return false
@@ -194,7 +195,15 @@ export function filterSessions(
       session.teacher.toLowerCase().includes(query) ||
       Boolean(session.substituteTeacher && session.substituteTeacher.toLowerCase().includes(query)) ||
       session.title.toLowerCase().includes(query) ||
-      session.classCode.toLowerCase().includes(query)
+      session.classCode.toLowerCase().includes(query) ||
+      (Boolean(session.hasSemesterEvaluation) && (
+        query.includes('đánh giá') ||
+        query.includes('danh gia') ||
+        query.includes('cuối kỳ') ||
+        query.includes('cuoi ky') ||
+        query.includes('semester') ||
+        query.includes('eval')
+      ))
     )
   })
 }

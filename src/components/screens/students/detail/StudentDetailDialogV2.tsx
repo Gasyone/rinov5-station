@@ -414,86 +414,89 @@ export function StudentDetailDialogV2({
         <div className="flex flex-col lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px] min-h-0 flex-1 gap-2 lg:gap-2.5 overflow-y-auto lg:overflow-hidden">
           {/* CỘT TRÁI: TAB CHƯƠNG TRÌNH/GÓI HỌC (SÁT HEADER) + TIẾN TRÌNH HỌC TẬP & LỚP HỌC */}
           <div className="flex min-h-0 flex-col space-y-2 pr-0 lg:pr-1 lg:overflow-y-auto scrollbar-thin shrink-0 lg:shrink">
-            {/* 1. KHUNG SECTION GÓI HỌC: Đóng khung cả cụm, có button thu gọn/mở rộng ở giữa dưới tab gói (mặc định thường đóng) */}
+            {/* 1. KHUNG SECTION GÓI HỌC VÀ TIẾN TRÌNH XẾP LỚP (BỐ CỤC ĐỒNG BỘ 2 NHÓM) */}
             {(() => {
               const currentProgId = selectedProgram?.id || programs[0]?.id || ''
-              const isPackageInfoExpanded = Boolean(expandedProgramIds[currentProgId])
+              const isExpanded = Boolean(expandedProgramIds[currentProgId])
 
               return (
-                <div className="relative rounded-xl border border-border/80 bg-card px-1.5 py-1.5 sm:px-2 sm:py-2 shadow-2xs text-left shrink-0 mb-3">
-                  {/* Tab các gói học (ở trên, luôn có đường line ở dưới) */}
-                  <div className="pb-1.5 sm:pb-2 border-b border-border/50 -mx-1.5 sm:-mx-2 px-1.5 sm:px-2">
-                    <StudentDetailProgramsBar
-                      programs={programs}
-                      selectedProgramId={currentProgId}
-                      onSelectProgram={setSelectedProgramId}
-                      historicalPackages={student.id === 's-baohan' ? defaultHistoricalOldPackages : []}
-                    />
-                  </div>
-
-                  {/* Thông tin chi tiết gói học đang chọn (Dòng 1 Tên gói học luôn hiển thị ở chế độ thu gọn; Dòng 2 & 3 hiển thị khi mở rộng) */}
-                  {selectedProgram && (
-                    <div className="pt-1.5 pb-2 sm:pb-2.5">
-                      <StudentProgramQuotaSummaryCard
-                        program={selectedProgram}
-                        studentBranch={student.branch}
-                        isExpanded={isPackageInfoExpanded}
-                        onOpenRenewalDetail={() => setIsRenewalDetailOpen(true)}
-                        onEditSessions={() => setIsEditSessionsOpen(true)}
+                <div className="space-y-2">
+                  <div className="relative rounded-xl border border-border/80 bg-card px-1.5 py-1.5 sm:px-2 sm:py-2 shadow-2xs text-left shrink-0 mb-3">
+                    {/* Tab các gói học (ở trên, luôn có đường line ở dưới) */}
+                    <div className="pb-1.5 sm:pb-2 border-b border-border/50 -mx-1.5 sm:-mx-2 px-1.5 sm:px-2">
+                      <StudentDetailProgramsBar
+                        programs={programs}
+                        selectedProgramId={currentProgId}
+                        onSelectProgram={setSelectedProgramId}
+                        historicalPackages={student.id === 's-baohan' ? defaultHistoricalOldPackages : []}
                       />
                     </div>
-                  )}
 
-                  {/* Button thu gọn / mở rộng nằm ở giữa cạnh dưới cùng của section, bám theo cạnh đáy */}
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setExpandedProgramIds((prev) => ({
-                          ...prev,
-                          [currentProgId]: !prev[currentProgId],
-                        }))
-                      }}
-                      className="inline-flex items-center gap-1 rounded-full border border-border/80 bg-background px-2.5 py-0.5 text-[10.5px] font-normal text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/40 transition-colors cursor-pointer shadow-3xs select-none"
-                      title={isPackageInfoExpanded ? 'Thu gọn thông tin gói học' : 'Mở rộng thông tin gói học'}
-                      aria-expanded={isPackageInfoExpanded}
-                    >
-                      <span>{isPackageInfoExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
-                      {isPackageInfoExpanded ? (
-                        <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                      )}
-                    </button>
+                    {/* Thông tin chi tiết gói học đang chọn (Dòng 1 + Dòng 2 luôn hiển thị; Dòng 3 Quota nghỉ & Hạn dự kiến hiển thị khi mở rộng) */}
+                    {selectedProgram && (
+                      <div className="pt-1.5 pb-2 sm:pb-2.5">
+                        <StudentProgramQuotaSummaryCard
+                          program={selectedProgram}
+                          studentBranch={student.branch}
+                          isExpanded={isExpanded}
+                          onOpenRenewalDetail={() => setIsRenewalDetailOpen(true)}
+                          onEditSessions={() => setIsEditSessionsOpen(true)}
+                        />
+                      </div>
+                    )}
+
+                    {/* Button thu gọn / mở rộng nằm ở giữa cạnh dưới cùng của section, điều khiển mở rộng CẢ 2 NHÓM: Gói học & Xếp lớp */}
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setExpandedProgramIds((prev) => ({
+                            ...prev,
+                            [currentProgId]: !prev[currentProgId],
+                          }))
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full border border-border/80 bg-background px-3 py-0.5 text-[10.5px] font-medium text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/40 transition-all cursor-pointer shadow-3xs select-none active:scale-95"
+                        title={isExpanded ? 'Thu gọn chi tiết gói học và lớp học' : 'Mở rộng chi tiết gói học và lớp học'}
+                        aria-expanded={isExpanded}
+                      >
+                        <span>{isExpanded ? 'Thu gọn chi tiết' : 'Mở rộng chi tiết'}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
                   </div>
+
+                  {/* 2. Tiến trình học tập, Lớp hiện tại, Cơ sở phụ trách, Cấn trừ buổi, Thao tác, Lịch sử lớp */}
+                  {selectedProgram && (
+                    <StudentDetailAcademicColumn
+                      program={selectedProgram}
+                      studentName={student.name}
+                      studentCode={studentCode}
+                      studentBranch={student.branch}
+                      studentLevel={selectedProgram.level || student.level}
+                      activeDeductingPackage={activeDeductingPackage}
+                      nextQueuedPackage={nextQueuedPackage}
+                      isExpanded={isExpanded}
+                      onOpenAssignClass={(pkgId) => handleOpenAssignForPackage(pkgId)}
+                      onLeaveClass={() => {
+                        setCreateLeaveReserveType('off')
+                        setIsCreateLeaveReserveOpen(true)
+                      }}
+                      onReserveClass={() => {
+                        setCreateLeaveReserveType('reservation')
+                        setIsCreateLeaveReserveOpen(true)
+                      }}
+                      onDropClass={() => setIsConfirmDropOpen(true)}
+                      onOpenRenewalDetail={() => setIsRenewalDetailOpen(true)}
+                      onOpenEarlyReturn={() => setIsEarlyReturnOpen(true)}
+                    />
+                  )}
                 </div>
               )
             })()}
-
-            {/* 3. Tiến trình học tập, Lớp hiện tại, Cơ sở phụ trách, Cấn trừ buổi, Thao tác, Lịch sử lớp */}
-            {selectedProgram && (
-              <StudentDetailAcademicColumn
-                program={selectedProgram}
-                studentName={student.name}
-                studentCode={studentCode}
-                studentBranch={student.branch}
-                studentLevel={selectedProgram.level || student.level}
-                activeDeductingPackage={activeDeductingPackage}
-                nextQueuedPackage={nextQueuedPackage}
-                onOpenAssignClass={(pkgId) => handleOpenAssignForPackage(pkgId)}
-                onLeaveClass={() => {
-                  setCreateLeaveReserveType('off')
-                  setIsCreateLeaveReserveOpen(true)
-                }}
-                onReserveClass={() => {
-                  setCreateLeaveReserveType('reservation')
-                  setIsCreateLeaveReserveOpen(true)
-                }}
-                onDropClass={() => setIsConfirmDropOpen(true)}
-                onOpenRenewalDetail={() => setIsRenewalDetailOpen(true)}
-                onOpenEarlyReturn={() => setIsEarlyReturnOpen(true)}
-              />
-            )}
           </div>
 
           {/* CỘT PHẢI: HỒ SƠ HỌC VIÊN (TRÊN CÙNG) + TRÌNH ĐỘ MỤC TIÊU + KHUNG GIỜ + VÍ GÓI HỌC */}
@@ -520,7 +523,7 @@ export function StudentDetailDialogV2({
       </DialogContent>
 
       {/* Dialog: Chi tiết màn Tái phí (StudentCareDetailDialog) */}
-      {student && (
+      {student && isRenewalDetailOpen && (
         <StudentCareDetailDialog
           studentId={student.id}
           open={isRenewalDetailOpen}
@@ -531,29 +534,33 @@ export function StudentDetailDialogV2({
       )}
 
       {/* Dialog: Chỉnh sửa Khung giờ học viên rảnh */}
-      <StudentDetailScheduleSlotsDialog
-        open={isEditScheduleSlotsOpen}
-        onOpenChange={setIsEditScheduleSlotsOpen}
-        initialSlots={selectedProgram?.availableSlots || []}
-        onSave={handleSaveScheduleSlots}
-      />
+      {isEditScheduleSlotsOpen && (
+        <StudentDetailScheduleSlotsDialog
+          open={isEditScheduleSlotsOpen}
+          onOpenChange={setIsEditScheduleSlotsOpen}
+          initialSlots={selectedProgram?.availableSlots || []}
+          onSave={handleSaveScheduleSlots}
+        />
+      )}
 
       {/* Dialog: Chỉnh sửa Trình độ & Thông tin */}
-      <StudentDetailLevelDialog
-        open={isEditLevelOpen}
-        onOpenChange={setIsEditLevelOpen}
-        initialLevel={selectedProgram?.level || student?.level || ''}
-        initialSubLevel={selectedProgram?.subLevel || student?.subLevel || ''}
-        initialSchoolClass={student?.schoolClass || 'Lớp 6'}
-        isEnglish={
-          selectedProgram?.subject === 'english' ||
-          Boolean(selectedProgram?.name.toLowerCase().includes('tiếng anh'))
-        }
-        onSave={handleSaveLevel}
-      />
+      {isEditLevelOpen && (
+        <StudentDetailLevelDialog
+          open={isEditLevelOpen}
+          onOpenChange={setIsEditLevelOpen}
+          initialLevel={selectedProgram?.level || student?.level || ''}
+          initialSubLevel={selectedProgram?.subLevel || student?.subLevel || ''}
+          initialSchoolClass={student?.schoolClass || 'Lớp 6'}
+          isEnglish={
+            selectedProgram?.subject === 'english' ||
+            Boolean(selectedProgram?.name.toLowerCase().includes('tiếng anh'))
+          }
+          onSave={handleSaveLevel}
+        />
+      )}
 
       {/* Dialog: Chỉnh sửa thông tin cá nhân & Ảnh học viên */}
-      {student && (
+      {student && isEditProfileOpen && (
         <StudentDetailEditProfileDialog
           open={isEditProfileOpen}
           onOpenChange={setIsEditProfileOpen}
@@ -569,20 +576,22 @@ export function StudentDetailDialogV2({
       )}
 
       {/* Dialog: Cập nhật số buổi học ở TỔNG chương trình */}
-      <StudentDetailSessionsDialog
-        open={isEditSessionsOpen}
-        onOpenChange={setIsEditSessionsOpen}
-        totalSessions={selectedProgram?.totalSessions || 24}
-        initialStudiedSessions={
-          selectedProgram
-            ? selectedProgram.studiedSessions ?? Math.max(0, selectedProgram.totalSessions - selectedProgram.remainingSessions)
-            : 0
-        }
-        onSave={handleSaveSessions}
-      />
+      {isEditSessionsOpen && (
+        <StudentDetailSessionsDialog
+          open={isEditSessionsOpen}
+          onOpenChange={setIsEditSessionsOpen}
+          totalSessions={selectedProgram?.totalSessions || 24}
+          initialStudiedSessions={
+            selectedProgram
+              ? selectedProgram.studiedSessions ?? Math.max(0, selectedProgram.totalSessions - selectedProgram.remainingSessions)
+              : 0
+          }
+          onSave={handleSaveSessions}
+        />
+      )}
 
       {/* Dialog: Chọn ghép / chuyển lớp học */}
-      {selectedProgram && (
+      {selectedProgram && isAssignOpen && (
         <StudentClassAssignmentDialog
           open={isAssignOpen}
           onOpenChange={(val) => {
@@ -626,7 +635,7 @@ export function StudentDetailDialogV2({
       />
 
       {/* Dialog: Tạo đơn nghỉ phép / bảo lưu */}
-      {student && (
+      {student && isCreateLeaveReserveOpen && (
         <LeaveReserveCreateDialog
           key={`${student.id}-${createLeaveReserveType}`}
           open={isCreateLeaveReserveOpen}
@@ -638,7 +647,7 @@ export function StudentDetailDialogV2({
       )}
 
       {/* Dialog: Xác nhận đi học lại sớm (khi đang bảo lưu) */}
-      {student && (
+      {student && isEarlyReturnOpen && (
         <StudentCareEarlyReturnDialog
           key={`early-return-${student.id}`}
           open={isEarlyReturnOpen}

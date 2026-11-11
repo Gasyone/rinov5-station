@@ -24,6 +24,7 @@ export interface ClassSession {
   assistantSubstitute?: string;
   status?: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'rescheduled';
   isOpeningDay?: boolean;
+  hasSemesterEvaluation?: boolean;
   ratingAverage?: number;
   ratingCount?: number;
   homeworkSubmitted?: number;
@@ -77,6 +78,7 @@ interface LessonItem {
   type: 'class_session' | 'test_session' | 'supplementary' | 'workshop' | 'project'
   typeLabel: string
   projectUrl?: string
+  hasSemesterEvaluation?: boolean
   content: LessonContent
 }
 
@@ -185,6 +187,20 @@ const LESSONS: Record<string, LessonItem[]> = {
         words: 'eco-friendly, solar power, green spaces, recycling, skyscraper',
         sentences: 'Welcome to our Eco-City project. In our city, there are solar buildings and electric vehicles.',
         phonics: 'Presentation skills and public speaking intonation',
+      },
+    },
+    {
+      title: 'Đánh giá cuối kỳ: Semester Evaluation & Final Review',
+      subtitle: 'Đánh giá năng lực cuối kỳ & tổng kết lộ trình',
+      sessionNumber: 9,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      hasSemesterEvaluation: true,
+      content: {
+        sessionNumber: 9,
+        words: 'comprehensive vocabulary & grammar review',
+        sentences: 'Final Semester Evaluation: 4-Skill Assessment & Progress Feedback',
+        phonics: 'Graduation fluency and pronunciation review',
       },
     },
   ],
@@ -307,6 +323,22 @@ const LESSONS: Record<string, LessonItem[]> = {
           { label: 'Dự án', text: 'Chế tạo mô hình công trình 3D từ các khối lăng trụ, chóp, hộp' },
           { label: 'Ứng dụng', text: 'Tính toán diện tích mặt đáy và diện tích xung quanh' },
           { label: 'Thuyết trình', text: 'Báo cáo giải pháp mê cung toán học tối ưu' },
+        ],
+      },
+    },
+    {
+      title: 'Đánh giá cuối kỳ: Tổng kết năng lực tư duy toán học',
+      subtitle: 'Đánh giá năng lực cuối kỳ & bảng nhận xét chi tiết',
+      sessionNumber: 9,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      hasSemesterEvaluation: true,
+      content: {
+        sessionNumber: 9,
+        sections: [
+          { label: 'Phạm vi', text: 'Đánh giá tổng hợp năng lực tư duy cuối khóa' },
+          { label: 'Hình thức', text: 'Bài kiểm tra chuẩn hóa và phỏng vấn tư duy 1-1' },
+          { label: 'Nhận xét', text: 'Bảng đánh giá năng lực cuối kỳ chi tiết gửi phụ huynh' },
         ],
       },
     },
@@ -498,6 +530,7 @@ export function getMockClassSessions(): ClassSession[] {
         return date
       }
       const curMonday = getMon(today)
+      const monKey = toDateKey(curMonday)
       const tueKey = toDateKey(addDays(curMonday, 1))
       const wedKey = toDateKey(addDays(curMonday, 2))
       const thuKey = toDateKey(addDays(curMonday, 3))
@@ -515,29 +548,34 @@ export function getMockClassSessions(): ClassSession[] {
 
       // Guaranteed opening day sessions covering all branches throughout the week
       const isOpening =
-        (dateStr === tueKey && cls.id === 'SA1_KD_000') ||     // RinoEdu Linh Đàm (Tuesday 29/09)
-        (dateStr === tueKey && cls.id === 'AK_TOAN_017') ||    // RinoEdu Smart City (Tuesday 29/09)
-        (dateStr === wedKey && cls.id === 'AK_TA_012') ||      // RinoEdu Nguyễn Tuân (Wednesday 30/09)
-        (dateStr === wedKey && cls.id === 'STEM_ROBO_003') ||  // RinoEdu Linh Đàm (Wednesday 30/09)
-        (dateStr === thuKey && cls.id === 'SA1_TA_001') ||     // RinoEdu Smart City (Thursday 01/10)
-        (dateStr === friKey && cls.id === 'SA2_TA_014') ||     // RinoEdu Linh Đàm (Friday 02/10)
-        (dateStr === friKey && cls.id === 'AK_TOAN_016') ||    // RinoEdu Nguyễn Tuân (Friday 02/10)
-        (dateStr === satKey && cls.id === 'AK_TA_WK01') ||     // RinoEdu Linh Đàm (Saturday 03/10)
-        (dateStr === satKey && cls.id === 'AK_TOAN_WK02') ||   // RinoEdu Smart City (Saturday 03/10)
+        (dateStr === tueKey && cls.id === 'SA1_KD_000') ||     // RinoEdu Linh Đàm (Tuesday)
+        (dateStr === tueKey && cls.id === 'AK_TOAN_017') ||    // RinoEdu Smart City (Tuesday)
+        (dateStr === wedKey && cls.id === 'AK_TA_012') ||      // RinoEdu Nguyễn Tuân (Wednesday)
+        (dateStr === wedKey && cls.id === 'STEM_ROBO_003') ||  // RinoEdu Linh Đàm (Wednesday)
+        (dateStr === satKey && cls.id === 'AK_TA_WK01') ||     // RinoEdu Linh Đàm (Saturday)
         (dateStr === prevWedKey && cls.id === 'AK_TA_012') ||
         (dateStr === prevFriKey && cls.id === 'AK_TOAN_021') ||
-        (dateStr === nextTueKey && cls.id === 'SA1_KD_000') ||
         (dateStr === nextWedKey && cls.id === 'STEM_ROBO_003') ||
-        (dateStr === nextFriKey && cls.id === 'SA2_TA_014') ||
         (dateStr === nextSatKey && cls.id === 'AK_TA_WK01')
 
+      // Guaranteed semester evaluation sessions covering branches in active week & adjacent weeks
+      const isSemesterEval =
+        Boolean(lesson.hasSemesterEvaluation) ||
+        (dateStr === monKey && cls.id === 'AK_TA_012') ||   // RinoEdu Nguyễn Tuân (Monday)
+        (dateStr === thuKey && cls.id === 'SA1_TA_001') ||    // RinoEdu Smart City (Thursday)
+        (dateStr === friKey && cls.id === 'SA2_TA_014') ||    // RinoEdu Linh Đàm (Friday)
+        (dateStr === friKey && cls.id === 'AK_TOAN_016') ||   // RinoEdu Nguyễn Tuân (Friday)
+        (dateStr === satKey && cls.id === 'AK_TOAN_WK02') ||  // RinoEdu Smart City (Saturday)
+        (dateStr === nextTueKey && cls.id === 'SA1_KD_000') ||
+        (dateStr === nextFriKey && cls.id === 'AK_TOAN_021')
+
       let assignedBranch = PICK(BRANCHES, seed)
-      // Pin branch for guaranteed opening day sessions to ensure multi-branch coverage
+      // Pin branch for guaranteed opening day and semester evaluation sessions
       if ((dateStr === tueKey || dateStr === nextTueKey) && cls.id === 'SA1_KD_000') {
         assignedBranch = 'RinoEdu Linh Đàm'
       } else if (dateStr === tueKey && cls.id === 'AK_TOAN_017') {
         assignedBranch = 'RinoEdu Smart City'
-      } else if ((dateStr === wedKey || dateStr === prevWedKey) && cls.id === 'AK_TA_012') {
+      } else if ((dateStr === wedKey || dateStr === prevWedKey || dateStr === monKey) && cls.id === 'AK_TA_012') {
         assignedBranch = 'RinoEdu Nguyễn Tuân'
       } else if ((dateStr === wedKey || dateStr === nextWedKey) && cls.id === 'STEM_ROBO_003') {
         assignedBranch = 'RinoEdu Linh Đàm'
@@ -553,7 +591,7 @@ export function getMockClassSessions(): ClassSession[] {
         assignedBranch = 'RinoEdu Smart City'
       }
 
-      if (isOpening && sts === 'cancelled') {
+      if ((isOpening || isSemesterEval) && sts === 'cancelled') {
         sts = bucket === 'past' ? 'completed' : 'confirmed'
       }
 
@@ -565,9 +603,23 @@ export function getMockClassSessions(): ClassSession[] {
       const ratingAverage = ratingCount > 0 ? Number((4.5 + ((seed % 6) * 0.1)).toFixed(1)) : undefined
       const homeworkSubmitted = bucket === 'upcoming' || sts === 'cancelled' ? 0 : Math.max(0, totalStudents - (seed % 5))
 
-      const lessonTitle = lesson.title
-      const lessonSubtitle = lesson.subtitle
-      const lessonNumber = isOpening ? 1 : lesson.sessionNumber
+      let finalTitle = lesson.title
+      let finalSubtitle = lesson.subtitle
+      let finalType = type
+      let finalTypeLabel = typeLabel
+      let finalLessonNumber = isOpening ? 1 : lesson.sessionNumber
+
+      if (isSemesterEval) {
+        finalType = 'test_session'
+        finalTypeLabel = 'Buổi kiểm tra'
+        finalLessonNumber = 9
+        if (!finalTitle.includes('Đánh giá cuối kỳ')) {
+          finalTitle = cls.subject.includes('Toán')
+            ? 'Đánh giá cuối kỳ: Tổng kết năng lực tư duy toán học'
+            : 'Đánh giá cuối kỳ: Semester Evaluation & Final Review'
+          finalSubtitle = 'Đánh giá năng lực cuối kỳ & tổng kết lộ trình'
+        }
+      }
 
       return {
         id: `CLS-${cls.id}-${dateStr}`, classCode: cls.id, className: cls.name,
@@ -578,9 +630,10 @@ export function getMockClassSessions(): ClassSession[] {
         date: dateStr, dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
         dateBucket: bucket, timeLabel: `${PAD(sh)}:${PAD(sm)}`, endTimeLabel: `${PAD(eh)}:${PAD(em)}`,
         scheduleLabel: cls.schedule, status: sts as ClassSession['status'], statusLabel: statusLabelMap[sts],
-        type, typeLabel,
-        title: lessonTitle, lessonSubtitle,
-        lessonNumber,
+        type: finalType, typeLabel: finalTypeLabel,
+        title: finalTitle, lessonSubtitle: finalSubtitle,
+        lessonNumber: finalLessonNumber,
+        hasSemesterEvaluation: isSemesterEval || undefined,
         lessonContent: lesson.content,
         projectUrl: lesson.projectUrl,
         totalStudents, officialStudents: 8 + (seed % 5), trialStudents, makeUpStudents,

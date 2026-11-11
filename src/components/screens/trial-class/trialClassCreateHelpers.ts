@@ -25,12 +25,13 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
   mockLeads.forEach((lead) => {
     const pName = lead.parentName || `Phụ huynh ${lead.studentName}`
     const pPhone = lead.phone || '0900000000'
-    const key = `lead_${pName}_${pPhone}`
+    const key = `${pName}_${pPhone}`
 
     if (!map.has(key)) {
       map.set(key, {
         id: key,
         name: pName,
+        role: lead.parentRole || 'Mẹ',
         phone: pPhone,
         source: `Lead CRM (${lead.source || 'Tư vấn'})`,
         isFromLead: true,
@@ -40,15 +41,47 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
     }
 
     const contact = map.get(key)!
-    if (!contact.children.some((c) => c.name === lead.studentName || c.id === lead.id)) {
+    if (lead.address && !contact.address) {
+      contact.address = lead.address
+    }
+    if (lead.parentRole && !contact.role) {
+      contact.role = lead.parentRole
+    }
+
+    const childKey = `lead_child_${lead.id}`
+    if (!contact.children.some((c) => c.name === lead.studentName || c.id === childKey || c.id === lead.id)) {
       contact.children.push({
-        id: lead.id,
+        id: childKey,
         name: lead.studentName,
-        dob: lead.birthYear ? String(lead.birthYear) : (lead.studentAge ? `${lead.studentAge} tuổi` : undefined),
+        dob: lead.birthYear ? `01/01/${lead.birthYear}` : undefined,
+        age: lead.studentAge,
+        currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
+        academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
         targetSubject: lead.targetSubject,
         branch: lead.branch,
         isFromLead: true,
         leadId: lead.id,
+      })
+    }
+
+    // Include otherChildren if mentioned in lead
+    if (lead.otherChildren && Array.isArray(lead.otherChildren)) {
+      lead.otherChildren.forEach((other, idx) => {
+        const otherKey = `lead_child_${lead.id}_other_${idx}`
+        if (!contact.children.some((c) => c.name === other.name)) {
+          contact.children.push({
+            id: otherKey,
+            name: other.name,
+            dob: other.birthYear ? `01/01/${other.birthYear}` : undefined,
+            age: other.age,
+            currentSchool: other.school || 'Tiểu học Lương Định Của (Quận 3)',
+            academicPerformance: 'Khá / Đang rèn luyện thêm',
+            targetSubject: other.targetSubject,
+            branch: lead.branch,
+            isFromLead: true,
+            leadId: lead.id,
+          })
+        }
       })
     }
 
@@ -63,6 +96,7 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
             targetSubject: lead.targetSubject,
             branch: lead.branch,
             isFromLead: true,
+            leadId: lead.id,
           })
         }
       })
@@ -79,6 +113,7 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
       map.set(key, {
         id: key,
         name: pName,
+        role: 'Phụ huynh',
         phone: pPhone,
         source: 'Học viên Station',
         isFromLead: false,
@@ -106,6 +141,7 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
       map.set(key, {
         id: key,
         name: contact.name,
+        role: 'Phụ huynh',
         phone: contact.phone,
         source: 'Danh bạ chung',
         isFromLead: false,

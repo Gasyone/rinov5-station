@@ -13,7 +13,8 @@ export default function MenuErrorPage({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('MenuPage error:', error)
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'SSR'
+    console.error(`MenuPage error at ${currentUrl}:`, error?.stack || error)
   }, [error])
 
   const isChunkError =

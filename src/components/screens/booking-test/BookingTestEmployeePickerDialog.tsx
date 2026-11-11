@@ -102,12 +102,12 @@ export function BookingTestEmployeePickerDialog({
       if (!employeeMatchesTab(employee, activeTab)) return false
       
       if (!query) return true
+      const roleLabel = isTeacherLikeEmployee(employee) ? 'giáo viên' : 'khác'
       const haystack = [
         employee.name,
         employee.email,
         employee.phone,
-        employee.position,
-        employee.department,
+        roleLabel,
       ]
         .join(' ')
         .toLowerCase()
@@ -150,7 +150,7 @@ export function BookingTestEmployeePickerDialog({
             <Input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Tìm tên, chức danh..."
+              placeholder="Tìm kiếm nhân sự..."
               className="h-7.5 pl-8 pr-2.5 text-xs bg-background shadow-2xs"
             />
           </div>
@@ -178,55 +178,52 @@ export function BookingTestEmployeePickerDialog({
                   bookings
                 )
                 const statusColorSet = getStatusColors(availability.statusSemantic)
+                const personItem = {
+                  id: employee.id,
+                  name: employee.name,
+                  role: getPersonTitle(employee),
+                  avatar: employee.avatar,
+                  phone: employee.phone,
+                  email: employee.email,
+                }
 
                 return (
-                  <div
+                  <PersonnelHoverCard
                     key={employee.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      if (availability.isBusy && availability.conflictDetail) {
-                        toast.warning(
-                          `Giáo viên ${employee.name} hiện đang bận: ${availability.conflictDetail}. Đã gán theo chỉ định.`
-                        )
-                      }
-                      onSelect(employee)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
+                    person={personItem}
+                    side="right"
+                    align="start"
+                  >
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
                         if (availability.isBusy && availability.conflictDetail) {
                           toast.warning(
                             `Giáo viên ${employee.name} hiện đang bận: ${availability.conflictDetail}. Đã gán theo chỉ định.`
                           )
                         }
                         onSelect(employee)
-                      }
-                    }}
-                    className={cn(
-                      'group flex items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-1.5 text-left transition-all duration-150 cursor-pointer',
-                      'hover:border-border/80 hover:bg-muted/40',
-                      selected ? 'border-primary/50 bg-primary/5 shadow-2xs font-medium' : '',
-                      availability.isBusy ? 'hover:bg-rose-500/5' : ''
-                    )}
-                  >
-                    <PersonnelHoverCard
-                      person={{
-                        id: employee.id,
-                        name: employee.name,
-                        role: getPersonTitle(employee),
-                        avatar: employee.avatar,
-                        phone: employee.phone,
-                        email: employee.email,
                       }}
-                      align="start"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          if (availability.isBusy && availability.conflictDetail) {
+                            toast.warning(
+                              `Giáo viên ${employee.name} hiện đang bận: ${availability.conflictDetail}. Đã gán theo chỉ định.`
+                            )
+                          }
+                          onSelect(employee)
+                        }
+                      }}
+                      className={cn(
+                        'group flex items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-1.5 text-left transition-all duration-150 cursor-pointer',
+                        'hover:border-border/80 hover:bg-muted/40',
+                        selected ? 'border-primary/50 bg-primary/5 shadow-2xs font-medium' : '',
+                        availability.isBusy ? 'hover:bg-rose-500/5' : ''
+                      )}
                     >
-                      <div
-                        className="shrink-0 transition-transform group-hover:scale-105"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                      >
+                      <div className="shrink-0 transition-transform group-hover:scale-105">
                         <AppAvatar
                           src={employee.avatar}
                           name={employee.name}
@@ -236,41 +233,41 @@ export function BookingTestEmployeePickerDialog({
                           userType="teacher"
                         />
                       </div>
-                    </PersonnelHoverCard>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1.5">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <p className="truncate text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {employee.name}
-                          </p>
-                          <span
-                            className={cn(
-                              'text-[10.5px] font-medium shrink-0',
-                              statusColorSet.text
-                            )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className="truncate text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                              {employee.name}
+                            </p>
+                            <span
+                              className={cn(
+                                'text-[10.5px] font-medium shrink-0',
+                                statusColorSet.text
+                              )}
+                            >
+                              {availability.statusLabel}
+                            </span>
+                          </div>
+                          {selected ? <Check className="h-3.5 w-3.5 shrink-0 text-primary" /> : null}
+                        </div>
+
+                        <p className="truncate text-xs text-muted-foreground leading-tight mt-0.5">
+                          {getPersonTitle(employee)}
+                        </p>
+
+                        {availability.isBusy && availability.conflictDetail ? (
+                          <div
+                            className="flex items-center gap-1 text-[10.5px] font-medium text-rose-600 dark:text-rose-400 leading-tight mt-0.5 truncate"
+                            title={availability.conflictDetail}
                           >
-                            {availability.statusLabel}
-                          </span>
-                        </div>
-                        {selected ? <Check className="h-3.5 w-3.5 shrink-0 text-primary" /> : null}
+                            <Clock className="h-3 w-3 shrink-0 text-rose-500" />
+                            <span className="truncate">{availability.conflictDetail}</span>
+                          </div>
+                        ) : null}
                       </div>
-
-                      <p className="truncate text-xs text-muted-foreground leading-tight mt-0.5">
-                        {getPersonTitle(employee)}
-                      </p>
-
-                      {availability.isBusy && availability.conflictDetail ? (
-                        <div
-                          className="flex items-center gap-1 text-[10.5px] font-medium text-rose-600 dark:text-rose-400 leading-tight mt-0.5 truncate"
-                          title={availability.conflictDetail}
-                        >
-                          <Clock className="h-3 w-3 shrink-0 text-rose-500" />
-                          <span className="truncate">{availability.conflictDetail}</span>
-                        </div>
-                      ) : null}
                     </div>
-                  </div>
+                  </PersonnelHoverCard>
                 )
               })}
 

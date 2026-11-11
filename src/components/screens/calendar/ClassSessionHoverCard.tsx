@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, type ReactNode } from 'react'
-import { BookOpen, Clock, Info, MapPin, Users, AlertTriangle, ExternalLink, FolderGit2, GraduationCap, CheckCircle2 } from 'lucide-react'
+import { BookOpen, Clock, Info, MapPin, Users, AlertTriangle, ExternalLink, FolderGit2, GraduationCap, CheckCircle2, ClipboardCheck } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { AppAvatar } from '@/components/shared'
 import { StaffProfilePopover, getStaffPersonnel } from './StaffProfilePopover'
@@ -306,6 +306,19 @@ export function ClassSessionHoverCard({
                 )}
               >
                 Kiểm tra
+              </span>
+            )}
+
+            {session.hasSemesterEvaluation && (
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded border px-1.5 py-0.2 text-xs font-bold shrink-0',
+                  getStatusBadgeClass('test_session')
+                )}
+                title="Buổi học có đánh giá cuối kỳ"
+              >
+                <ClipboardCheck className="h-3 w-3 shrink-0" />
+                Đánh giá cuối kỳ
               </span>
             )}
           </div>

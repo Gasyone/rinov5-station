@@ -574,30 +574,30 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
             : undefined,
   }
 
-  // Gói 2: Gói nâng cao / giai đoạn 2 của cùng môn học để chọn lọc
+  // Gói 2: Gói song song môn Tiếng Anh (đối với học viên Toán) hoặc môn Toán (đối với học viên Tiếng Anh)
   const pkg2: SimulatedPackage = {
     id: 'pkg-2',
     packageName: isMath 
-      ? `[MATH_ARCH] Toán Tư Duy Archimedes_${student.totalSessions || 48} buổi`
-      : `[IE_MOVERS] Tiếng Anh SuperKids Level 4_${student.totalSessions || 48} buổi`,
+      ? `[IE_MOVERS] Tiếng Anh SuperKids 1:6_48 buổi`
+      : `[MATH_ARCH] Toán Tư Duy Archimedes_${student.totalSessions || 48} buổi`,
     totalSessions: 48,
-    remainingSessions: isSessionEnded ? 0 : 36,
+    remainingSessions: isSessionEnded ? 0 : 24,
     classCode: (isPendingTransfer || isReserve || isUnassigned || isSessionEnded)
       ? ''
-      : (isMath ? 'LD_TOAN_00088' : 'SA1 TA 00003'),
+      : (isMath ? 'LD_ANH_00018' : 'LD_TOAN_00088'),
     className: (isPendingTransfer || isReserve || isUnassigned || isSessionEnded)
-      ? (isMath ? 'Lớp Toán Tư Duy (Chờ xếp)' : 'Lớp Tiếng Anh (Chờ xếp)')
-      : (isMath ? 'Lớp Toán Tư Duy Archimedes G2' : 'SA1 MOVA 01 Tiếng Anh'),
-    teacherCode: student.teacherCode || 'GV_HuiLT20',
-    schedule: 'T4 - 18:00-19:30, T7 - 09:00-10:30',
-    attendanceRatio: '46/48',
-    homeworkCompletion: 90,
+      ? (isMath ? 'Lớp Tiếng Anh (Chờ xếp)' : 'Lớp Toán Tư Duy (Chờ xếp)')
+      : (isMath ? 'Tiếng Anh SuperKids 1:6' : 'Lớp Toán Tư Duy Archimedes G2'),
+    teacherCode: isMath ? 'GV_SarahSmith' : (student.teacherCode || 'GV_HuiLT20'),
+    schedule: isMath ? 'T3 - 19:30-21:00, T6 - 19:30-21:00' : 'T4 - 18:00-19:30, T7 - 09:00-10:30',
+    attendanceRatio: '24/24',
+    homeworkCompletion: 92,
     lastTestScore: 9.0,
     priorTestScore: 8.5,
     startDate: '10/01/2026',
     endDate: '10/01/2027',
-    level: isMath ? 'Archimedes 1' : 'Level 4',
-    subLevel: 'B',
+    level: isMath ? 'SuperKids 1:6' : 'Archimedes 1',
+    subLevel: isMath ? 'Starters' : 'B',
     status: isSessionEnded ? 'expired' : ((isPendingTransfer || isReserve || isUnassigned) ? 'pending' : 'active'),
     studentStatus: isSessionEnded
       ? 'Hết buổi'

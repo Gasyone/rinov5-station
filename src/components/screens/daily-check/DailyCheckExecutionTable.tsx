@@ -112,15 +112,15 @@ export function DailyCheckExecutionTable({
 
   return (
     <div className="flex-1 min-h-0 overflow-auto">
-      <table className="min-w-[1380px] w-full text-xs border-collapse">
+      <table className="min-w-[1200px] w-full text-xs border-collapse table-fixed">
         {/* ─── 1. TABLE HEADER (CỐ ĐỊNH TRÊN CÙNG KHI CUỘN DỌC) ─── */}
         <thead className="sticky top-0 z-30 shadow-xs">
           <tr className="border-b border-border/70 bg-muted/95 backdrop-blur-xs">
             {/* Sticky Col 1: Cố định cả trên (top-0) lẫn trái (left-0), z-40 cao nhất */}
-            <th data-explain="standards-column" className="p-2.5 px-3 text-left font-medium text-foreground sticky top-0 left-0 bg-muted/95 backdrop-blur-xs z-40 w-[350px] min-w-[350px] border-r border-border shadow-[inset_-1px_0_0_var(--border)] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border/90 after:pointer-events-none relative">
+            <th data-explain="standards-column" className="p-2.5 px-3 text-left font-medium text-foreground sticky top-0 left-0 bg-muted/95 backdrop-blur-xs z-40 w-[350px] min-w-[350px] max-w-[350px] border-r border-border border-b border-border/70">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className="text-xs font-medium text-foreground">Hạng mục &amp; Tiêu chuẩn kiểm tra</span>
+                  <span className="text-xs font-semibold text-foreground">Hạng mục &amp; Tiêu chuẩn kiểm tra</span>
                   <span className="text-[10px] text-muted-foreground font-normal">
                     Thống kê Đạt / Tổng số tiêu chí (Bỏ qua)
                   </span>
@@ -130,7 +130,7 @@ export function DailyCheckExecutionTable({
                 <button
                   type="button"
                   onClick={onToggleAllCategories}
-                  className="text-[11px] font-normal text-primary hover:text-primary/80 transition-colors cursor-pointer shrink-0"
+                  className="text-[11px] font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer shrink-0"
                   title={isAllCollapsed ? 'Mở rộng tất cả danh mục' : 'Thu gọn tất cả danh mục'}
                 >
                   {isAllCollapsed ? 'Mở rộng tất cả' : 'Thu gọn tất cả'}
@@ -145,26 +145,33 @@ export function DailyCheckExecutionTable({
                 <th
                   key={day.dateStr}
                   className={cn(
-                    'p-2.5 px-2 text-center min-w-[145px] w-[145px] border-r border-border/40 last:border-r-0 transition-colors',
+                    'p-2 px-1 text-center border-b border-border/70 transition-colors bg-muted/95 backdrop-blur-xs',
                     day.isToday
-                      ? 'bg-primary/10 text-primary border-primary/30 font-medium'
-                      : 'text-foreground font-normal'
+                      ? 'w-[185px] min-w-[185px] max-w-[185px] bg-primary/10 border-x-2 border-primary/30'
+                      : 'w-[110px] min-w-[110px] max-w-[110px] border-r border-border/50 last:border-r-0'
                   )}
                 >
-                  <div className="flex flex-col items-center gap-0.5">
-                    {/* Dòng 1: TX - Ngày/tháng */}
-                    <span className={cn('text-xs font-medium', day.isToday && 'text-primary')}>
-                      {day.dayOfWeek} - {day.dayOfMonth}/{day.dateStr.split('-')[1]}
-                    </span>
+                  <div className="flex flex-col items-center justify-center gap-0.5">
+                    {/* Dòng 1: Thứ - Ngày/tháng */}
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn('text-xs font-semibold', day.isToday ? 'text-primary' : 'text-foreground')}>
+                        {day.dayOfWeek} - {day.dayOfMonth}/{day.dateStr.split('-')[1]}
+                      </span>
+                      {day.isToday && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-primary text-primary-foreground shadow-2xs">
+                          Hôm nay
+                        </span>
+                      )}
+                    </div>
 
                     {/* Dòng 2: Thống kê Đạt/tổng (và số lượng bỏ qua trong ngoặc) */}
                     {score && score.isEvaluated ? (
                       <span
                         className={cn(
-                          'text-[11px] font-normal',
+                          'text-[11px] font-semibold',
                           score.failCount === 0
                             ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-rose-600 dark:text-rose-400 font-medium'
+                            : 'text-rose-600 dark:text-rose-400'
                         )}
                       >
                         {score.passCount}/{score.activeTotal}
@@ -220,9 +227,9 @@ export function DailyCheckExecutionTable({
                           )}
                         >
                           {/* Sticky Col 1: Avatar xem tiêu chuẩn, tên chỉ tiêu, yêu cầu, nút ẩn */}
-                          <td className="p-2 px-3 sticky left-0 bg-background/95 backdrop-blur-xs z-10 w-[350px] min-w-[350px] border-r border-border shadow-[inset_-1px_0_0_var(--border)] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border/90 after:pointer-events-none relative align-middle">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-2.5 min-w-0">
+                          <td className="p-2 px-3 sticky left-0 bg-background/95 backdrop-blur-xs z-10 w-[350px] min-w-[350px] max-w-[350px] border-r border-border align-middle">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
                                 {/* Avatar ở phía đầu, bấm vào để mở xem tiêu chuẩn */}
                                 <button
                                   type="button"
@@ -234,7 +241,7 @@ export function DailyCheckExecutionTable({
                                       requirement: it.requirement,
                                     })
                                   }
-                                  className="relative shrink-0 w-8 h-8 rounded-md overflow-hidden border border-border/80 hover:border-primary hover:ring-2 hover:ring-primary/20 transition-all cursor-pointer group/avatar mt-0.5 shadow-2xs"
+                                  className="relative shrink-0 w-8 h-8 rounded-md overflow-hidden border border-border/80 hover:border-primary hover:ring-2 hover:ring-primary/20 transition-all cursor-pointer group/avatar shadow-2xs"
                                   title="Bấm để xem tiêu chuẩn vận hành & ảnh/video mẫu 5 sao"
                                 >
                                   <img
@@ -250,10 +257,10 @@ export function DailyCheckExecutionTable({
                                 </button>
 
                                 <div className="space-y-0.5 min-w-0 pr-1">
-                                  <p className="font-normal text-foreground/90 text-xs leading-tight">
+                                  <p className="font-medium text-foreground text-xs leading-tight">
                                     {it.detail}
                                   </p>
-                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">
+                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-1">
                                     {it.requirement || 'Theo tiêu chuẩn vận hành 5 sao.'}
                                   </p>
                                 </div>
@@ -263,7 +270,7 @@ export function DailyCheckExecutionTable({
                               <button
                                 type="button"
                                 onClick={() => onSkipCriterion(it.detail, grp)}
-                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/item:opacity-100 cursor-pointer shrink-0 mt-0.5"
+                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/item:opacity-100 cursor-pointer shrink-0"
                                 title="Bỏ qua tiêu chí này tại cơ sở này"
                               >
                                 <EyeOff className="h-3.5 w-3.5" />
@@ -274,7 +281,7 @@ export function DailyCheckExecutionTable({
                         {/* 7 Days Columns */}
                         {weekDays.map((day) => {
                           if (day.isToday) {
-                            // CỘT HÔM NAY: 1 HÀNG NGANG GỌN GÀNG [Đạt] [Lỗi] [Ảnh]
+                            // CỘT HÔM NAY: [Đạt] [Lỗi] [Ảnh] căn giữa, không gian rộng rãi 185px
                             const evalStatus = getItemTodayStatus(it.detail)
                             const itemPhotos = getItemPhotos(it.detail)
                             const hasPhoto = itemPhotos.length > 0
@@ -282,43 +289,42 @@ export function DailyCheckExecutionTable({
                             return (
                               <td
                                 key={day.dateStr}
-                                className="p-1 px-2 border-r border-border/40 last:border-r-0 bg-primary/5 align-middle"
+                                className="p-1.5 px-2 w-[185px] min-w-[185px] max-w-[185px] border-x-2 border-primary/25 bg-primary/[0.04] align-middle text-center"
                               >
-                                <div className="flex items-center justify-between gap-1 w-full">
-                                  {/* Cạnh trái: Nút Đạt & Lỗi */}
-                                  <div data-explain="today-eval-cell" className="flex items-center gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => onSetItemStatus(it.detail, 'pass')}
-                                      className={cn(
-                                        'h-6 px-1.5 rounded text-[11px] font-normal flex items-center gap-0.5 transition-all cursor-pointer border',
-                                        evalStatus === 'pass'
-                                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs font-medium'
-                                          : 'bg-background text-muted-foreground border-border/80 hover:bg-emerald-50 hover:text-emerald-700'
-                                      )}
-                                      title="Đạt tiêu chuẩn"
-                                    >
-                                      <Check className="h-3 w-3" />
-                                      <span>Đạt</span>
-                                    </button>
+                                <div className="flex items-center justify-center gap-1.5 w-full">
+                                  {/* Nút Đạt */}
+                                  <button
+                                    type="button"
+                                    onClick={() => onSetItemStatus(it.detail, 'pass')}
+                                    className={cn(
+                                      'h-6 px-2 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer border',
+                                      evalStatus === 'pass'
+                                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs font-semibold'
+                                        : 'bg-background text-muted-foreground border-border/80 hover:bg-emerald-50 hover:text-emerald-700 font-normal'
+                                    )}
+                                    title={evalStatus === 'pass' ? 'Click để bỏ chọn (về chờ)' : 'Đạt tiêu chuẩn'}
+                                  >
+                                    <Check className="h-3 w-3" />
+                                    <span>Đạt</span>
+                                  </button>
 
-                                    <button
-                                      type="button"
-                                      onClick={() => onSetItemStatus(it.detail, 'fail')}
-                                      className={cn(
-                                        'h-6 px-1.5 rounded text-[11px] font-normal flex items-center gap-0.5 transition-all cursor-pointer border',
-                                        evalStatus === 'fail'
-                                          ? 'bg-rose-600 text-white border-rose-600 shadow-2xs font-medium'
-                                          : 'bg-background text-muted-foreground border-border/80 hover:bg-rose-50 hover:text-rose-700'
-                                      )}
-                                      title="Không đạt / Lỗi"
-                                    >
-                                      <X className="h-3 w-3" />
-                                      <span>Lỗi</span>
-                                    </button>
-                                  </div>
+                                  {/* Nút Lỗi */}
+                                  <button
+                                    type="button"
+                                    onClick={() => onSetItemStatus(it.detail, 'fail')}
+                                    className={cn(
+                                      'h-6 px-2 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer border',
+                                      evalStatus === 'fail'
+                                        ? 'bg-rose-600 text-white border-rose-600 shadow-2xs font-semibold'
+                                        : 'bg-background text-muted-foreground border-border/80 hover:bg-rose-50 hover:text-rose-700 font-normal'
+                                    )}
+                                    title={evalStatus === 'fail' ? 'Click để bỏ chọn (về chờ)' : 'Không đạt / Lỗi'}
+                                  >
+                                    <X className="h-3 w-3" />
+                                    <span>Lỗi</span>
+                                  </button>
 
-                                  {/* Cạnh phải: Nút Ảnh nằm sát mép phải */}
+                                  {/* Nút Ảnh */}
                                   <button
                                     type="button"
                                     data-explain="evidence-btn"
@@ -352,14 +358,14 @@ export function DailyCheckExecutionTable({
                             return (
                               <td
                                 key={day.dateStr}
-                                className="p-2 text-center border-r border-border/40 last:border-r-0 text-muted-foreground/40 align-middle"
+                                className="p-1.5 text-center w-[110px] min-w-[110px] max-w-[110px] border-r border-border/40 last:border-r-0 text-muted-foreground/40 align-middle text-xs"
                               >
                                 —
                               </td>
                             )
                           }
 
-                          // CỘT NGÀY TRƯỚC: Hiển thị kết quả + Nút xem ảnh bằng chứng nếu có
+                          // CỘT NGÀY TRƯỚC: Hiển thị kết quả + Nút xem ảnh căn giữa
                           const hist = getHistoricalItemStatus(day.dateStr, it.detail)
                           const pastPhotos = hist.photos || []
                           const hasPastPhotos = pastPhotos.length > 0
@@ -367,34 +373,32 @@ export function DailyCheckExecutionTable({
                           return (
                             <td
                               key={day.dateStr}
-                              className="p-1 px-2 border-r border-border/40 last:border-r-0 align-middle"
+                              className="p-1.5 px-1 w-[110px] min-w-[110px] max-w-[110px] border-r border-border/40 last:border-r-0 align-middle text-center"
                             >
-                              <div className="flex items-center justify-between gap-1 w-full">
-                                {/* Cạnh trái: Trạng thái Đạt / Lỗi */}
-                                <div className="flex items-center gap-1">
-                                  {hist.status === 'pass' && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                                      <Check className="h-3 w-3" />
-                                      <span>Đạt</span>
-                                    </span>
-                                  )}
-                                  {hist.status === 'fail' && (
-                                    <span
-                                      className="inline-flex items-center gap-1 text-[11px] font-normal text-rose-700 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-300 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800"
-                                      title={hist.note || 'Có sự cố'}
-                                    >
-                                      <X className="h-3 w-3" />
-                                      <span>Lỗi</span>
-                                    </span>
-                                  )}
-                                  {hist.status === 'not_submitted' && (
-                                    <span className="text-muted-foreground/60 text-[10px]">
-                                      Chưa nộp
-                                    </span>
-                                  )}
-                                </div>
+                              <div className="flex items-center justify-center gap-1 w-full">
+                                {/* Trạng thái Đạt / Lỗi */}
+                                {hist.status === 'pass' && (
+                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shrink-0">
+                                    <Check className="h-3 w-3" />
+                                    <span>Đạt</span>
+                                  </span>
+                                )}
+                                {hist.status === 'fail' && (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-[11px] font-medium text-rose-700 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-300 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 shrink-0"
+                                    title={hist.note || 'Có sự cố'}
+                                  >
+                                    <X className="h-3 w-3" />
+                                    <span>Lỗi</span>
+                                  </span>
+                                )}
+                                {hist.status === 'not_submitted' && (
+                                  <span className="text-muted-foreground/60 text-[10px]">
+                                    Chưa nộp
+                                  </span>
+                                )}
 
-                                {/* Cạnh phải: Nút xem ảnh ngày trước */}
+                                {/* Nút xem ảnh ngày trước */}
                                 {hasPastPhotos && (
                                   <button
                                     type="button"
@@ -408,7 +412,7 @@ export function DailyCheckExecutionTable({
                                         photos: pastPhotos,
                                       })
                                     }
-                                    className="h-5 px-1.5 rounded text-[10px] flex items-center gap-0.5 font-medium border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 hover:bg-blue-100 cursor-pointer shrink-0"
+                                    className="h-5 px-1 rounded text-[10px] flex items-center gap-0.5 font-medium border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 hover:bg-blue-100 cursor-pointer shrink-0"
                                     title="Xem ảnh bằng chứng lưu trữ"
                                   >
                                     <Camera className="h-2.5 w-2.5" />
@@ -458,9 +462,10 @@ export function DailyCheckExecutionTable({
                             idx % 2 === 1 && 'bg-muted/5'
                           )}
                         >
-                          <td className="p-2 px-3 sticky left-0 bg-background/95 backdrop-blur-xs z-10 w-[350px] min-w-[350px] border-r border-border shadow-[inset_-1px_0_0_var(--border)] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border/90 after:pointer-events-none relative align-middle">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-2.5 min-w-0">
+                          {/* Sticky Col 1: Avatar xem tiêu chuẩn, tên nhiệm vụ, yêu cầu, nút ẩn */}
+                          <td className="p-2 px-3 sticky left-0 bg-background/95 backdrop-blur-xs z-10 w-[350px] min-w-[350px] max-w-[350px] border-r border-border align-middle">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
                                 {/* Avatar ở phía đầu, bấm vào để mở xem tiêu chuẩn */}
                                 <button
                                   type="button"
@@ -472,7 +477,7 @@ export function DailyCheckExecutionTable({
                                       requirement: task.description,
                                     })
                                   }
-                                  className="relative shrink-0 w-8 h-8 rounded-md overflow-hidden border border-border/80 hover:border-primary hover:ring-2 hover:ring-primary/20 transition-all cursor-pointer group/avatar mt-0.5 shadow-2xs"
+                                  className="relative shrink-0 w-8 h-8 rounded-md overflow-hidden border border-border/80 hover:border-primary hover:ring-2 hover:ring-primary/20 transition-all cursor-pointer group/avatar shadow-2xs"
                                   title="Bấm để xem tiêu chuẩn vận hành & ảnh/video mẫu 5 sao"
                                 >
                                   <img
@@ -488,10 +493,10 @@ export function DailyCheckExecutionTable({
                                 </button>
 
                                 <div className="space-y-0.5 min-w-0 pr-1">
-                                  <p className="font-normal text-foreground/90 text-xs leading-tight">
+                                  <p className="font-medium text-foreground text-xs leading-tight">
                                     {task.name}
                                   </p>
-                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">
+                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-1">
                                     {task.description}
                                   </p>
                                 </div>
@@ -500,7 +505,7 @@ export function DailyCheckExecutionTable({
                               <button
                                 type="button"
                                 onClick={() => onSkipCriterion(task.name, grp)}
-                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/item:opacity-100 cursor-pointer shrink-0 mt-0.5"
+                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/item:opacity-100 cursor-pointer shrink-0"
                                 title="Bỏ qua nhiệm vụ này tại cơ sở này"
                               >
                                 <EyeOff className="h-3.5 w-3.5" />
@@ -517,43 +522,42 @@ export function DailyCheckExecutionTable({
                             return (
                               <td
                                 key={day.dateStr}
-                                className="p-1 px-2 border-r border-border/40 last:border-r-0 bg-primary/5 align-middle"
+                                className="p-1.5 px-2 w-[185px] min-w-[185px] max-w-[185px] border-x-2 border-primary/25 bg-primary/[0.04] align-middle text-center"
                               >
-                                <div className="flex items-center justify-between gap-1 w-full">
-                                  {/* Cạnh trái: Nút Đạt & Lỗi */}
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => onSetItemStatus(task.name, 'pass')}
-                                      className={cn(
-                                        'h-6 px-1.5 rounded text-[11px] font-normal flex items-center gap-0.5 transition-all cursor-pointer border',
-                                        evalStatus === 'pass'
-                                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs font-medium'
-                                          : 'bg-background text-muted-foreground border-border/80 hover:bg-emerald-50 hover:text-emerald-700'
-                                      )}
-                                      title="Đã hoàn tất"
-                                    >
-                                      <Check className="h-3 w-3" />
-                                      <span>Đạt</span>
-                                    </button>
+                                <div className="flex items-center justify-center gap-1.5 w-full">
+                                  {/* Nút Đạt */}
+                                  <button
+                                    type="button"
+                                    onClick={() => onSetItemStatus(task.name, 'pass')}
+                                    className={cn(
+                                      'h-6 px-2 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer border',
+                                      evalStatus === 'pass'
+                                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs font-semibold'
+                                        : 'bg-background text-muted-foreground border-border/80 hover:bg-emerald-50 hover:text-emerald-700 font-normal'
+                                    )}
+                                    title={evalStatus === 'pass' ? 'Click để bỏ chọn (về chờ)' : 'Đã hoàn tất'}
+                                  >
+                                    <Check className="h-3 w-3" />
+                                    <span>Đạt</span>
+                                  </button>
 
-                                    <button
-                                      type="button"
-                                      onClick={() => onSetItemStatus(task.name, 'fail')}
-                                      className={cn(
-                                        'h-6 px-1.5 rounded text-[11px] font-normal flex items-center gap-0.5 transition-all cursor-pointer border',
-                                        evalStatus === 'fail'
-                                          ? 'bg-rose-600 text-white border-rose-600 shadow-2xs font-medium'
-                                          : 'bg-background text-muted-foreground border-border/80 hover:bg-rose-50 hover:text-rose-700'
-                                      )}
-                                      title="Chưa xong"
-                                    >
-                                      <X className="h-3 w-3" />
-                                      <span>Lỗi</span>
-                                    </button>
-                                  </div>
+                                  {/* Nút Lỗi */}
+                                  <button
+                                    type="button"
+                                    onClick={() => onSetItemStatus(task.name, 'fail')}
+                                    className={cn(
+                                      'h-6 px-2 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer border',
+                                      evalStatus === 'fail'
+                                        ? 'bg-rose-600 text-white border-rose-600 shadow-2xs font-semibold'
+                                        : 'bg-background text-muted-foreground border-border/80 hover:bg-rose-50 hover:text-rose-700 font-normal'
+                                    )}
+                                    title={evalStatus === 'fail' ? 'Click để bỏ chọn (về chờ)' : 'Chưa xong'}
+                                  >
+                                    <X className="h-3 w-3" />
+                                    <span>Lỗi</span>
+                                  </button>
 
-                                  {/* Cạnh phải: Nút Ảnh đính kèm */}
+                                  {/* Nút Ảnh đính kèm */}
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -585,7 +589,7 @@ export function DailyCheckExecutionTable({
                             return (
                               <td
                                 key={day.dateStr}
-                                className="p-2 text-center border-r border-border/40 last:border-r-0 text-muted-foreground/40 align-middle"
+                                className="p-1.5 text-center w-[110px] min-w-[110px] max-w-[110px] border-r border-border/40 last:border-r-0 text-muted-foreground/40 align-middle text-xs"
                               >
                                 —
                               </td>
@@ -599,34 +603,32 @@ export function DailyCheckExecutionTable({
                           return (
                             <td
                               key={day.dateStr}
-                              className="p-1 px-2 border-r border-border/40 last:border-r-0 align-middle"
+                              className="p-1.5 px-1 w-[110px] min-w-[110px] max-w-[110px] border-r border-border/40 last:border-r-0 align-middle text-center"
                             >
-                              <div className="flex items-center justify-between gap-1 w-full">
-                                {/* Cạnh trái: Trạng thái Đạt / Lỗi */}
-                                <div className="flex items-center gap-1">
-                                  {hist.status === 'pass' && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                                      <Check className="h-3 w-3" />
-                                      <span>Đạt</span>
-                                    </span>
-                                  )}
-                                  {hist.status === 'fail' && (
-                                    <span
-                                      className="inline-flex items-center gap-1 text-[11px] font-normal text-rose-700 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-300 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800"
-                                      title={hist.note || 'Có sự cố'}
-                                    >
-                                      <X className="h-3 w-3" />
-                                      <span>Lỗi</span>
-                                    </span>
-                                  )}
-                                  {hist.status === 'not_submitted' && (
-                                    <span className="text-muted-foreground/60 text-[10px]">
-                                      Chưa nộp
-                                    </span>
-                                  )}
-                                </div>
+                              <div className="flex items-center justify-center gap-1 w-full">
+                                {/* Trạng thái Đạt / Lỗi */}
+                                {hist.status === 'pass' && (
+                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shrink-0">
+                                    <Check className="h-3 w-3" />
+                                    <span>Đạt</span>
+                                  </span>
+                                )}
+                                {hist.status === 'fail' && (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-[11px] font-medium text-rose-700 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-300 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 shrink-0"
+                                    title={hist.note || 'Có sự cố'}
+                                  >
+                                    <X className="h-3 w-3" />
+                                    <span>Lỗi</span>
+                                  </span>
+                                )}
+                                {hist.status === 'not_submitted' && (
+                                  <span className="text-muted-foreground/60 text-[10px]">
+                                    Chưa nộp
+                                  </span>
+                                )}
 
-                                {/* Cạnh phải: Nút xem ảnh ngày trước */}
+                                {/* Nút xem ảnh ngày trước */}
                                 {hasPastPhotos && (
                                   <button
                                     type="button"
@@ -640,7 +642,7 @@ export function DailyCheckExecutionTable({
                                         photos: pastPhotos,
                                       })
                                     }
-                                    className="h-5 px-1.5 rounded text-[10px] flex items-center gap-0.5 font-medium border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 hover:bg-blue-100 cursor-pointer shrink-0"
+                                    className="h-5 px-1 rounded text-[10px] flex items-center gap-0.5 font-medium border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 hover:bg-blue-100 cursor-pointer shrink-0"
                                     title="Xem ảnh bằng chứng lưu trữ"
                                   >
                                     <Camera className="h-2.5 w-2.5" />

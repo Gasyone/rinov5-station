@@ -1,24 +1,22 @@
 'use client'
-/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useState, useMemo, useEffect } from 'react'
-import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { useState, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { FieldLabel } from '@/components/shared'
-import { SegmentedControl, StudentCombobox, type StudentOption } from '@/components/controls'
+import { StudentCombobox, type StudentOption } from '@/components/controls'
 import { mockStudents } from '@/mocks/students'
-import type { LeaveReserveRequest } from '@/mocks/leaveReserve'
-import { cn } from '@/lib/utils'
+import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 import {
   formatDateISO,
   addDays,
   addMonths,
-  generateStudentSessions,
   getSubjectMaxHoldSessions,
-  isEligibleForReserve,
   getPastAllowedDate,
+  generateStudentClassTree,
+  getStudentLeaveQuotaStats,
 } from './leaveReserveHelpers'
+import type { StudentClassSession, LeaveReservePackageItem } from './leaveReserveTypes'
 import { LeaveReservePolicyPanel } from './LeaveReservePolicyPanel'
 import { LeaveReserveOffForm } from './LeaveReserveOffForm'
 import { LeaveReserveReservationForm } from './LeaveReserveReservationForm'
@@ -28,20 +26,49 @@ interface LeaveReserveCreateDialogProps {
   onOpenChange: (open: boolean) => void
   initialType?: 'off' | 'reservation'
   initialStudentId?: string
-  onSubmit: (req: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>) => void
+  initialClassCode?: string
+  initialClassName?: string
+  initialPackageName?: string
+  initialRemainingSessions?: number
+  initialTotalSessions?: number
+  packagesList?: Array<{
+    id: string
+    packageName: string
+    remainingSessions: number
+    totalSessions: number
+    classCode: string
+    className: string
+  }>
+  selectedPackageId?: string
+  onSubmit: (
+    req: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>,
+    extraReqs?: Array<Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>>
+  ) => void
 }
 
-export function LeaveReserveCreateDialog({
+export function LeaveReserveCreateDialog(props: LeaveReserveCreateDialogProps) {
+  if (!props.open) return null
+  return <LeaveReserveCreateDialogInner {...props} />
+}
+
+function LeaveReserveCreateDialogInner({
   open,
   onOpenChange,
   initialType = 'off',
   initialStudentId,
+  initialClassCode,
+  initialClassName,
+  initialPackageName,
+  initialRemainingSessions,
+  initialTotalSessions,
+  packagesList,
+  selectedPackageId,
   onSubmit,
 }: LeaveReserveCreateDialogProps) {
   const todayStr = useMemo(() => formatDateISO(new Date()), [])
-  const [type, setType] = useState<'off' | 'reservation'>(initialType)
+  const type = initialType
+
   const [studentId, setStudentId] = useState<string>(initialStudentId || mockStudents[0]?.id || '')
-  const [selectedClassCode, setSelectedClassCode] = useState<string>('all')
 
   // Reservation specific sub-type: hold_seat vs no_hold_seat
   const [reserveMode, setReserveMode] = useState<'hold_seat' | 'no_hold_seat'>('hold_seat')
@@ -49,12 +76,105 @@ export function LeaveReserveCreateDialog({
   const [startDate, setStartDate] = useState<string>(todayStr)
   const [endDate, setEndDate] = useState<string>(todayStr)
   const [reason, setReason] = useState<string>('')
-  const [selectedSessionIds, setSelectedSessionIds] = useState<Set<string>>(new Set())
 
-  // Find selected student data
+  // Find active student (supports 'bao-han', 's-baohan', or exact match)
+  const activeStudentId = initialStudentId || studentId
   const selectedStudent = useMemo(() => {
-    return mockStudents.find((s) => s.id === studentId) || mockStudents[0]
-  }, [studentId])
+    return (
+      mockStudents.find(
+        (s) =>
+          s.id === activeStudentId ||
+          s.id === `s-${activeStudentId}` ||
+          (activeStudentId === 'bao-han' && s.id === 's-baohan') ||
+          s.name === activeStudentId
+      ) || mockStudents[0]
+    )
+  }, [activeStudentId])
+
+  // Derive active package options (Toán / Tiếng Anh)
+  const packageOptions: LeaveReservePackageItem[] = useMemo(() => {
+    if (!selectedStudent) return []
+
+    // If student has multiple enrolledClasses in mockStudents, use them
+    if (selectedStudent.enrolledClasses && selectedStudent.enrolledClasses.length > 0) {
+      return selectedStudent.enrolledClasses.map((c, idx) => {
+        const isMath = c.className.toLowerCase().includes('toán') || c.classCode.toLowerCase().includes('toan')
+        return {
+          id: c.packageId || `pkg-${idx + 1}`,
+          packageName:
+            c.linkedPackageName ||
+            (isMath
+              ? '[MATH_TUTOR] Toán Tư Duy Toán 1:6_96 buổi'
+              : '[IE_MOVERS] Tiếng Anh SuperKids 1:6_48 buổi'),
+          subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
+          classCode: c.classCode,
+          className: c.className,
+          remainingSessions: c.remainingSessions ?? (isMath ? 12 : 24),
+          totalSessions: c.totalSessions ?? (isMath ? 96 : 48),
+          schedule: c.scheduleSlots?.map((s) => `${s.dayOfWeek} (${s.startTime} - ${s.endTime})`).join(', ') || '',
+        }
+      })
+    }
+
+    // Fallback: If packagesList passed from props
+    if (packagesList && packagesList.length > 0) {
+      return packagesList.map((p) => {
+        const isMath = p.packageName.toLowerCase().includes('toán')
+        return {
+          id: p.id,
+          packageName: p.packageName,
+          subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
+          classCode: p.classCode,
+          className: p.className,
+          remainingSessions: p.remainingSessions,
+          totalSessions: p.totalSessions,
+        }
+      })
+    }
+
+    return [
+      {
+        id: 'pkg-1',
+        packageName: initialPackageName || selectedStudent.packageName || 'Gói chuẩn',
+        subject: selectedStudent.level?.includes('Toán') ? 'Toán tư duy' : 'Chương trình',
+        classCode: initialClassCode || 'CLS-GEN-01',
+        className: initialClassName || selectedStudent.enrolledClass || 'Lớp học hiện tại',
+        remainingSessions: initialRemainingSessions ?? selectedStudent.remainingSessions ?? 12,
+        totalSessions: initialTotalSessions ?? selectedStudent.totalSessions ?? 96,
+      },
+    ]
+  }, [
+    selectedStudent,
+    packagesList,
+    initialClassCode,
+    initialClassName,
+    initialPackageName,
+    initialRemainingSessions,
+    initialTotalSessions,
+  ])
+
+  // Find matching default package from initialClassCode, initialPackageName, or selectedPackageId
+  const initialDefaultTab = useMemo(() => {
+    if (initialClassCode) {
+      const match = packageOptions.find((p) => p.classCode === initialClassCode)
+      if (match) return match.classCode
+    }
+    if (selectedPackageId) {
+      const match = packageOptions.find((p) => p.id === selectedPackageId)
+      if (match) return match.classCode
+    }
+    if (initialPackageName) {
+      const isEnglish = !initialPackageName.toLowerCase().includes('toán')
+      const match = packageOptions.find((p) =>
+        isEnglish ? !p.subject.toLowerCase().includes('toán') : p.subject.toLowerCase().includes('toán')
+      )
+      if (match) return match.classCode
+    }
+    return packageOptions[0]?.classCode || ''
+  }, [initialClassCode, selectedPackageId, initialPackageName, packageOptions])
+
+  // Active package tab: Mặc định vào đúng gói mà người dùng đã chọn mở modal
+  const [activePackageTab, setActivePackageTab] = useState<string>(initialDefaultTab)
 
   // Student's enrolled classes list
   const studentClasses = useMemo(() => {
@@ -77,57 +197,71 @@ export function LeaveReserveCreateDialog({
   }, [selectedStudent])
 
   const selectedClass = useMemo(() => {
-    return studentClasses.find((c) => c.classCode === selectedClassCode) || studentClasses[0]
-  }, [studentClasses, selectedClassCode])
+    if (activePackageTab) {
+      const found = studentClasses.find((c) => c.classCode === activePackageTab)
+      if (found) return found
+    }
+    return studentClasses[0]
+  }, [studentClasses, activePackageTab])
 
   // Subject limit info for hold seat
   const subjectHoldInfo = useMemo(() => {
     return getSubjectMaxHoldSessions(selectedClass?.className || selectedStudent?.enrolledClass)
   }, [selectedClass, selectedStudent])
 
-  // Eligibility evaluation
-  const eligibility = useMemo(() => {
-    return isEligibleForReserve(selectedStudent)
+  // Generate Treeview of all classes & upcoming sessions for leave mode
+  const allClassTrees = useMemo(() => {
+    if (!selectedStudent) return []
+    return generateStudentClassTree(
+      selectedStudent,
+      mockLeaveReserveRequests,
+      4
+    )
   }, [selectedStudent])
 
-  // Sync initial type and dates when dialog opens
-  useEffect(() => {
-    if (open) {
-      setType(initialType)
-      if (initialStudentId) {
-        setStudentId(initialStudentId)
-      }
-      const today = new Date()
-      const tStr = formatDateISO(today)
-      setStartDate(tStr)
-      if (initialType === 'off') {
-        setEndDate(tStr)
-      } else {
-        setReserveMode('hold_seat')
-        const maxSessions = getSubjectMaxHoldSessions(selectedClass?.className || selectedStudent?.enrolledClass).maxSessions
-        const computedEnd = formatDateISO(addDays(today, maxSessions * 3))
-        setEndDate(computedEnd)
-      }
-    }
-  }, [open, initialType, initialStudentId, selectedClass, selectedStudent])
+  // Filter class trees based on activePackageTab
+  const displayedClassTrees = useMemo(() => {
+    if (!activePackageTab) return allClassTrees
+    return allClassTrees.filter((t) => t.classCode === activePackageTab)
+  }, [allClassTrees, activePackageTab])
 
-  // Reset form when switching main types (Off vs Reservation)
-  const handleTypeChange = (newType: string) => {
-    const t = newType as 'off' | 'reservation'
-    setType(t)
-    const today = new Date()
-    const tStr = formatDateISO(today)
-    setStartDate(tStr)
-    if (t === 'off') {
-      setEndDate(tStr)
+  // Student Quota stats based on history & selected package tab
+  const quotaStats = useMemo(() => {
+    return getStudentLeaveQuotaStats(selectedStudent, mockLeaveReserveRequests, activePackageTab)
+  }, [selectedStudent, activePackageTab])
+
+  // Active package object for Policy panel
+  const activePackageForPolicy = useMemo(() => {
+    return packageOptions.find((p) => p.classCode === activePackageTab) || packageOptions[0]
+  }, [packageOptions, activePackageTab])
+
+  // First available session for initial default
+  const defaultFirstSessionId = useMemo(() => {
+    for (const tree of displayedClassTrees) {
+      const found = tree.sessions.find((s) => !s.alreadyRequested)
+      if (found) return found.id
+    }
+    return undefined
+  }, [displayedClassTrees])
+
+  // Set of selected session IDs for leave mode
+  const [selectedSessionIds, setSelectedSessionIds] = useState<Set<string>>(() => {
+    return defaultFirstSessionId ? new Set([defaultFirstSessionId]) : new Set()
+  })
+
+  // Khi chuyển tab gói học, chọn buổi học khả dụng đầu tiên của gói đó
+  const handlePackageTabChange = (tabId: string) => {
+    setActivePackageTab(tabId)
+    const targetTree = allClassTrees.find((t) => t.classCode === tabId)
+    const firstAvailable = targetTree?.sessions.find((s) => !s.alreadyRequested)
+    if (firstAvailable) {
+      setSelectedSessionIds(new Set([firstAvailable.id]))
     } else {
-      setReserveMode('hold_seat')
-      const computedEnd = formatDateISO(addDays(today, subjectHoldInfo.maxSessions * 3))
-      setEndDate(computedEnd)
+      setSelectedSessionIds(new Set())
     }
   }
 
-  // Student options for combobox
+  // Student options for combobox (chỉ dùng khi không có studentId từ trước)
   const studentOptions: StudentOption[] = useMemo(() => {
     return mockStudents.map((s) => ({
       id: s.id,
@@ -138,44 +272,17 @@ export function LeaveReserveCreateDialog({
     }))
   }, [])
 
-  // Available sessions on the selected start date for 'off' mode across ALL classes of student
-  const availableSessions = useMemo(() => {
-    if (!selectedStudent || !startDate) return []
-    return generateStudentSessions(selectedStudent, startDate, 'all')
-  }, [selectedStudent, startDate])
-
-  // Key derived from session ids to prevent reference-based infinite re-renders
-  const availableSessionIdsKey = useMemo(() => {
-    return availableSessions.map((s) => s.id).join(',')
-  }, [availableSessions])
-
-  // Default select all sessions when available sessions change
-  useEffect(() => {
-    if (!availableSessionIdsKey) {
-      setSelectedSessionIds(new Set())
-    } else {
-      setSelectedSessionIds(new Set(availableSessionIdsKey.split(',')))
-    }
-  }, [availableSessionIdsKey])
-
-  const toggleSession = (id: string) => {
+  // Toggle session selection in treeview
+  const handleToggleSession = (session: StudentClassSession) => {
     setSelectedSessionIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
+      if (next.has(session.id)) {
+        next.delete(session.id)
       } else {
-        next.add(id)
+        next.add(session.id)
       }
       return next
     })
-  }
-
-  const toggleSelectAllSessions = () => {
-    if (selectedSessionIds.size === availableSessions.length) {
-      setSelectedSessionIds(new Set())
-    } else {
-      setSelectedSessionIds(new Set(availableSessions.map((s) => s.id)))
-    }
   }
 
   // Handle Reserve Mode switch (Giữ chỗ vs Không giữ chỗ)
@@ -213,60 +320,111 @@ export function LeaveReserveCreateDialog({
   }, [startDate])
 
   const handleClearAndClose = () => {
-    setStudentId(mockStudents[0]?.id || '')
-    setSelectedClassCode('all')
-    const today = new Date()
-    const todayStr = formatDateISO(today)
-    setStartDate(todayStr)
-    setEndDate(todayStr)
     setReason('')
-    setSelectedSessionIds(new Set())
+    setSelectedSessionIds(defaultFirstSessionId ? new Set([defaultFirstSessionId]) : new Set())
     onOpenChange(false)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedStudent || !startDate || !reason.trim()) return
+    if (!selectedStudent || !reason.trim()) return
 
-    const appliedClass = selectedClassCode === 'all' ? studentClasses[0] : selectedClass
+    const selectedSessionsList = allClassTrees
+      .flatMap((t) => t.sessions)
+      .filter((s) => selectedSessionIds.has(s.id))
 
-    let title = ''
+    if (type === 'off' && selectedSessionsList.length === 0) return
+
     if (type === 'off') {
-      title = `Đơn xin nghỉ phép - ${selectedStudent.name} (${selectedSessionIds.size} buổi)`
-    } else {
-      title = `Đơn xin bảo lưu - ${selectedStudent.name} (${reserveMode === 'hold_seat' ? 'Giữ chỗ' : 'Không giữ chỗ'})`
-    }
+      // Group selected sessions by classCode so that if multiple packages are selected, requests are generated for each
+      const sessionsByClass = new Map<string, StudentClassSession[]>()
+      for (const session of selectedSessionsList) {
+        const list = sessionsByClass.get(session.classCode) || []
+        list.push(session)
+        sessionsByClass.set(session.classCode, list)
+      }
 
-    onSubmit({
-      studentId: selectedStudent.id,
-      studentName: selectedStudent.name,
-      studentCode: `STU-00${selectedStudent.id.replace(/\D/g, '') || '01'}`,
-      branch: selectedStudent.branch,
-      type,
-      startDate,
-      endDate: endDate || startDate,
-      reason: reason.trim(),
-      title,
-      phone: selectedStudent.phone || '',
-      email: selectedStudent.email || '',
-      className: appliedClass?.className || selectedStudent.enrolledClass || 'Lớp chưa xếp',
-      classCode: appliedClass?.classCode || 'CLS-GEN-01',
-      productPackage: selectedStudent.packageName || 'Gói chuẩn',
-      parentName: selectedStudent.parentName ? `Phụ huynh: ${selectedStudent.parentName}` : undefined,
-      additionalContacts: selectedStudent.parentPhone
-        ? [{ name: `Phụ huynh: ${selectedStudent.parentName || 'Người giám hộ'}`, phone: selectedStudent.parentPhone }]
-        : [],
-      quota: 12,
-      usedAbsences: type === 'off' ? selectedSessionIds.size : 0,
-    })
+      const requestsToCreate: Array<Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>> = []
+
+      for (const [clsCode, sessions] of sessionsByClass.entries()) {
+        const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date))
+        const reqStartDate = sorted[0].date
+        const reqEndDate = sorted[sorted.length - 1].date
+        const foundCls = studentClasses.find((c) => c.classCode === clsCode)
+        const isMath =
+          foundCls?.className.toLowerCase().includes('toán') || clsCode.toLowerCase().includes('toan')
+        const subjName = isMath ? 'Toán tư duy' : 'Tiếng Anh'
+        const title = `Đơn xin nghỉ phép - ${selectedStudent.name} (${subjName} - ${sessions.length} buổi)`
+
+        requestsToCreate.push({
+          studentId: selectedStudent.id,
+          studentName: selectedStudent.name,
+          studentCode:
+            selectedStudent.id === 's-baohan'
+              ? '10700325'
+              : `STU-00${selectedStudent.id.replace(/\D/g, '') || '01'}`,
+          branch: selectedStudent.branch,
+          type: 'off',
+          startDate: reqStartDate,
+          endDate: reqEndDate || reqStartDate,
+          reason: reason.trim(),
+          title,
+          phone: selectedStudent.phone || '',
+          email: selectedStudent.email || '',
+          className: foundCls?.className || selectedStudent.enrolledClass || 'Lớp chưa xếp',
+          classCode: clsCode,
+          productPackage: foundCls?.linkedPackageName || selectedStudent.packageName || 'Gói chuẩn',
+          parentName: selectedStudent.parentName ? `Phụ huynh: ${selectedStudent.parentName}` : undefined,
+          additionalContacts: selectedStudent.parentPhone
+            ? [{ name: `Phụ huynh: ${selectedStudent.parentName || 'Người giám hộ'}`, phone: selectedStudent.parentPhone }]
+            : [],
+          quota: quotaStats.totalQuota,
+          usedAbsences: sessions.length,
+        })
+      }
+
+      if (requestsToCreate.length > 0) {
+        const [first, ...rest] = requestsToCreate
+        onSubmit(first, rest)
+      }
+    } else {
+      const appliedClass = studentClasses[0]
+      const title = `Đơn xin bảo lưu - ${selectedStudent.name} (${reserveMode === 'hold_seat' ? 'Giữ chỗ' : 'Không giữ chỗ'})`
+      onSubmit({
+        studentId: selectedStudent.id,
+        studentName: selectedStudent.name,
+        studentCode:
+          selectedStudent.id === 's-baohan'
+            ? '10700325'
+            : `STU-00${selectedStudent.id.replace(/\D/g, '') || '01'}`,
+        branch: selectedStudent.branch,
+        type: 'reservation',
+        startDate: startDate,
+        endDate: endDate || startDate,
+        reason: reason.trim(),
+        title,
+        phone: selectedStudent.phone || '',
+        email: selectedStudent.email || '',
+        className: appliedClass?.className || selectedStudent.enrolledClass || 'Lớp chưa xếp',
+        classCode: appliedClass?.classCode || 'CLS-GEN-01',
+        productPackage: selectedStudent.packageName || 'Gói chuẩn',
+        parentName: selectedStudent.parentName ? `Phụ huynh: ${selectedStudent.parentName}` : undefined,
+        additionalContacts: selectedStudent.parentPhone
+          ? [{ name: `Phụ huynh: ${selectedStudent.parentName || 'Người giám hộ'}`, phone: selectedStudent.parentPhone }]
+          : [],
+        quota: quotaStats.totalQuota,
+        usedAbsences: 0,
+      })
+    }
 
     handleClearAndClose()
   }
 
+  const selectedSessionsCount = selectedSessionIds.size
   const isSubmitDisabled =
-    !startDate ||
     !reason.trim() ||
-    (type === 'off' && selectedSessionIds.size === 0)
+    (type === 'off' && selectedSessionsCount === 0) ||
+    (type === 'reservation' && !startDate)
 
   return (
     <Dialog
@@ -276,100 +434,50 @@ export function LeaveReserveCreateDialog({
         else onOpenChange(true)
       }}
     >
-      <DialogContent className="w-[94vw] max-w-3xl lg:max-w-[780px] bg-card p-0 gap-0 overflow-hidden border border-border shadow-2xl rounded-xl">
-        {/* Header - Title only, compact and clean */}
-        <DialogHeader className="px-5 py-3 border-b border-border/40">
-          <DialogTitle className="text-base font-bold text-foreground tracking-tight">
-            Tạo đơn yêu cầu mới
+      <DialogContent className="w-[96vw] max-w-5xl lg:max-w-[1040px] xl:max-w-[1080px] bg-card p-0 gap-0 overflow-hidden border border-border shadow-2xl rounded-xl">
+        {/* Header: Viết hoa chữ cái đầu, text thường, nhỏ, màu nhạt, không in đậm */}
+        <DialogHeader className="px-5 py-2.5 border-b border-border/40">
+          <DialogTitle className="text-xs font-normal text-muted-foreground tracking-normal">
+            {type === 'off' ? 'Đăng ký nghỉ phép' : 'Đơn xin bảo lưu học tập'}
           </DialogTitle>
         </DialogHeader>
         <DialogDescription className="sr-only">
           Tạo đơn yêu cầu xin nghỉ phép hoặc bảo lưu học tập cho học viên
         </DialogDescription>
 
-        {/* 2-Column Body: Form on Left + Policy Panel on Right */}
+        {/* 2-Column Body: Form on Left + Policy & Student Panel on Right */}
         <form onSubmit={handleSubmit} className="flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 max-h-[72vh] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 p-4 max-h-[75vh] overflow-y-auto">
             {/* Left Column: Form Controls (7 cols) */}
-            <div className="space-y-2.5 md:col-span-7">
-              {/* Button Bảo lưu / Nghỉ phép đưa sang panel trái, giàn full width */}
-              <div className="w-full">
-                <SegmentedControl
-                  value={type}
-                  options={[
-                    {
-                      value: 'off',
-                      label: 'Nghỉ phép',
-                    },
-                    {
-                      value: 'reservation',
-                      label: 'Bảo lưu',
-                    },
-                  ]}
-                  onValueChange={handleTypeChange}
-                  className="w-full grid grid-cols-2 p-1 bg-muted/70 rounded-lg"
-                  itemClassName="w-full text-center h-8 text-xs font-semibold"
-                />
-              </div>
+            <div className="space-y-3 md:col-span-7">
+              {/* Chỉ hiển thị ô search học viên khi KHÔNG đi từ học viên cụ thể */}
+              {!initialStudentId && (
+                <div className="space-y-1">
+                  <FieldLabel label="Học viên" required>
+                    <StudentCombobox
+                      options={studentOptions}
+                      value={selectedStudent?.id || ''}
+                      onChange={(val) => {
+                        setStudentId(val)
+                      }}
+                      placeholder="Tìm theo tên, SĐT hoặc mã học viên..."
+                      className="w-full"
+                    />
+                  </FieldLabel>
+                </div>
+              )}
 
-              {/* Student Selector */}
-              <div className="space-y-1">
-                <FieldLabel
-                  label={
-                    <div className="flex items-center justify-between w-full">
-                      <span>Học viên</span>
-                      {type === 'reservation' && selectedStudent && (
-                        <span
-                          className={cn(
-                            'inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border normal-case',
-                            eligibility.eligible
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                              : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
-                          )}
-                        >
-                          {eligibility.eligible ? (
-                            <>
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Đủ ĐK ({eligibility.remaining}b ≥ 16b)
-                            </>
-                          ) : (
-                            <>
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              Chưa đủ 16 buổi
-                            </>
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  }
-                  required
-                >
-                  <StudentCombobox
-                    options={studentOptions}
-                    value={selectedStudent?.id || ''}
-                    onChange={(val) => {
-                      setStudentId(val)
-                      setSelectedClassCode('all')
-                    }}
-                    placeholder="Tìm theo tên, SĐT hoặc mã học viên..."
-                    className="w-full"
-                  />
-                </FieldLabel>
-              </div>
-
-              {/* SECTION: Nghỉ phép with 4-button Date Filter Tabs in middle & Multi-session Checklist */}
+              {/* SECTION: Nghỉ phép with Treeview of classes & upcoming sessions */}
               {type === 'off' && (
                 <LeaveReserveOffForm
-                  startDate={startDate}
-                  onDateChange={(date) => {
-                    setStartDate(date)
-                    setEndDate(date)
-                  }}
-                  availableSessions={availableSessions}
+                  student={selectedStudent}
+                  packageOptions={packageOptions}
+                  activePackageTab={activePackageTab}
+                  onPackageTabChange={handlePackageTabChange}
+                  classTrees={displayedClassTrees}
                   selectedSessionIds={selectedSessionIds}
-                  onToggleSession={toggleSession}
-                  onToggleSelectAllSessions={toggleSelectAllSessions}
-                  quotaRemaining={selectedStudent?.remainingSessions ?? 10}
+                  onToggleSession={handleToggleSession}
+                  quotaStats={quotaStats}
                 />
               )}
 
@@ -388,43 +496,58 @@ export function LeaveReserveCreateDialog({
                 />
               )}
 
-              {/* Reason Textarea */}
-              <FieldLabel label={type === 'off' ? 'Lý do xin nghỉ phép' : 'Lý do xin bảo lưu'} required>
+              {/* Reason Textarea (Viết hoa chữ cái đầu, text thường, không in đậm) */}
+              <div className="space-y-1">
+                <label className="text-xs font-normal text-muted-foreground">
+                  {type === 'off' ? 'Lý do nghỉ phép' : 'Lý do xin bảo lưu'} <span className="text-destructive">*</span>
+                </label>
                 <textarea
                   id="request-reason"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder={
                     type === 'off'
-                      ? 'Ví dụ: Học viên ốm sốt, gia đình có việc bận, đi du lịch...'
+                      ? 'Nhập lý do nghỉ phép (ví dụ: Học viên ốm sốt, bận việc gia đình...)'
                       : 'Ví dụ: Học viên đi học quân sự, du học trao đổi, lý do cá nhân...'
                   }
-                  className="w-full min-h-[56px] max-h-[80px] rounded-md border border-input bg-background p-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="w-full min-h-[56px] max-h-[80px] rounded-md border border-input bg-background p-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-normal"
                   required
                 />
-              </FieldLabel>
+              </div>
             </div>
 
-            {/* Right Column: Policy & Guidelines + Student History Cards (5 cols) */}
+            {/* Right Column: Thông tin học viên + Lịch sử nghỉ phép + Quy định (5 cols) */}
             <LeaveReservePolicyPanel
               type={type}
+              student={selectedStudent}
               studentId={selectedStudent?.id}
               studentName={selectedStudent?.name}
+              packageName={activePackageForPolicy?.packageName || initialPackageName}
+              remainingSessions={activePackageForPolicy?.remainingSessions ?? initialRemainingSessions}
+              totalSessions={activePackageForPolicy?.totalSessions ?? initialTotalSessions}
+              activePackageTab={activePackageTab}
+              activePackage={activePackageForPolicy}
             />
           </div>
 
-          {/* Compact Footer */}
+          {/* Compact Footer (Nút Bỏ qua & Xác nhận) */}
           <div className="px-5 py-2.5 border-t border-border/40 flex items-center justify-end gap-2 bg-muted/10">
-            <Button type="button" variant="outline" size="sm" onClick={handleClearAndClose} className="cursor-pointer h-8 text-xs">
-              Hủy bỏ
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClearAndClose}
+              className="cursor-pointer h-8 text-xs px-4"
+            >
+              Bỏ qua
             </Button>
             <Button
               type="submit"
               size="sm"
               disabled={isSubmitDisabled}
-              className="font-semibold cursor-pointer h-8 text-xs"
+              className="font-semibold cursor-pointer h-8 text-xs px-5 bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Gửi đơn yêu cầu
+              Xác nhận
             </Button>
           </div>
         </form>

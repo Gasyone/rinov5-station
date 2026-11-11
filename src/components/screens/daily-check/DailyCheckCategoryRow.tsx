@@ -41,7 +41,7 @@ export function DailyCheckCategoryRow({
   return (
     <tr className="border-b border-border/70 bg-muted/40 group/cat">
       {/* Sticky Col 1: Tên danh mục, số lượng tiêu chí, nút Thu gọn & Ẩn (khi hover) */}
-      <td className="sticky left-0 z-20 bg-muted/90 backdrop-blur-xs w-[350px] min-w-[350px] border-r border-border shadow-[inset_-1px_0_0_var(--border)] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border/90 after:pointer-events-none relative p-2 px-3">
+      <td className="sticky left-0 z-20 bg-muted/90 backdrop-blur-xs w-[350px] min-w-[350px] max-w-[350px] border-r border-border p-2 px-3 align-middle">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <div
@@ -54,7 +54,7 @@ export function DailyCheckCategoryRow({
                 <ChevronDown className="h-3.5 w-3.5 text-primary shrink-0" />
               )}
 
-              <span className="font-medium text-xs uppercase truncate">
+              <span className="font-semibold text-xs uppercase truncate">
                 {group}
               </span>
               <span className="text-[11px] font-normal text-muted-foreground/70 shrink-0">
@@ -77,7 +77,7 @@ export function DailyCheckCategoryRow({
         </div>
       </td>
 
-      {/* 7 Cột ngày: Thống kê n/n sát trái & Nút ảnh từng ngày */}
+      {/* 7 Cột ngày: Thống kê n/n & Nút ảnh từng ngày */}
       {weekDays.map((day) => {
         const catScore = getCategoryDayScore(itemNames, day.dateStr, day.isToday)
         const photos = getCategoryPhotos(group, day.dateStr)
@@ -87,7 +87,7 @@ export function DailyCheckCategoryRow({
           return (
             <td
               key={day.dateStr}
-              className="p-1 text-center min-w-[145px] w-[145px] border-r border-border/40 last:border-r-0 text-muted-foreground/30 align-middle text-xs"
+              className="p-1.5 text-center w-[110px] min-w-[110px] max-w-[110px] border-r border-border/40 last:border-r-0 text-muted-foreground/30 align-middle text-xs"
             >
               —
             </td>
@@ -98,29 +98,31 @@ export function DailyCheckCategoryRow({
           <td
             key={day.dateStr}
             className={cn(
-              'p-1 px-2 min-w-[145px] w-[145px] border-r border-border/40 last:border-r-0 align-middle transition-colors',
-              day.isToday && 'bg-primary/5'
+              'p-1.5 px-1.5 align-middle transition-colors text-center',
+              day.isToday
+                ? 'w-[185px] min-w-[185px] max-w-[185px] bg-primary/[0.04] border-x-2 border-primary/25'
+                : 'w-[110px] min-w-[110px] max-w-[110px] border-r border-border/40 last:border-r-0'
             )}
           >
-            <div className="flex items-center justify-between gap-1 w-full">
-              {/* Thống kê nhẹ n/n sát cạnh trái, màu nhạt */}
+            <div className="flex items-center justify-center gap-1.5 w-full">
+              {/* Thống kê nhẹ n/n */}
               {catScore && catScore.isEvaluated ? (
                 <span
                   className={cn(
-                    'text-[11px] font-mono font-medium shrink-0',
+                    'text-[11px] font-mono font-semibold shrink-0',
                     catScore.fail > 0
-                      ? 'text-rose-600 dark:text-rose-400 font-semibold'
-                      : 'text-muted-foreground/70 dark:text-muted-foreground/80'
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : 'text-foreground/80'
                   )}
                   title={`Đạt ${catScore.pass}/${catScore.total} tiêu chí`}
                 >
                   {catScore.pass}/{catScore.total}
                 </span>
               ) : (
-                <span className="text-[11px] text-muted-foreground/30 font-mono shrink-0">—</span>
+                <span className="text-[11px] text-muted-foreground/40 font-mono shrink-0">—</span>
               )}
 
-              {/* Nút Ảnh ở bên phải */}
+              {/* Nút Ảnh */}
               {day.isToday ? (
                 <button
                   type="button"

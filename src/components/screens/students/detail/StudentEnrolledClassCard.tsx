@@ -30,6 +30,7 @@ export interface StudentEnrolledClassCardProps {
   studentLevel?: string
   isPast?: boolean
   defaultExpanded?: boolean
+  isExpanded?: boolean
   onOpenClassDetail?: (classCode: string) => void
   onOpenAssignClass?: () => void
   onLeaveClass?: () => void
@@ -45,6 +46,7 @@ export function StudentEnrolledClassCard({
   studentLevel,
   isPast = false,
   defaultExpanded,
+  isExpanded = true,
   onOpenClassDetail,
   onLeaveClass,
   onReserveClass,
@@ -456,7 +458,7 @@ export function StudentEnrolledClassCard({
             </div>
           </div>
 
-          {/* Dòng 3: Thống kê học tập 3 thẻ to cho lớp đang học */}
+          {/* Dòng 3: Thống kê học tập 3 thẻ to cho lớp đang học - luôn hiển thị đầy đủ */}
           <div className="pt-0.5 animate-in fade-in duration-200">
             <div className="grid grid-cols-3 select-none gap-1.5">
               {/* Card 1: Chuyên cần */}

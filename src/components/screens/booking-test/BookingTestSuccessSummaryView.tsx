@@ -15,9 +15,11 @@ import {
   ExternalLink,
   MessageSquare,
   Sparkles,
-  School,
   FileText,
   Phone,
+  Laptop,
+  Globe,
+  RotateCcw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -43,13 +45,91 @@ export function BookingTestSuccessSummaryView({
   schoolAddress,
   dateLabel,
   timeRange,
-  onCreateAnother: _onCreateAnother,
+  onCreateAnother,
 }: BookingTestSuccessSummaryViewProps) {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
   const [isCopied, setIsCopied] = useState(false)
   const [isPhoneCopied, setIsPhoneCopied] = useState(false)
+  const [isTestLinkCopied, setIsTestLinkCopied] = useState(false)
   const displayPhone = booking.phone || '---'
+
+  const resolvedRole =
+    booking.parentRole ||
+    (leadId ? mockLeads.find((l) => l.id === leadId)?.parentRole : undefined) ||
+    mockLeads.find((l) => l.studentName === booking.childName || l.phone === booking.phone)?.parentRole ||
+    (booking.parentName?.toLowerCase().includes('văn') ||
+     booking.parentName?.toLowerCase().includes('nam') ||
+     booking.parentName?.toLowerCase().includes('tuấn') ||
+     booking.parentName?.toLowerCase().includes('dũng')
+      ? 'Bố'
+      : 'Mẹ')
+
+  const rawParentName =
+    booking.parentName ||
+    booking.familyMembers?.[0]?.name?.replace(/\s*\([^)]*\)/, '') ||
+    booking.familyName?.replace(/^Gia đình\s+/, '') ||
+    'Chưa gán'
+
+  const displayParentName = rawParentName !== 'Chưa gán'
+    ? (rawParentName.includes('(') ? rawParentName : `${rawParentName} (${resolvedRole})`)
+    : 'Chưa gán'
+
+  // Tạo URL bài test online theo cấu trúc chuẩn rinoedu.vn/tutoring/intro
+  const onlineTestLink = React.useMemo(() => {
+    if (booking.testLink && booking.testLink.includes('rinoedu.vn/tutoring/intro')) {
+      return booking.testLink
+    }
+    const isMath = booking.subject === 'math' || booking.program?.toLowerCase().includes('toán')
+    const subjectAlias = isMath ? 'toan' : 'tieng_anh'
+    const subjectId = isMath ? '1' : '2'
+    const curriculum = isMath ? 'CT_TOANTD' : 'CT_STATION'
+    const levelMatch = (booking.expectedLevel || booking.testResult?.level || '').match(/\d+/)
+    const levelNum = levelMatch ? levelMatch[0] : '1'
+    const birthYear = booking.dob ? booking.dob.slice(-4) : '2018'
+    const cleanParent = rawParentName !== 'Chưa gán' ? rawParentName.replace(/\s*\([^)]*\)/, '').trim() : 'Tech Test Sen'
+    const numericId = booking.id.replace(/\D/g, '') || '303174'
+    const practiceId = `618${numericId.slice(-3).padStart(3, '0')}`
+
+    const params = new URLSearchParams({
+      student_name: booking.childName || 'Hoàng Thị Sen 1',
+      parent_name: cleanParent || 'Tech Test Sen',
+      last_example_point: '',
+      birthday: birthYear,
+      phone: booking.phone || '0866999702',
+      subject_alias: subjectAlias,
+      level: levelNum,
+      grade_id: '2',
+      subjectId: subjectId,
+      curriculum: curriculum,
+      core_user_id: numericId,
+      tutorPracticeId: practiceId,
+    })
+
+    return `https://rinoedu.vn/tutoring/intro?${params.toString()}`
+  }, [booking, rawParentName])
+
+  const handleCopyTestLink = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(onlineTestLink)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = onlineTestLink
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+      }
+      setIsTestLinkCopied(true)
+      setTimeout(() => setIsTestLinkCopied(false), 2000)
+      toast.success('Đã sao chép link làm bài test online!')
+    } catch {
+      toast.error('Không thể sao chép link test')
+    }
+  }
 
   const displayCreator =
     booking.createdBy && booking.createdBy !== 'Người dùng hiện tại' && booking.createdBy !== 'Demo User'
@@ -82,65 +162,73 @@ export function BookingTestSuccessSummaryView({
     }
   }
 
-  // Xác định vai trò phụ huynh (Bố / Mẹ / Phụ huynh)
-  const resolvedRole =
-    booking.parentRole ||
-    (leadId ? mockLeads.find((l) => l.id === leadId)?.parentRole : undefined) ||
-    mockLeads.find((l) => l.studentName === booking.childName || l.phone === booking.phone)?.parentRole ||
-    (booking.parentName?.toLowerCase().includes('văn') ||
-     booking.parentName?.toLowerCase().includes('nam') ||
-     booking.parentName?.toLowerCase().includes('tuấn') ||
-     booking.parentName?.toLowerCase().includes('dũng')
-      ? 'Bố'
-      : 'Mẹ')
-
-  const rawParentName =
-    booking.parentName ||
-    booking.familyMembers?.[0]?.name?.replace(/\s*\([^)]*\)/, '') ||
-    booking.familyName?.replace(/^Gia đình\s+/, '') ||
-    'Chưa gán'
-
-  const displayParentName = rawParentName !== 'Chưa gán'
-    ? (rawParentName.includes('(') ? rawParentName : `${rawParentName} (${resolvedRole})`)
-    : 'Chưa gán'
-
   const displayTime = timeRange || booking.testTime.split(' ')[1] || '09:00 - 09:30'
   const displayDate = dateLabel || booking.testTime.split(' ')[0] || 'Hôm nay'
   const displayTeacher = booking.teacher || booking.tester || 'Bộ phận chuyên môn phân công'
   const displayLevel = booking.testResult?.level || booking.expectedLevel || 'Chưa phân cấp'
 
-  // Biên soạn nội dung tin nhắn Zalo chuẩn bị gửi cho phụ huynh (gọn gàng, dễ đọc, có thể chỉnh sửa)
-  const defaultZaloMessage = React.useMemo(() => [
-    `🌟 XÁC NHẬN LỊCH ĐÁNH GIÁ NĂNG LỰC - RINOEDU 🌟`,
-    `Kính gửi Quý phụ huynh ${displayParentName !== 'Chưa gán' ? displayParentName : (booking.familyName || booking.familyMembers?.[0]?.name || '')},`,
-    `Hệ thống RinoEdu xin gửi xác nhận thông tin lịch hẹn đánh giá năng lực của con:`,
-    `👤 Học viên: ${booking.childName}`,
-    `📚 Chương trình: ${booking.program}${displayLevel ? ` (${displayLevel})` : ''}`,
-    `⏰ Thời gian: ${displayTime}, ${displayDate}`,
-    `📍 Cơ sở: ${booking.school}`,
-    ...(schoolAddress ? [`🏢 Địa chỉ: ${schoolAddress}`] : []),
-    `🚪 Phòng: ${booking.room || 'Phòng A1'}`,
-    `👩‍🏫 Phụ trách: ${displayTeacher}`,
-    ``,
-    `👉 Lưu ý: Ba/Mẹ vui lòng đưa bé đến trước giờ hẹn 10 - 15 phút để bé làm quen phòng học và chuẩn bị tâm lý thoải mái nhất nhé ạ.`,
-    `RinoEdu trân trọng cảm ơn Ba/Mẹ! ❤️`,
-  ].join('\n'), [displayParentName, booking, displayLevel, displayTime, displayDate, schoolAddress, displayTeacher])
-
-  const [messageContent, setMessageContent] = useState(defaultZaloMessage)
+  const messageBoxRef = React.useRef<HTMLDivElement>(null)
+  const [resetKey, setResetKey] = useState(0)
 
   const handleCopyZalo = async () => {
     try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(messageContent)
+      let htmlSnippet = ''
+      let plainText = ''
+
+      if (messageBoxRef.current) {
+        htmlSnippet = messageBoxRef.current.innerHTML
+        // Thay thế hiển thị bài test trong plain text để vẫn có link khi paste ra app thuần text
+        plainText = messageBoxRef.current.innerText.replace(
+          /Bài test(\s*↗)?/,
+          `Bài test: ${onlineTestLink}`
+        )
       } else {
-        const textArea = document.createElement('textarea')
-        textArea.value = messageContent
-        textArea.style.position = 'fixed'
-        textArea.style.opacity = '0'
-        document.body.appendChild(textArea)
-        textArea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textArea)
+        htmlSnippet = `
+          <div>
+            <p>🌟 <b>XÁC NHẬN LỊCH ĐÁNH GIÁ NĂNG LỰC - RINOEDU</b> 🌟</p>
+            <p>Kính gửi Quý phụ huynh <b>${displayParentName !== 'Chưa gán' ? displayParentName : (booking.familyName || booking.familyMembers?.[0]?.name || '')}</b>,</p>
+            <p>Hệ thống RinoEdu xin gửi xác nhận thông tin lịch hẹn đánh giá năng lực của con:</p>
+            <p>👤 <b>Học viên:</b> ${booking.childName}</p>
+            <p>📚 <b>Chương trình:</b> ${booking.program}${displayLevel ? ` (${displayLevel})` : ''}</p>
+            <p>⏰ <b>Thời gian:</b> ${displayTime}, ${displayDate}</p>
+            <p>📍 <b>Cơ sở:</b> ${booking.school}</p>
+            ${schoolAddress ? `<p>🏢 <b>Địa chỉ:</b> ${schoolAddress}</p>` : ''}
+            <p>👩‍🏫 <b>Phụ trách:</b> ${displayTeacher}</p>
+            <p>📝 <b>Bài test:</b> <a href="${onlineTestLink}">Bài test</a></p>
+            <br/>
+            <p>👉 <i>Lưu ý: Ba/Mẹ vui lòng đưa bé đến trước giờ hẹn 10 - 15 phút để bé làm quen phòng học và chuẩn bị tâm lý thoải mái nhất nhé ạ.</i></p>
+            <p>RinoEdu trân trọng cảm ơn Ba/Mẹ! ❤️</p>
+          </div>
+        `.trim()
+
+        plainText = [
+          `🌟 XÁC NHẬN LỊCH ĐÁNH GIÁ NĂNG LỰC - RINOEDU 🌟`,
+          `Kính gửi Quý phụ huynh ${displayParentName !== 'Chưa gán' ? displayParentName : (booking.familyName || booking.familyMembers?.[0]?.name || '')},`,
+          `Hệ thống RinoEdu xin gửi xác nhận thông tin lịch hẹn đánh giá năng lực của con:`,
+          `👤 Học viên: ${booking.childName}`,
+          `📚 Chương trình: ${booking.program}${displayLevel ? ` (${displayLevel})` : ''}`,
+          `⏰ Thời gian: ${displayTime}, ${displayDate}`,
+          `📍 Cơ sở: ${booking.school}`,
+          ...(schoolAddress ? [`🏢 Địa chỉ: ${schoolAddress}`] : []),
+          `👩‍🏫 Phụ trách: ${displayTeacher}`,
+          `📝 Bài test: ${onlineTestLink}`,
+          ``,
+          `👉 Lưu ý: Ba/Mẹ vui lòng đưa bé đến trước giờ hẹn 10 - 15 phút để bé làm quen phòng học và chuẩn bị tâm lý thoải mái nhất nhé ạ.`,
+          `RinoEdu trân trọng cảm ơn Ba/Mẹ! ❤️`,
+        ].join('\n')
+      }
+
+      if (navigator?.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+        const textBlob = new Blob([plainText], { type: 'text/plain' })
+        const htmlBlob = new Blob([htmlSnippet], { type: 'text/html' })
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': textBlob,
+            'text/html': htmlBlob,
+          }),
+        ])
+      } else if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(plainText)
       }
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 2500)
@@ -186,6 +274,17 @@ export function BookingTestSuccessSummaryView({
               #{booking.id}
             </span>
           </div>
+          {onCreateAnother && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onCreateAnother}
+              className="h-7 px-2.5 text-xs font-medium border-emerald-300 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950 cursor-pointer shadow-xs shrink-0"
+            >
+              + Đặt lịch khác
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -233,26 +332,18 @@ export function BookingTestSuccessSummaryView({
                 </div>
               </div>
 
-              {/* Dòng 2: Cơ sở & Phòng test (cạnh phải) */}
-              <div className="flex items-start justify-between gap-2 min-w-0">
-                <div className="flex items-start gap-2 min-w-0 flex-1">
-                  <MapPin className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <span className="font-semibold text-foreground text-xs block truncate">
-                      {booking.school}
-                    </span>
-                    {schoolAddress && (
-                      <span className="text-muted-foreground text-xs block truncate leading-tight">
-                        {schoolAddress}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0 text-xs mt-0.5">
-                  <School className="h-3.5 w-3.5 text-violet-500 shrink-0" />
-                  <span className="font-medium text-foreground text-xs">
-                    {booking.room || 'Phòng A1'}
+              {/* Dòng 2: Cơ sở */}
+              <div className="flex items-start gap-2 min-w-0">
+                <MapPin className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <span className="font-semibold text-foreground text-xs block truncate">
+                    {booking.school}
                   </span>
+                  {schoolAddress && (
+                    <span className="text-muted-foreground text-xs block truncate leading-tight">
+                      {schoolAddress}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -282,7 +373,57 @@ export function BookingTestSuccessSummaryView({
             </div>
           </div>
 
-          {/* KHỐI 2: THÔNG TIN HỌC VIÊN & PHỤ HUYNH */}
+          {/* KHỐI 2: LINK BÀI TEST ONLINE CHO HỌC VIÊN */}
+          <div className="rounded-lg border border-border/80 bg-card p-3 sm:p-3.5 space-y-2 shadow-2xs">
+            <div className="flex items-center gap-1.5 border-b border-border/60 pb-1.5">
+              <Laptop className="h-3.5 w-3.5 text-primary shrink-0" />
+              <h3 className="font-bold text-xs text-foreground">
+                Link bài test Online cho Học viên
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-1.5 p-1 rounded-md bg-muted/40 border border-border/70">
+              <div className="flex items-center gap-1.5 min-w-0 flex-1 px-1.5">
+                <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span className="font-mono text-xs text-foreground font-medium truncate select-all" title={onlineTestLink}>
+                  {onlineTestLink}
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyTestLink}
+                className="h-6 px-2 text-xs font-semibold gap-1 text-primary hover:text-primary hover:bg-primary/10 cursor-pointer shrink-0"
+                title="Sao chép link làm bài test"
+              >
+                {isTestLinkCopied ? (
+                  <>
+                    <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                    <span>Đã chép</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3" />
+                    <span>Sao chép</span>
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(onlineTestLink, '_blank')}
+                className="h-6 px-2 text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                title="Mở bài test trong tab mới"
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span className="hidden sm:inline">Mở link</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* KHỐI 3: THÔNG TIN HỌC VIÊN & PHỤ HUYNH */}
           <div className="rounded-lg border border-border/80 bg-card p-3.5 space-y-2.5 shadow-2xs">
             <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-1.5">
               <div className="flex items-center gap-1.5">
@@ -385,7 +526,7 @@ export function BookingTestSuccessSummaryView({
         {/* CỘT PHẢI: MẪU TIN NHẮN ZALO GỬI PHỤ HUYNH (MỞ RỘNG) */}
         <div className="lg:col-span-7 flex flex-col">
           <div className="rounded-lg border border-border/80 bg-card p-3.5 space-y-2.5 shadow-2xs flex flex-col h-full">
-            <div className="flex items-center justify-between border-b border-border/60 pb-1.5">
+            <div className="flex items-center justify-between border-b border-border/60 pb-1.5 gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
                 <MessageSquare className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                 <h3 className="font-bold text-xs text-foreground truncate">
@@ -395,33 +536,95 @@ export function BookingTestSuccessSummaryView({
                   (Có thể chỉnh sửa)
                 </span>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopyZalo}
-                className="h-6 px-2 text-xs font-semibold gap-1 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-300 dark:text-emerald-300 dark:hover:bg-emerald-950/40 cursor-pointer shrink-0"
-              >
-                {isCopied ? (
-                  <>
-                    <Check className="h-3 w-3 text-emerald-600" />
-                    <span>Đã sao chép</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3 w-3 text-muted-foreground" />
-                    <span>Sao chép toàn bộ</span>
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setResetKey((k) => k + 1)
+                    toast.info('Đã khôi phục nội dung tin nhắn mặc định')
+                  }}
+                  className="h-6 px-1.5 text-[11px] font-normal text-muted-foreground hover:text-foreground cursor-pointer gap-1"
+                  title="Khôi phục lại nội dung mặc định"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span className="hidden md:inline">Khôi phục</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyZalo}
+                  className="h-6 px-2 text-xs font-semibold gap-1 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-300 dark:text-emerald-300 dark:hover:bg-emerald-950/40 cursor-pointer shadow-2xs"
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="h-3 w-3 text-emerald-600" />
+                      <span>Đã sao chép</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 text-muted-foreground" />
+                      <span>Sao chép toàn bộ</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
-            <textarea
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-              className="w-full flex-1 rounded-lg bg-muted/40 border border-border/60 p-3 sm:p-3.5 font-mono text-[11.5px] sm:text-xs text-foreground leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 min-h-[320px] sm:min-h-[340px] resize-y"
-              placeholder="Nhập nội dung tin nhắn gửi Zalo cho phụ huynh..."
-            />
+            <div
+              key={resetKey}
+              ref={messageBoxRef}
+              contentEditable
+              suppressContentEditableWarning
+              className="w-full flex-1 rounded-lg bg-muted/30 border border-border/60 p-3.5 sm:p-4 text-xs font-sans text-foreground leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 min-h-[320px] sm:min-h-[340px] space-y-2 select-text overflow-y-auto"
+            >
+              <div className="font-bold text-emerald-800 dark:text-emerald-400">
+                🌟 XÁC NHẬN LỊCH ĐÁNH GIÁ NĂNG LỰC - RINOEDU 🌟
+              </div>
+
+              <div>
+                Kính gửi Quý phụ huynh <strong>{displayParentName !== 'Chưa gán' ? displayParentName : (booking.familyName || booking.familyMembers?.[0]?.name || '')}</strong>,
+              </div>
+
+              <div>
+                Hệ thống RinoEdu xin gửi xác nhận thông tin lịch hẹn đánh giá năng lực của con:
+              </div>
+
+              <div className="space-y-1 pl-1">
+                <div>👤 <strong>Học viên:</strong> {booking.childName}</div>
+                <div>📚 <strong>Chương trình:</strong> {booking.program}{displayLevel ? ` (${displayLevel})` : ''}</div>
+                <div>⏰ <strong>Thời gian:</strong> {displayTime}, {displayDate}</div>
+                <div>📍 <strong>Cơ sở:</strong> {booking.school}</div>
+                {schoolAddress && (
+                  <div>🏢 <strong>Địa chỉ:</strong> {schoolAddress}</div>
+                )}
+                <div>👩‍🏫 <strong>Phụ trách:</strong> {displayTeacher}</div>
+                <div className="flex items-center gap-1.5 py-0.5" contentEditable={false}>
+                  <span>📝</span>
+                  <span className="font-semibold text-foreground">Bài test:</span>
+                  <a
+                    href={onlineTestLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 font-semibold underline hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Nhấn để mở làm bài test online"
+                  >
+                    <span>Bài test</span>
+                    <ExternalLink className="h-3 w-3 inline" />
+                  </a>
+                </div>
+              </div>
+
+              <div className="pt-2 text-muted-foreground text-[11.5px] border-t border-border/40">
+                👉 <em>Lưu ý: Ba/Mẹ vui lòng đưa bé đến trước giờ hẹn 10 - 15 phút để bé làm quen phòng học và chuẩn bị tâm lý thoải mái nhất nhé ạ.</em>
+              </div>
+
+              <div className="text-emerald-700 dark:text-emerald-400 font-medium text-[11.5px]">
+                RinoEdu trân trọng cảm ơn Ba/Mẹ! ❤️
+              </div>
+            </div>
           </div>
         </div>
       </div>

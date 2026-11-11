@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { StudentProgram } from './studentDetailTypes'
 import { StudentPackageHistoryPopover } from './StudentPackageHistoryPopover'
+import { StatusBadge } from '@/components/shared'
 
 export interface StudentProgramQuotaSummaryCardProps {
   program: StudentProgram
@@ -144,15 +145,21 @@ export function StudentProgramQuotaSummaryCard({
         className
       )}
     >
-      {/* ── DÒNG 1: TÊN GÓI HỌC (TRÁI) & SỐ BUỔI HỌC (PHẢI) - LUÔN HIỂN THỊ CẢ KHI THU GỌN ── */}
+      {/* ── DÒNG 1: TÊN GÓI HỌC + TRẠNG THÁI GÓI (TRÁI) & SỐ BUỔI HỌC (PHẢI) ── */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        {/* Tên gói học */}
-        <h4
-          className="text-xs sm:text-[13px] font-bold text-foreground truncate leading-tight flex-1 min-w-0"
-          title={packageDisplayName}
-        >
-          {packageDisplayName}
-        </h4>
+        {/* Tên gói học + Badge trạng thái gói */}
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <h4
+            className="text-xs sm:text-[13px] font-bold text-foreground truncate leading-tight"
+            title={packageDisplayName}
+          >
+            {packageDisplayName}
+          </h4>
+          <StatusBadge
+            status={program.programStatus || 'active'}
+            className="text-[10px] py-0 px-1.5 h-4 shrink-0 font-medium"
+          />
+        </div>
 
         {/* Số buổi học */}
         <div className="flex items-center gap-1.5 text-xs shrink-0 text-right ml-auto">
@@ -179,7 +186,7 @@ export function StudentProgramQuotaSummaryCard({
 
       {/* ── NỘI DUNG MỞ RỘNG: DÒNG 2 (MÔ TẢ, CƠ SỞ) & DÒNG 3 (QUOTA, TÁI PHÍ, HẠN DÙNG) ── */}
       {isExpanded && (
-        <div className="space-y-1 pt-0.5 animate-in fade-in duration-150">
+        <div className="space-y-1 pt-1 border-t border-border/40 animate-in fade-in duration-150">
           {/* Dòng 2: Phân cấp/mô tả (trái) & Cơ sở (phải) */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
             <div className="flex items-center gap-1.5 flex-wrap min-w-0">

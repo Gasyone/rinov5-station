@@ -2,21 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import {
-  X,
   Calendar,
-  User,
   FileText,
   Clock,
   Copy,
-  Phone,
   ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
   History,
-  Sparkles,
-  ExternalLink,
-  MapPin,
-  BookOpen,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -28,7 +19,7 @@ import { mockStudents } from '@/mocks/students'
 import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 import { cn } from '@/lib/utils'
 import { TYPE_LABELS, STATUS_LABELS } from './leaveReserveTypes'
-import { getRequestSubject, SUBJECT_OPTIONS, maskPhone } from './leaveReserveHelpers'
+import { getRequestSubject, SUBJECT_OPTIONS } from './leaveReserveHelpers'
 import { LeaveReserveReasonDialog } from './LeaveReserveReasonDialog'
 
 interface LeaveReserveDetailDialogProps {
@@ -39,7 +30,12 @@ interface LeaveReserveDetailDialogProps {
   readOnly?: boolean
 }
 
-export function LeaveReserveDetailDialog({
+export function LeaveReserveDetailDialog(props: LeaveReserveDetailDialogProps) {
+  if (!props.open || !props.request) return null
+  return <LeaveReserveDetailDialogInner {...props} />
+}
+
+function LeaveReserveDetailDialogInner({
   open,
   onOpenChange,
   request,

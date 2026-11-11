@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, ExternalLink, X } from 'lucide-react'
+import { Check, ExternalLink, Pencil, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
@@ -22,6 +22,7 @@ interface Form2025SectionProps {
   draft: AssessmentDraft
   resultHref?: string
   readOnly?: boolean
+  onStartEdit?: () => void
   onDraftChange: (draft: AssessmentDraft | ((current: AssessmentDraft) => AssessmentDraft)) => void
 }
 
@@ -29,6 +30,7 @@ export function Form2025Section({
   draft,
   resultHref,
   readOnly,
+  onStartEdit,
   onDraftChange,
 }: Form2025SectionProps) {
   const totalScore = FORM_2025_COLUMNS.reduce((sum, col) => {
@@ -99,13 +101,29 @@ export function Form2025Section({
             <span className="text-xs font-semibold text-foreground leading-tight">{speakingLevel}</span>
           </div>
         </div>
-        {resultHref && readOnly ? (
-          <Button size="sm" className="h-6.5 px-2.5 text-xs gap-1.5" asChild>
+        {readOnly ? (
+          <div className="flex items-center gap-1.5">
+            {onStartEdit && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6.5 px-2.5 text-xs gap-1.5 text-primary border-primary/40 hover:bg-primary/10 hover:text-primary cursor-pointer shadow-none"
+                onClick={onStartEdit}
+              >
+                <Pencil className="h-3 w-3" />
+                <span>Chỉnh sửa</span>
+              </Button>
+            )}
+            {resultHref && (
+              <Button size="sm" variant="ghost" className="h-6.5 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" asChild>
             <Link href={resultHref} target="_blank" rel="noreferrer">
               <ExternalLink className="h-3.5 w-3.5" />
-              Mở kết quả
+              <span>Trang kết quả</span>
             </Link>
           </Button>
+        )}
+      </div>
         ) : (
           <div className="flex items-center gap-2">
             {!draft.isSkipped2025 && answeredCount < FORM_2025_COLUMNS.length ? (
@@ -265,6 +283,33 @@ export function Form2025Section({
             )
           })}
         </div>
+      </section>
+
+      {/* 5. Teacher General Comment / Nhận xét của giáo viên */}
+      <section className="space-y-1.5">
+        <h4 className="text-xs font-semibold text-foreground">Nhận xét & Đánh giá của giáo viên</h4>
+        {readOnly ? (
+          <div className="rounded-md border bg-muted/20 p-2.5 text-xs text-foreground leading-relaxed">
+            {draft.generalComment || draft.oldForm?.generalComment || (
+              <span className="italic text-muted-foreground">Chưa có nhận xét chi tiết.</span>
+            )}
+          </div>
+        ) : (
+          <textarea
+            value={draft.generalComment ?? draft.oldForm?.generalComment ?? ''}
+            onChange={(e) => {
+              const val = e.target.value
+              onDraftChange((current) => ({
+                ...current,
+                generalComment: val,
+                oldForm: { ...current.oldForm, generalComment: val },
+              }))
+            }}
+            placeholder="Nhập nhận xét tổng quan về buổi kiểm tra, điểm mạnh và điểm cần cải thiện của học viên..."
+            rows={3}
+            className="w-full rounded-md border border-input bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed resize-none"
+          />
+        )}
       </section>
     </div>
   )

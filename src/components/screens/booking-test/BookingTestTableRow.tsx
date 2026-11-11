@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import {
+  ArrowLeftRight,
   CheckCircle2,
   ExternalLink,
   MapPin,
@@ -36,7 +37,7 @@ import {
   isBookingDeclined,
   shouldShowCheckInAction,
 } from './bookingTestHelpers'
-import { SpeakingScore, LwrScore } from './BookingTestScoreDisplay'
+import { SpeakingScore, LwrScore, MathLwrScore } from './BookingTestScoreDisplay'
 
 interface BookingTestTableRowProps {
   booking: BookingTest
@@ -47,6 +48,7 @@ interface BookingTestTableRowProps {
   onToggle: (id: string, checked: boolean) => void
   onRowClick: (id: string) => void
   onOpenAssessment: (id: string) => void
+  onOpenManualUpload?: (id: string) => void
   onUpdateBooking: (id: string, updater: (booking: BookingTest) => BookingTest) => void
   onCopy: (text: string, key: string) => Promise<void>
   onCall?: (phone?: string) => void
@@ -60,6 +62,7 @@ export function BookingTestTableRow({
   onToggle,
   onRowClick,
   onOpenAssessment,
+  onOpenManualUpload,
   onUpdateBooking,
 }: BookingTestTableRowProps) {
   const user = useAuthStore((state) => state.user)
@@ -127,7 +130,7 @@ export function BookingTestTableRow({
       <td
         onClick={() => onRowClick(booking.id)}
         className={cn(
-          'sticky left-8 z-30 w-[220px] min-w-[200px] xl:w-[240px] 2xl:w-[260px] px-2 xl:px-2.5 transition-colors cursor-pointer',
+          'sticky left-8 z-30 w-[270px] min-w-[250px] xl:w-[285px] 2xl:w-[300px] px-2 xl:px-2.5 transition-colors cursor-pointer',
           stickyBgClass
         )}
       >
@@ -135,7 +138,7 @@ export function BookingTestTableRow({
           className={cn(
             'relative flex items-center justify-between gap-2 min-w-0 pr-1',
             canCheckIn && canCancel
-              ? 'pr-[92px] group-hover:pr-[126px]'
+              ? 'pr-[124px]'
               : canCheckIn
                 ? 'pr-[92px]'
                 : canCancel
@@ -179,11 +182,23 @@ export function BookingTestTableRow({
             </div>
           </div>
 
-          {/* Quick row actions: Check-in luôn hiển thị, Hủy khi hover */}
+          {/* Quick row actions: Hủy khi hover (nằm trước), Check-in luôn hiển thị (nằm sau) để Check-in giữ cố định vị trí mép phải không bị nhảy giao diện */}
           <div
             className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pl-1 bg-inherit"
             onClick={(event) => event.stopPropagation()}
           >
+            {canCancel && (
+              <Button
+                type="button"
+                variant="ghost"
+                title="Hủy ca test / Báo vắng"
+                aria-label={`Hủy ca test cho ${booking.childName}`}
+                onClick={() => setConfirmCancelOpen(true)}
+                className="size-7 p-0 rounded-full text-rose-500 hover:text-rose-600 hover:bg-rose-100/80 dark:hover:bg-rose-950/60 cursor-pointer hidden group-hover:inline-flex items-center justify-center shrink-0 [&_svg]:!size-4.5"
+              >
+                <XCircle className="size-4.5 text-rose-500" />
+              </Button>
+            )}
             {canCheckIn && (
               <Button
                 type="button"
@@ -199,18 +214,6 @@ export function BookingTestTableRow({
               >
                 <UserCheck className="size-4 shrink-0 text-emerald-600" />
                 <span>Check-in</span>
-              </Button>
-            )}
-            {canCancel && (
-              <Button
-                type="button"
-                variant="ghost"
-                title="Hủy ca test / Báo vắng"
-                aria-label={`Hủy ca test cho ${booking.childName}`}
-                onClick={() => setConfirmCancelOpen(true)}
-                className="size-7.5 p-0 rounded-full text-rose-500 hover:text-rose-600 hover:bg-rose-100/80 dark:hover:bg-rose-950/60 cursor-pointer hidden group-hover:inline-flex items-center justify-center shrink-0 [&_svg]:!size-5"
-              >
-                <XCircle className="size-5 text-rose-500" />
               </Button>
             )}
           </div>
@@ -279,7 +282,7 @@ export function BookingTestTableRow({
         </BookingTestScheduleHoverCard>
       </td>
 
-      {/* 5. Speaking & LWR: Điểm số */}
+      {/* 5. Speaking & LWR (hoặc LWR Level cho môn Toán): Điểm số */}
       <td className="w-[195px] min-w-[180px] xl:w-[210px] 2xl:w-[230px] px-2 xl:px-2.5">
         {booking.subject === 'english' ? (
           <div className="min-w-0 space-y-1">
@@ -291,11 +294,19 @@ export function BookingTestTableRow({
             <LwrScore result={booking.testResult} compact />
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs font-mono">-</span>
+          <div className="min-w-0">
+            <MathLwrScore
+              result={booking.testResult}
+              compact
+              status={booking.status}
+              resultLink={booking.resultLink || booking.testResult?.uploadedFileUrl}
+              expectedLevel={booking.expectedLevel}
+            />
+          </div>
         )}
       </td>
 
-      {/* 6. Kết quả: Level đặt & Nhận xét */}
+      {/* 6. Kết quả: Level đặt & Nhận xét / Upload */}
       <td
         className="w-[125px] min-w-[115px] xl:w-[135px] 2xl:w-[145px] px-2"
         onClick={(event) => event.stopPropagation()}
@@ -303,6 +314,7 @@ export function BookingTestTableRow({
         <BookingTestLevelPopover
           booking={booking}
           onUpdateBooking={onUpdateBooking}
+          onOpenManualUpload={onOpenManualUpload}
         />
       </td>
 
@@ -333,7 +345,7 @@ export function BookingTestTableRow({
             >
               <div
                 onClick={() => setTeacherPickerOpen(true)}
-                className="inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors w-fit leading-tight text-xs 2xl:text-sm text-foreground font-normal truncate max-w-[150px]"
+                className="group/assignee inline-flex items-center gap-1 cursor-pointer hover:text-primary transition-colors w-fit leading-tight text-xs 2xl:text-sm text-foreground font-normal truncate max-w-[155px] xl:max-w-[175px] 2xl:max-w-[195px]"
                 title={`Người phụ trách: ${booking.teacher} (Bấm để đổi)`}
               >
                 <span className="truncate">{booking.teacher}</span>
@@ -342,6 +354,7 @@ export function BookingTestTableRow({
                     (bạn)
                   </span>
                 )}
+                <ArrowLeftRight className="size-3 text-primary shrink-0 transition-colors" />
               </div>
             </PersonnelHoverCard>
           ) : (

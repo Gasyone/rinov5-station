@@ -187,6 +187,7 @@ export function BookingTestAssessmentDialog({
                 draft={draft}
                 resultHref={resultHref}
                 readOnly={isReadOnly}
+                onStartEdit={handleEditClick}
                 onDraftChange={onDraftChange}
               />
             </div>

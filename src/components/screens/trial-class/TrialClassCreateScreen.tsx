@@ -24,7 +24,7 @@ import {
   PROGRAM_OPTIONS,
   CENTER_DATA,
 } from './trialClassConstants'
-import type { TrialContactPerson } from './trialClassCreateTypes'
+import type { TrialContactChild, TrialContactPerson } from './trialClassCreateTypes'
 import type { TrialSessionSelection } from './trialClassTypes'
 import { TrialClassCreateProgramSection } from './TrialClassCreateProgramSection'
 import { TrialClassCreateContactSection } from './TrialClassCreateContactSection'
@@ -85,8 +85,27 @@ export function TrialClassCreateScreen() {
 
   const contactsList = useMemo(() => buildTrialContactsList(customContacts), [customContacts])
 
-  const [contactId, setContactId] = useState(leadInfo?.leadId || '')
-  const [childId, setChildId] = useState(leadInfo?.leadId ? `child-${leadInfo.leadId}` : '')
+  // Map contact tương ứng từ leadInfo nếu có
+  const initialContactId = useMemo(() => {
+    if (!leadInfo) return ''
+    const found = contactsList.find(
+      (c) =>
+        (leadInfo.phone && c.phone === leadInfo.phone) ||
+        (leadInfo.parentName && c.name.toLowerCase() === leadInfo.parentName.toLowerCase())
+    )
+    return found ? found.id : `${leadInfo.parentName}_${leadInfo.phone || '0900000000'}`
+  }, [leadInfo, contactsList])
+
+  const [contactId, setContactId] = useState(initialContactId)
+  // Vì bản CRM cũ chỉ chọn contact là Phụ huynh, chưa có cơ chế chọn con nên trên màn này bắt buộc phải chọn con thủ công
+  const [childId, setChildId] = useState('')
+
+  const [prevContactLeadId, setPrevContactLeadId] = useState(initialContactId)
+  if (initialContactId !== prevContactLeadId) {
+    setPrevContactLeadId(initialContactId)
+    setContactId(initialContactId)
+    setChildId('')
+  }
 
   const leadRecord = useMemo(() => {
     if (paramLeadId) return mockLeads.find((l) => l.id === paramLeadId)
@@ -107,55 +126,68 @@ export function TrialClassCreateScreen() {
   const [createdSession, setCreatedSession] = useState<TrialSessionSelection | null>(null)
 
   const selectedContactObj = useMemo(() => {
-    if (!contactId) return null
-    return contactsList.find((c) => c.id === contactId) || null
-  }, [contactId, contactsList])
+    const found = contactsList.find((c) => c.id === contactId)
+    if (found) return found
+    if (leadInfo) {
+      return {
+        id: contactId || 'lead_contact',
+        name: leadInfo.parentName,
+        role: leadInfo.parentRole || 'Mẹ',
+        phone: leadInfo.phone,
+        address: leadInfo.address,
+        children: [
+          {
+            id: `lead_child_${paramLeadId || '0'}`,
+            name: leadInfo.childName,
+            dob: leadInfo.dob,
+            age: leadInfo.age,
+            currentSchool: leadInfo.currentSchool,
+            academicPerformance: leadInfo.academicPerformance,
+            targetSubject: leadRecord?.targetSubject,
+            branch: leadRecord?.branch,
+            isFromLead: true,
+            leadId: leadInfo.leadId,
+          },
+        ],
+      }
+    }
+    return null
+  }, [contactsList, contactId, leadInfo, paramLeadId, leadRecord])
 
   const childSelectOptions = useMemo(() => {
     if (!selectedContactObj) return []
-    const opts = selectedContactObj.children.map((c) => ({
-      value: c.id,
-      label: c.targetSubject
-        ? `${c.name} (${c.dob ? `${c.dob} · ` : ''}Quan tâm: ${c.targetSubject})`
-        : c.name,
-    }))
-    opts.push({ value: 'add_new_child', label: '+ Thêm con / học viên mới' })
-    return opts
+    return [
+      { value: '', label: 'Chọn con / học viên' },
+      ...selectedContactObj.children.map((ch) => ({
+        value: ch.id,
+        label: `${ch.name} ${ch.age ? `(${ch.age} tuổi${ch.dob ? ` - ${ch.dob}` : ''})` : ch.dob ? `(${ch.dob})` : ''}`,
+      })),
+      { value: 'add_new_child', label: '+ Thêm con / học viên mới' },
+    ]
   }, [selectedContactObj])
 
   // Current student and parent info for summary card
   const currentChildName = useMemo(() => {
-    if (leadInfo) return leadInfo.childName
-    if (selectedContactObj) {
-      const child = selectedContactObj.children.find((c) => c.id === childId)
-      return child?.name || ''
-    }
-    return ''
-  }, [leadInfo, selectedContactObj, childId])
+    const found = selectedContactObj?.children.find((c) => c.id === childId)
+    return found?.name || ''
+  }, [selectedContactObj, childId])
 
   const currentParentName = useMemo(() => {
-    if (leadInfo) return leadInfo.parentName
     if (selectedContactObj) return selectedContactObj.name
+    if (leadInfo) return leadInfo.parentName
     return ''
-  }, [leadInfo, selectedContactObj])
+  }, [selectedContactObj, leadInfo])
 
   const currentPhone = useMemo(() => {
-    if (leadInfo) return leadInfo.phone
     if (selectedContactObj) return selectedContactObj.phone
+    if (leadInfo) return leadInfo.phone
     return ''
-  }, [leadInfo, selectedContactObj])
+  }, [selectedContactObj, leadInfo])
 
-  // Handle changing contact/parent
+  // Handle changing contact/parent - reset childId so user must select child manually
   const handleContactChange = (newContactId: string) => {
     setContactId(newContactId)
-
-    const contact = contactsList.find((c) => c.id === newContactId)
-    if (contact && contact.children.length > 0) {
-      const firstChild = contact.children[0]
-      setChildId(firstChild.id)
-    } else {
-      setChildId('')
-    }
+    setChildId('')
   }
 
   // Handle changing child
@@ -169,36 +201,58 @@ export function TrialClassCreateScreen() {
     if (!newLead) return
 
     const newChildId = `child-${newLead.id}`
+    const newContactId = `contact-${newLead.id}`
     const newContact: TrialContactPerson = {
-      id: `contact-${newLead.id}`,
+      id: newContactId,
       name: newLead.parentName,
+      role: newLead.parentRole || 'Mẹ',
       phone: newLead.phone,
       isFromLead: true,
       leadId: newLead.id,
+      address: newLead.address,
       children: [
         {
           id: newChildId,
           name: newLead.studentName,
-          dob: String(newLead.birthYear || ''),
+          dob: newLead.birthYear ? String(newLead.birthYear) : undefined,
+          age: newLead.studentAge,
+          currentSchool: newLead.schoolName,
+          academicPerformance: newLead.academicAbility || newLead.academicPerformance,
           targetSubject: newLead.targetSubject,
           branch: newLead.branch,
           leadId: newLead.id,
+          isFromLead: true,
         },
       ],
     }
 
     setCustomContacts((prev) => [newContact, ...prev])
     setContactId(newContact.id)
-    setChildId(newChildId)
+    setChildId('')
+    if (newLead.branch) setSchool(newLead.branch)
+    if (newLead.targetSubject) setProgram(mapLeadSubjectToTrialProgram(newLead.targetSubject))
     setIsAddContactModalOpen(false)
     toast.success(
-      `Đã thêm phụ huynh "${newLead.parentName}" và học viên "${newLead.studentName}" thành công!`
+      `Đã thêm phụ huynh "${newLead.parentName}" thành công! Vui lòng chọn con để đặt lịch.`
     )
   }
 
   // Handle submitting new child modal
   const handleAddChildSubmit = (newChild: NewChildData) => {
     if (!selectedContactObj) return
+
+    const childPayload: TrialContactChild = {
+      id: newChild.id,
+      name: newChild.name,
+      dob: newChild.dob || (newChild.birthYear ? String(newChild.birthYear) : undefined),
+      age: newChild.age,
+      currentSchool: newChild.currentSchool,
+      academicPerformance: newChild.academicPerformance,
+      targetSubject: newChild.course,
+      branch: school,
+      isFromLead: true,
+      leadId: paramLeadId || undefined,
+    }
 
     setCustomContacts((prev) => {
       const existing = prev.find((c) => c.id === contactId)
@@ -207,36 +261,23 @@ export function TrialClassCreateScreen() {
           c.id === contactId
             ? {
                 ...c,
-                children: [
-                  ...c.children,
-                  {
-                    id: newChild.id,
-                    name: newChild.name,
-                    dob: newChild.birthYear || String(newChild.dob || ''),
-                    targetSubject: newChild.course,
-                  },
-                ],
+                children: [...c.children, childPayload],
               }
             : c
         )
       } else {
         const updated: TrialContactPerson = {
           ...selectedContactObj,
-          children: [
-            ...selectedContactObj.children,
-            {
-              id: newChild.id,
-              name: newChild.name,
-              dob: newChild.birthYear || String(newChild.dob || ''),
-              targetSubject: newChild.course,
-            },
-          ],
+          children: [...selectedContactObj.children, childPayload],
         }
         return [updated, ...prev]
       }
     })
 
     setChildId(newChild.id)
+    if (newChild.course) {
+      setProgram(mapLeadSubjectToTrialProgram(newChild.course))
+    }
     setIsAddChildModalOpen(false)
     toast.success(`Đã thêm học viên "${newChild.name}" thành công!`)
   }
@@ -266,32 +307,13 @@ export function TrialClassCreateScreen() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
-    let finalParentName = ''
-    let finalPhone = ''
-    let finalStudentName = ''
-    let resolvedLeadId = leadInfo?.leadId
-
-    if (leadInfo) {
-      finalParentName = leadInfo.parentName
-      finalPhone = leadInfo.phone
-      finalStudentName = leadInfo.childName
-    } else {
-      if (!selectedContactObj) {
-        toast.error('Vui lòng chọn phụ huynh')
-        return
-      }
-      finalParentName = selectedContactObj.name
-      finalPhone = selectedContactObj.phone
-
-      const foundChild = selectedContactObj.children.find((c) => c.id === childId)
-      finalStudentName = foundChild?.name || 'Học viên'
-      if (foundChild?.leadId) {
-        resolvedLeadId = foundChild.leadId
-      }
+    if (!selectedContactObj) {
+      toast.error('Vui lòng chọn phụ huynh trước khi đặt lịch')
+      return
     }
 
-    if (!finalStudentName) {
-      toast.error('Vui lòng nhập tên học viên')
+    if (!childId || !currentChildName) {
+      toast.error('Vui lòng chọn con / học viên trước khi đặt lịch')
       return
     }
 
@@ -299,6 +321,12 @@ export function TrialClassCreateScreen() {
       toast.error('Vui lòng chọn chương trình học thử')
       return
     }
+
+    const finalStudentName = currentChildName.trim()
+    const finalParentName = currentParentName.trim()
+    const finalPhone = currentPhone.trim() || '---'
+    const foundChild = selectedContactObj.children.find((c) => c.id === childId)
+    const resolvedLeadId = foundChild?.leadId || paramLeadId || undefined
 
     setIsSubmitting(true)
 
@@ -447,14 +475,11 @@ export function TrialClassCreateScreen() {
       },
       ...CENTER_DATA.map((c) => ({
         value: c.name,
-        textValue: `${c.name} (${c.distanceStr})`,
+        textValue: c.name,
         label: (
           <div className="flex flex-col w-full py-0.5 min-w-0">
             <div className="flex items-center justify-between w-full gap-2">
               <span className="font-medium text-foreground text-xs">{c.name}</span>
-              <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
-                {c.distanceStr}
-              </span>
             </div>
             <span className="text-xs text-muted-foreground/75 truncate font-normal leading-normal mt-0.5">
               {c.address}
@@ -464,9 +489,6 @@ export function TrialClassCreateScreen() {
         selectedLabel: (
           <div className="flex items-center justify-between w-full gap-2 text-xs">
             <span className="truncate font-medium text-foreground">{c.name}</span>
-            <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
-              {c.distanceStr}
-            </span>
           </div>
         ),
       })),
@@ -505,42 +527,6 @@ export function TrialClassCreateScreen() {
           onSubmit={handleSubmit}
           className="mx-auto max-w-5xl space-y-2.5"
         >
-          {/* SEC-BT-01: Ngữ cảnh Lead CRM & Tiếp nhận khách hàng */}
-          {leadInfo && (
-            <PoExplainSectionWrapper sectionId="lead-banner" side="bottom" align="start">
-              <div
-                id="po-sec-lead-context"
-                className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-semibold text-foreground">
-                    Học viên: {leadInfo.childName} ({leadInfo.age} tuổi)
-                  </span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">
-                    Phụ huynh: {leadInfo.parentName} ({leadInfo.phone})
-                  </span>
-                  {leadRecord?.branch && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-muted-foreground">Cơ sở Lead: {leadRecord.branch}</span>
-                    </>
-                  )}
-                  {leadRecord?.targetSubject && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-muted-foreground">Môn: {leadRecord.targetSubject}</span>
-                    </>
-                  )}
-                </div>
-                <span className="font-mono text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border">
-                  Lead: {paramLeadId}
-                </span>
-              </div>
-            </PoExplainSectionWrapper>
-          )}
-
           <div className="flex flex-col lg:flex-row gap-2.5 items-start">
             {/* CỘT TRÁI (FLEX-1): TOÀN BỘ QUY TRÌNH CHỌN LỊCH VÀ LỚP HỌC THỬ */}
             <div className="flex-1 min-w-0 flex flex-col space-y-2.5">

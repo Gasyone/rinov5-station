@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Check, ExternalLink, Pencil } from 'lucide-react'
+import { Check, ExternalLink, Pencil, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { InlineSelect } from '@/components/controls'
 import { cn } from '@/lib/utils'
 import {
+  MATH_LEVELS,
   PROGRAM_LEVELS,
   SUB_LEVELS,
   type BookingTest,
@@ -20,15 +21,18 @@ import {
 interface BookingTestLevelPopoverProps {
   booking: BookingTest
   onUpdateBooking: (id: string, updater: (booking: BookingTest) => BookingTest) => void
+  onOpenManualUpload?: (id: string) => void
 }
 
 export function BookingTestLevelPopover({
   booking,
   onUpdateBooking,
+  onOpenManualUpload,
 }: BookingTestLevelPopoverProps) {
   const [isEditing, setIsEditing] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const isMath = booking.subject === 'math'
   const rawLevel = booking.testResult?.level ?? ''
   const rawSubLevel = booking.testResult?.subLevel ?? ''
   const level = rawLevel === 'Chưa đặt' ? '' : rawLevel
@@ -37,7 +41,29 @@ export function BookingTestLevelPopover({
   const hasResult = hasBookingAssessmentResult(booking)
   const hasLink = hasResult || Boolean(level) || Boolean(booking.resultLink)
 
+  const isManualMath =
+    isMath && (booking.testSource === 'manual' || Boolean(booking.testResult?.uploadedFileName))
+  const hasManualMathScore = Boolean(
+    booking.testResult?.lwr &&
+      booking.testResult.lwr !== '-' &&
+      booking.testResult.lwr.trim() !== ''
+  ) || Boolean(booking.testResult?.uploadedFileName)
+
+  const lmsResultUrl =
+    booking.resultLink && booking.resultLink.startsWith('http')
+      ? booking.resultLink
+      : 'https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600'
+
+  const hasLmsResult = Boolean(
+    booking.status === 'completed' ||
+      (booking.testResult?.lwr && booking.testResult.lwr !== '-') ||
+      Boolean(booking.resultLink)
+  )
+
   const levelDisplay = useMemo(() => {
+    if (isMath) {
+      return level || 'Chưa đặt'
+    }
     if (level && subLevel && subLevel !== '-') {
       return `${level} - ${subLevel}`
     }
@@ -48,7 +74,7 @@ export function BookingTestLevelPopover({
       return subLevel
     }
     return 'Chưa đặt'
-  }, [level, subLevel])
+  }, [isMath, level, subLevel])
 
   const resultHref =
     booking.resultLink?.startsWith('http://') ||
@@ -90,6 +116,46 @@ export function BookingTestLevelPopover({
 
   // 1. CHẾ ĐỘ SỬA TRỰC TIẾP TRÊN DÒNG (INLINE EDITING) - THU GỌN KÍCH THƯỚC
   if (isEditing) {
+    if (isMath) {
+      return (
+        <div
+          ref={containerRef}
+          className="flex items-center gap-0.5 w-full py-0 min-w-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <InlineSelect
+            value={level}
+            ariaLabel={`Trình độ môn Toán của ${booking.childName}`}
+            className="!h-5 !min-h-0 !py-0 !px-1.5 flex-1 text-[11px] font-normal border-primary/50 bg-background shadow-none [&_svg]:!size-3 rounded leading-none"
+            options={[
+              { value: '', label: 'Chưa đặt' },
+              ...MATH_LEVELS.map((lvl) => ({ value: lvl, label: lvl })),
+            ]}
+            onValueChange={(val) => {
+              onUpdateBooking(booking.id, (current) => ({
+                ...current,
+                testResult: { ...current.testResult, level: val },
+              }))
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsEditing(false)
+              toast.success(`Đã cập nhật: ${levelDisplay}`)
+            }}
+            className="!h-5 !w-5 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 rounded shrink-0 cursor-pointer p-0"
+            title="Xong (Hoàn tất chỉnh sửa)"
+          >
+            <Check className="h-3 w-3 stroke-[2.5]" />
+          </Button>
+        </div>
+      )
+    }
+
     return (
       <div
         ref={containerRef}
@@ -187,8 +253,72 @@ export function BookingTestLevelPopover({
         </Button>
       </div>
 
-      {/* Dòng 2: Nhận xét, link */}
-      {hasLink ? (
+      {/* Dòng 2: Kết quả / Nhận xét / Upload */}
+      {isMath ? (
+        isManualMath ? (
+          hasManualMathScore ? (
+            <div
+              className="flex items-center gap-1.5 min-w-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <a
+                href={booking.resultLink || booking.testResult?.uploadedFileUrl || '#'}
+                target="_blank"
+                rel="noreferrer"
+                title="Mở xem kết quả bài chấm tay"
+                className="inline-flex max-w-full items-center gap-0.5 text-xs font-normal text-primary hover:underline leading-tight"
+                onClick={(e) => {
+                  const url = booking.resultLink || booking.testResult?.uploadedFileUrl
+                  if (!url || (!url.startsWith('http') && !url.startsWith('blob:'))) {
+                    e.preventDefault()
+                    onOpenManualUpload?.(booking.id)
+                  }
+                }}
+              >
+                <span className="truncate">Kết quả</span>
+                <ExternalLink className="h-3 w-3 shrink-0" />
+              </a>
+              <span className="text-muted-foreground/35 text-[10px] shrink-0 select-none">•</span>
+              <button
+                type="button"
+                className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0"
+                title="Cập nhật kết quả bài chấm tay"
+                onClick={() => onOpenManualUpload?.(booking.id)}
+              >
+                <Upload className="h-3 w-3 shrink-0" />
+                <span>Upload</span>
+              </button>
+            </div>
+          ) : (
+            <div onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => onOpenManualUpload?.(booking.id)}
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline transition-colors cursor-pointer shrink-0 font-normal leading-tight"
+                title="Upload kết quả bài chấm tay"
+              >
+                <Upload className="h-3 w-3 shrink-0" />
+                <span>Upload kết quả</span>
+              </button>
+            </div>
+          )
+        ) : hasLmsResult ? (
+          <a
+            href={lmsResultUrl}
+            target="_blank"
+            rel="noreferrer"
+            title="Mở trang kết quả đánh giá năng lực Toán tư duy"
+            aria-label={`Mở kết quả đánh giá của ${booking.childName}`}
+            className="inline-flex max-w-full items-center gap-1 text-xs font-normal text-primary hover:underline leading-tight"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="truncate">Kết quả</span>
+            <ExternalLink className="h-3 w-3 shrink-0" />
+          </a>
+        ) : (
+          <p className="font-mono text-xs text-muted-foreground leading-tight">-</p>
+        )
+      ) : hasLink ? (
         <Link
           href={resultHref}
           target="_blank"

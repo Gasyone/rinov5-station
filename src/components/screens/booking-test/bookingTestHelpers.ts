@@ -1,4 +1,4 @@
-import type { BookingStatus, BookingSubject, BookingTest } from '@/mocks/bookingTests'
+import { mockBookingTests, type BookingStatus, type BookingSubject, type BookingTest } from '@/mocks/bookingTests'
 import { mockLeads } from '@/mocks/crmLeads'
 import { mockStudents } from '@/mocks/students'
 import type { AssessmentDraft } from './bookingTestTypes'
@@ -69,6 +69,7 @@ export function buildEmptyAssessmentDraft(booking?: BookingTest): AssessmentDraf
     speaking: booking?.testResult?.speaking ?? '',
     lwr: booking?.testResult?.lwr ?? '',
     path: booking?.testResult?.path ?? 'Kiểm tra đầu vào Tiếng Anh',
+    generalComment: booking?.notes?.at(-1)?.text || booking?.msg || '',
     oldForm: {
       scoreSelections: {},
       isSkipped: false,
@@ -444,10 +445,16 @@ export function buildNewBooking({
 
 export const BOOKING_TEST_CENTER_DATA = [
   {
+    name: 'Chi nhánh Quận 1',
+    distance: 1.0,
+    distanceStr: '1.0 km',
+    address: 'Số 12 Lê Duẩn, Phường Bến Nghé, Quận 1, TP.HCM',
+  },
+  {
     name: 'RinoEdu Linh Đàm',
     distance: 1.2,
     distanceStr: '1.2 km',
-    address: 'Tầng 3, TTTM Rice City, Linh Đàm, Hoàng Mai',
+    address: 'Tầng 3, TTTM Rice City, Linh Đàm, Hoàng Mai, Hà Nội',
   },
   {
     name: 'RinoEdu Nguyễn Tuân',
@@ -521,7 +528,46 @@ export function buildBookingTestContactsList(
         age: lead.studentAge,
         currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
         academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
+        targetSubject: lead.targetSubject,
       })
+    }
+
+    if (lead.otherChildren && Array.isArray(lead.otherChildren)) {
+      lead.otherChildren.forEach((other, idx) => {
+        const otherKey = `lead_child_${lead.id}_other_${idx}`
+        if (!contact.children.some((c) => c.name === other.name)) {
+          contact.children.push({
+            id: otherKey,
+            name: other.name,
+            dob: other.birthYear ? `01/01/${other.birthYear}` : undefined,
+            age: other.age,
+            currentSchool: other.school || 'Tiểu học Lương Định Của (Quận 3)',
+            academicPerformance: 'Khá / Đang rèn luyện thêm',
+            targetSubject: other.targetSubject,
+          })
+        }
+      })
+    }
+  })
+
+  // Bổ sung các con từ mockBookingTests của cùng phụ huynh
+  mockBookingTests.forEach((b) => {
+    if (!b.parentName || !b.childName) return
+    const pPhone = b.phone || '0900000000'
+    const key = `${b.parentName}_${pPhone}`
+    if (map.has(key)) {
+      const contact = map.get(key)!
+      if (!contact.children.some((c) => c.name.toLowerCase() === b.childName.toLowerCase())) {
+        contact.children.push({
+          id: `booking_child_${b.id}`,
+          name: b.childName,
+          dob: '01/01/2018',
+          age: 8,
+          currentSchool: 'Tiểu học Lương Định Của (Quận 3)',
+          academicPerformance: 'Giỏi / Tốt nghiệp loại Ưu',
+          targetSubject: b.program,
+        })
+      }
     }
   })
 
@@ -690,5 +736,82 @@ export const AVATAR_COLORS = [
 
 export const getAvatarColor = (id: string): string =>
   AVATAR_COLORS[stableHash(id) % AVATAR_COLORS.length]
+
+/**
+ * Kiểm tra xem học viên đã có lịch trải nghiệm / test đang active ở một chương trình cụ thể hay chưa.
+ * "Chỉ khi trùng Chương trình thì mới hiển thị"
+ */
+export function findDuplicateBookingTest(
+  bookings: BookingTest[],
+  studentName?: string,
+  phone?: string,
+  program?: string
+): BookingTest | null {
+  if (!program) return null
+  const cleanName = studentName?.trim().toLowerCase()
+  const cleanPhone = phone?.trim()
+
+  if (!cleanName && !cleanPhone) return null
+
+  return (
+    bookings.find((b) => {
+      if (isTerminalBookingStatus(b.status)) return false
+      if (!b.program) return false
+
+      // Trùng chương trình
+      const isSameProgram =
+        b.program.trim().toLowerCase() === program.trim().toLowerCase() ||
+        (program.includes('Toán') && b.program.includes('Toán')) ||
+        (program.includes('Station') && b.program.includes('Station'))
+
+      if (!isSameProgram) return false
+
+      // Khớp học viên: nếu có tên học viên thì ưu tiên kiểm tra tên trước
+      if (cleanName) {
+        return b.childName?.trim().toLowerCase() === cleanName
+      }
+      if (cleanPhone) {
+        return b.phone?.trim() === cleanPhone
+      }
+      return false
+    }) ?? null
+  )
+}
+
+/**
+ * Lấy danh sách map các chương trình mà học viên hiện tại đã có lịch test active.
+ */
+export function getDuplicateProgramsForStudent(
+  bookings: BookingTest[],
+  studentName?: string,
+  phone?: string
+): Record<string, BookingTest> {
+  const cleanName = studentName?.trim().toLowerCase()
+  const cleanPhone = phone?.trim()
+  if (!cleanName && !cleanPhone) return {}
+
+  const result: Record<string, BookingTest> = {}
+
+  bookings.forEach((b) => {
+    if (isTerminalBookingStatus(b.status)) return
+    if (!b.program) return
+
+    // Khớp học viên: theo tên con hoặc SĐT
+    const matchName = Boolean(
+      cleanName &&
+        b.childName &&
+        (b.childName.trim().toLowerCase() === cleanName ||
+          b.childName.trim().toLowerCase().includes(cleanName) ||
+          cleanName.includes(b.childName.trim().toLowerCase()))
+    )
+    const matchPhone = Boolean(cleanPhone && b.phone && b.phone.trim() === cleanPhone)
+
+    if (matchName || matchPhone) {
+      result[b.program] = b
+    }
+  })
+
+  return result
+}
 
 

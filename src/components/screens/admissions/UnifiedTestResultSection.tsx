@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { InlineSelect } from '@/components/controls'
 import { cn } from '@/lib/utils'
 import { getStatusColors } from '@/lib/statusColors'
-import { PROGRAM_LEVELS, SUB_LEVELS } from '@/mocks/bookingTests'
+import { MATH_LEVELS, PROGRAM_LEVELS, SUB_LEVELS } from '@/mocks/bookingTests'
 import type { BookingTest } from '@/mocks/bookingTests'
 import type { UnifiedSessionItem } from './unifiedSessionTypes'
 
@@ -69,6 +69,24 @@ export function UnifiedTestResultSection({
     ? `${booking?.testResult?.lwrLevel && booking.testResult.lwrLevel !== '-' ? booking.testResult.lwrLevel : 'LWR'} - ${booking?.testResult?.lwr || '-'} - ${booking?.testResult?.lwrScore || '0'}`
     : (booking?.status === 'ipad_test_started' ? 'Đang làm bài...' : 'Chưa có')
 
+  const isMath = session.subject === 'math' || booking?.subject === 'math'
+  const isManualMath = isMath && (booking?.testSource === 'manual' || Boolean(booking?.testResult?.uploadedFileName))
+  const mathGrade =
+    booking?.testResult?.lwrLevel &&
+    booking.testResult.lwrLevel !== '-' &&
+    booking.testResult.lwrLevel !== 'LWR'
+      ? booking.testResult.lwrLevel
+      : ''
+  const mathLwrDisplay = hasLwrScore
+    ? `${mathGrade ? `${mathGrade} - ` : '- '}${booking?.testResult?.lwr || '-'}`
+    : booking?.status === 'ipad_test_started'
+      ? 'Đang làm bài...'
+      : 'Chưa có'
+  const mathResultUrl =
+    booking?.resultLink && booking.resultLink.startsWith('http')
+      ? booking.resultLink
+      : 'https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600'
+
   const [isBookingDetailsExpanded, setIsBookingDetailsExpanded] = useState(!hasTestScore)
 
   return (
@@ -100,17 +118,19 @@ export function UnifiedTestResultSection({
                   <span>Check in</span>
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onDirectAssessment}
-                  className="h-7 px-3 text-xs font-normal text-foreground hover:bg-muted cursor-pointer shadow-2xs gap-1.5"
-                  title="Tự động Check-in và mở ngay hộp thoại đánh giá nhận xét"
-                >
-                  <FileText className="h-3.5 w-3.5 text-primary" />
-                  <span>Nhận xét</span>
-                </Button>
+                {!isMath && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onDirectAssessment}
+                    className="h-7 px-3 text-xs font-normal text-foreground hover:bg-muted cursor-pointer shadow-2xs gap-1.5"
+                    title="Tự động Check-in và mở ngay hộp thoại đánh giá nhận xét"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-primary" />
+                    <span>Nhận xét</span>
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -127,21 +147,25 @@ export function UnifiedTestResultSection({
                     Đã điểm danh (Check-in) • Sẵn sàng đánh giá
                   </p>
                   <p className="text-[11px] text-muted-foreground font-normal truncate">
-                    Học viên đã có mặt tại cơ sở. Bấm Nhận xét để tiến hành kiểm tra & ghi điểm.
+                    {isMath
+                      ? 'Học viên đã có mặt tại cơ sở và sẵn sàng làm bài kiểm tra.'
+                      : 'Học viên đã có mặt tại cơ sở. Bấm Nhận xét để tiến hành kiểm tra & ghi điểm.'}
                   </p>
                 </div>
               </div>
 
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => booking && onOpenAssessment?.(booking.id)}
-                className="h-7 px-3 text-xs font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs gap-1.5 shrink-0"
-                title="Mở form đánh giá và ghi nhận xét"
-              >
-                <FileText className="h-3.5 w-3.5" />
-                <span>Nhận xét</span>
-              </Button>
+              {!isMath && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => booking && onOpenAssessment?.(booking.id)}
+                  className="h-7 px-3 text-xs font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs gap-1.5 shrink-0"
+                  title="Mở form đánh giá và ghi nhận xét"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>Nhận xét</span>
+                </Button>
+              )}
             </div>
           )}
 
@@ -156,7 +180,7 @@ export function UnifiedTestResultSection({
           {hasTestScore && (
             <div className="space-y-2">
               {/* Trình độ đầu vào & Nhánh */}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className={cn("grid gap-2.5", isMath ? "grid-cols-1" : "grid-cols-2")}>
                 <div className="space-y-1">
                   <span className="text-muted-foreground text-[11px] font-normal">Trình độ đầu vào:</span>
                   <InlineSelect
@@ -165,83 +189,87 @@ export function UnifiedTestResultSection({
                     ariaLabel="Trình độ đầu vào"
                     options={[
                       { value: '', label: 'Chưa đặt' },
-                      ...PROGRAM_LEVELS.map((level) => ({ value: level, label: level })),
+                      ...(isMath ? MATH_LEVELS : PROGRAM_LEVELS).map((level) => ({ value: level, label: level })),
                     ]}
                     onValueChange={(val) => onUpdateBookingLevel?.(val, booking?.testResult?.subLevel)}
                     className="h-7 text-xs border-solid shadow-2xs font-medium text-sky-700 dark:text-sky-300"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <span className="text-muted-foreground text-[11px] font-normal">Nhánh trình độ:</span>
-                  <InlineSelect
-                    value={booking?.testResult?.subLevel ?? ''}
-                    disabled={!canEditPlacement || terminalStatus?.status === 'cancelled'}
-                    ariaLabel="Nhánh trình độ"
-                    options={[
-                      { value: '', label: '-' },
-                      ...SUB_LEVELS.map((sub) => ({ value: sub, label: sub })),
-                    ]}
-                    onValueChange={(sub) => onUpdateBookingLevel?.(booking?.testResult?.level || '', sub)}
-                    className="h-7 text-xs border-solid shadow-2xs font-normal"
-                  />
-                </div>
+                {!isMath && (
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground text-[11px] font-normal">Nhánh trình độ:</span>
+                    <InlineSelect
+                      value={booking?.testResult?.subLevel ?? ''}
+                      disabled={!canEditPlacement || terminalStatus?.status === 'cancelled'}
+                      ariaLabel="Nhánh trình độ"
+                      options={[
+                        { value: '', label: '-' },
+                        ...SUB_LEVELS.map((sub) => ({ value: sub, label: sub })),
+                      ]}
+                      onValueChange={(sub) => onUpdateBookingLevel?.(booking?.testResult?.level || '', sub)}
+                      className="h-7 text-xs border-solid shadow-2xs font-normal"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Điểm số Speaking & LWR */}
-              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-                {/* CỘT ĐIỂM SPEAKING */}
-                <div className="min-w-0 space-y-0.5">
-                  <span className="text-[11px] font-normal text-muted-foreground block">
-                    Điểm speaking
-                  </span>
-                  <div className="flex items-center justify-between gap-1.5 mt-0.5">
-                    <div className="flex flex-wrap items-baseline gap-1.5 min-w-0">
-                      <span className={cn('text-xs font-normal', warningText)}>
-                        GV: {booking?.testResult?.speaking || 'chưa có'}
-                      </span>
-                      <span className={cn('text-xs font-normal', infoText)}>
-                        AI: {booking?.testResult?.speakingAi || '0/0'}
-                      </span>
-                      <span className={cn('text-sm font-semibold', isPositiveScore ? successText : 'text-muted-foreground')}>
-                        {scoreValue}
-                      </span>
-                    </div>
+              <div className={cn("grid gap-2.5 pt-0.5", isMath ? "grid-cols-1" : "grid-cols-2")}>
+                {/* CỘT ĐIỂM SPEAKING (Chỉ hiển thị cho Tiếng Anh) */}
+                {!isMath && (
+                  <div className="min-w-0 space-y-0.5">
+                    <span className="text-[11px] font-normal text-muted-foreground block">
+                      Điểm speaking
+                    </span>
+                    <div className="flex items-center justify-between gap-1.5 mt-0.5">
+                      <div className="flex flex-wrap items-baseline gap-1.5 min-w-0">
+                        <span className={cn('text-xs font-normal', warningText)}>
+                          GV: {booking?.testResult?.speaking || 'chưa có'}
+                        </span>
+                        <span className={cn('text-xs font-normal', infoText)}>
+                          AI: {booking?.testResult?.speakingAi || '0/0'}
+                        </span>
+                        <span className={cn('text-sm font-semibold', isPositiveScore ? successText : 'text-muted-foreground')}>
+                          {scoreValue}
+                        </span>
+                      </div>
 
-                    {booking && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenAssessment?.(booking.id)}
-                        className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal cursor-pointer shrink-0"
-                        title="Mở modal nhận xét & đánh giá"
-                      >
-                        <FileText className="h-3 w-3" />
-                        <span>Nhận xét</span>
-                      </button>
-                    )}
+                      {booking && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenAssessment?.(booking.id)}
+                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal cursor-pointer shrink-0"
+                          title="Mở modal nhận xét & đánh giá"
+                        >
+                          <FileText className="h-3 w-3" />
+                          <span>Nhận xét</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* CỘT ĐIỂM LWR */}
                 <div className="min-w-0 space-y-0.5">
                   <span className="text-[11px] font-normal text-muted-foreground block">
-                    Điểm LWR
+                    {isMath ? 'Điểm LWR (Toán)' : 'Điểm LWR'}
                   </span>
                   <div className="flex items-center justify-between gap-1.5 mt-0.5">
                     <p
                       className="text-xs sm:text-[13px] font-normal text-foreground truncate min-w-0"
-                      title={lwrDisplay}
+                      title={isMath ? mathLwrDisplay : lwrDisplay}
                     >
-                      {lwrDisplay}
+                      {isMath ? mathLwrDisplay : lwrDisplay}
                     </p>
 
-                    {(booking?.testLink || booking?.resultLink) && (
+                    {(booking?.testLink || booking?.resultLink || isMath) && (
                       <a
-                        href={booking.testLink || booking.resultLink}
+                        href={isMath ? mathResultUrl : (booking?.testLink || booking?.resultLink)}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal shrink-0"
-                        title="Xem kết quả bài làm từ iPad"
+                        title={isMath ? "Xem kết quả bài test môn Toán" : "Xem kết quả bài làm từ iPad"}
                       >
                         <ExternalLink className="h-3 w-3" />
                         <span>Kết quả</span>

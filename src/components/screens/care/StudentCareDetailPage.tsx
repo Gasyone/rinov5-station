@@ -75,21 +75,31 @@ export function StudentCareDetailPage({
     setIsCreateLeaveReserveOpen(true)
   }
 
-  const handleCreateLeaveReserveSubmit = (newReq: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>) => {
-    const idPrefix = newReq.type === 'off' ? 'NP' : 'BL'
-    const newId = `${idPrefix}${String(mockLeaveReserveRequests.length + 1).padStart(3, '0')}`
-    const createdRequest: LeaveReserveRequest = {
-      ...newReq,
-      id: newId,
-      status: 'pending',
-      requestedDate: formatDateISO(new Date()),
-    }
-    mockLeaveReserveRequests.unshift(createdRequest)
+  const handleCreateLeaveReserveSubmit = (
+    newReq: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>,
+    extraReqs?: Array<Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>>
+  ) => {
+    const all = [newReq, ...(extraReqs || [])]
+    const createdIds: string[] = []
+    all.forEach((req, idx) => {
+      const idPrefix = req.type === 'off' ? 'NP' : 'BL'
+      const newId = `${idPrefix}${String(mockLeaveReserveRequests.length + 1 + idx).padStart(3, '0')}`
+      createdIds.push(newId)
+      const createdRequest: LeaveReserveRequest = {
+        ...req,
+        id: newId,
+        status: 'pending',
+        requestedDate: formatDateISO(new Date()),
+      }
+      mockLeaveReserveRequests.unshift(createdRequest)
+    })
     setIsCreateLeaveReserveOpen(false)
     toast.success(
-      `Tạo ${newReq.type === 'off' ? 'đơn xin nghỉ phép' : 'đơn bảo lưu'} thành công (${newId})!`,
+      all.length > 1
+        ? `Tạo thành công ${all.length} đơn xin nghỉ phép (${createdIds.join(', ')})!`
+        : `Tạo ${newReq.type === 'off' ? 'đơn xin nghỉ phép' : 'đơn bảo lưu'} thành công (${createdIds[0]})!`,
       {
-        description: `Học viên: ${newReq.studentName} • Bắt đầu: ${newReq.startDate}`,
+        description: `Học viên: ${newReq.studentName} • ${all.map((r) => r.className).join(' & ')}`,
       }
     )
   }
@@ -100,12 +110,6 @@ export function StudentCareDetailPage({
   }, [studentId, alerts])
 
   const [assignedCS, setAssignedCS] = useState(student?.csStaff || 'Trần Thị Mai')
-  const [prevStudentIdForCS, setPrevStudentIdForCS] = useState<string | null>(student?.studentId || null)
-
-  if (student && student.studentId !== prevStudentIdForCS) {
-    setPrevStudentIdForCS(student.studentId)
-    setAssignedCS(student.csStaff || 'Trần Thị Mai')
-  }
 
   const isRenewalMode = initialTab === 'renewal' || initialMode === 'renewal'
 
@@ -126,13 +130,6 @@ export function StudentCareDetailPage({
 
   const [selectedPackageId, setSelectedPackageId] = useState<string>('pkg-1')
   const [selectedContactPhone] = useState<string | null>(null)
-  const [prevStudentId, setPrevStudentId] = useState<string | null>(null)
-
-  // Sync selected package and sideLogs when student changes
-  if (student && student.studentId !== prevStudentId) {
-    setPrevStudentId(student.studentId)
-    setSelectedPackageId('pkg-1')
-  }
 
   const activePackage = useMemo(() => {
     return packagesList.find((p) => p.id === selectedPackageId) || packagesList[0] || null
@@ -190,19 +187,19 @@ export function StudentCareDetailPage({
           teachers: [
             {
               id: 'EMP-GV-PTT',
-              name: 'Phạm Thị Toán',
-              role: 'Giáo viên Toán tư duy',
+              name: isEnglish ? 'GV Sarah Smith' : 'Phạm Thị Toán',
+              role: isEnglish ? 'Giáo viên Tiếng Anh' : 'Giáo viên Toán tư duy',
               phone: '0917654321',
-              email: 'toan.pt@rinoedu.vn',
-              avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThiToan'
+              email: isEnglish ? 'sarah.smith@rinoedu.vn' : 'toan.pt@rinoedu.vn',
+              avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${isEnglish ? 'Sarah' : 'ThiToan'}`
             },
             {
               id: 'EMP-GV-TA2',
-              name: 'Nguyễn Văn Minh',
+              name: 'Hoàng Anh',
               role: 'Trợ giảng (TA)',
               phone: '0988776655',
-              email: 'minh.nv@rinoedu.com',
-              avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=VanMinh',
+              email: 'hoanganh@rinoedu.com',
+              avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=HoangAnh',
               titleHeader: 'Trợ giảng buổi học',
               badge: 'Trợ giảng'
             }
@@ -507,13 +504,15 @@ export function StudentCareDetailPage({
         </div>
       </div>
 
-      <StudentDetailDialog
-        studentId={student.studentId}
-        open={isProfileOpen}
-        onOpenChange={setIsProfileOpen}
-      />
+      {isProfileOpen && (
+        <StudentDetailDialog
+          studentId={student.studentId}
+          open={isProfileOpen}
+          onOpenChange={setIsProfileOpen}
+        />
+      )}
 
-      {leaveRequest && (
+      {isLeaveReserveOpen && leaveRequest && (
         <LeaveReserveDetailDialog
           open={isLeaveReserveOpen}
           onOpenChange={setIsLeaveReserveOpen}
@@ -523,50 +522,63 @@ export function StudentCareDetailPage({
       )}
 
       {/* Modal Tạo đơn bảo lưu / Nghỉ phép */}
-      <LeaveReserveCreateDialog
-        open={isCreateLeaveReserveOpen}
-        onOpenChange={setIsCreateLeaveReserveOpen}
-        initialType={createLeaveReserveType}
-        initialStudentId={student?.studentId}
-        onSubmit={handleCreateLeaveReserveSubmit}
-      />
+      {isCreateLeaveReserveOpen && (
+        <LeaveReserveCreateDialog
+          open={isCreateLeaveReserveOpen}
+          onOpenChange={setIsCreateLeaveReserveOpen}
+          initialType={createLeaveReserveType}
+          initialStudentId={student?.studentId}
+          initialClassCode={activePackage?.classCode}
+          initialClassName={activePackage?.className}
+          initialPackageName={activePackage?.packageName}
+          initialRemainingSessions={activePackage?.remainingSessions}
+          initialTotalSessions={activePackage?.totalSessions}
+          packagesList={packagesList}
+          selectedPackageId={selectedPackageId}
+          onSubmit={handleCreateLeaveReserveSubmit}
+        />
+      )}
 
       {/* Modal Đi học lại (khi đang bảo lưu) */}
-      <StudentCareEarlyReturnDialog
-        open={isEarlyReturnOpen}
-        onOpenChange={setIsEarlyReturnOpen}
-        studentName={student?.studentName || ''}
-        studentCode={student?.customerCode || student?.studentId || ''}
-        studentId={student?.studentId}
-        packageName={student ? `${student.subject} - ${student.level}` : 'Khóa học'}
-        className={student?.classCode || 'Lớp học'}
-        classCode={student?.classCode || 'LD_TOAN_00010'}
-        isHoldingClass={Boolean(student?.classCode && student.classCode !== '-')}
-        expectedReturnDate={student?.expectedEndDate || '16/09/2026'}
-        remainingSessions={student?.remainingSessions ?? 22}
-        branchName="RinoEdu Nguyễn Tuân"
-        onSuccess={() => {
-          setIsEarlyReturnOpen(false)
-          toast.success(`Học viên ${student?.studentName} đã quay lại học thành công!`)
-        }}
-      />
+      {isEarlyReturnOpen && (
+        <StudentCareEarlyReturnDialog
+          open={isEarlyReturnOpen}
+          onOpenChange={setIsEarlyReturnOpen}
+          studentName={student?.studentName || ''}
+          studentCode={student?.customerCode || student?.studentId || ''}
+          studentId={student?.studentId}
+          packageName={student ? `${student.subject} - ${student.level}` : 'Khóa học'}
+          className={student?.classCode || 'Lớp học'}
+          classCode={student?.classCode || 'LD_TOAN_00010'}
+          isHoldingClass={Boolean(student?.classCode && student.classCode !== '-')}
+          expectedReturnDate={student?.expectedEndDate || '16/09/2026'}
+          remainingSessions={student?.remainingSessions ?? 22}
+          branchName="RinoEdu Nguyễn Tuân"
+          onSuccess={() => {
+            setIsEarlyReturnOpen(false)
+            toast.success(`Học viên ${student?.studentName} đã quay lại học thành công!`)
+          }}
+        />
+      )}
 
-      <CareJourneyModal
-        isOpen={isRoadmapOpen}
-        onClose={() => setIsRoadmapOpen(false)}
-        workItem={
-          student
-            ? {
-                id: student.id,
-                studentId: student.studentId,
-                studentName: student.studentName,
-                className: student.classCode,
-                productName: `${student.subject} - ${student.level}`,
-                expectedEndDate: student.expectedEndDate || '25/10/2026',
-              }
-            : null
-        }
-      />
+      {isRoadmapOpen && (
+        <CareJourneyModal
+          isOpen={isRoadmapOpen}
+          onClose={() => setIsRoadmapOpen(false)}
+          workItem={
+            student
+              ? {
+                  id: student.id,
+                  studentId: student.studentId,
+                  studentName: student.studentName,
+                  className: student.classCode,
+                  productName: `${student.subject} - ${student.level}`,
+                  expectedEndDate: student.expectedEndDate || '25/10/2026',
+                }
+              : null
+          }
+        />
+      )}
 
       {/* Dialog: Chỉnh sửa thông tin học viên (Ảnh 2) */}
       {resolvedStudent && isEditProfileOpen && (

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { CenterProfileHoverCard } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { getSlotTimeRange } from './bookingTestCreateTypes'
 
@@ -180,16 +181,20 @@ export function BookingTestCreateSummary({
           </p>
         </div>
 
-        {/* 2. Cơ sở / Trung tâm */}
+        {/* 2. Cơ sở / Trung tâm (Hover xem profile cơ sở) */}
         <div className="flex items-center gap-2 min-w-0">
           <MapPin className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-          <p className="font-medium text-foreground truncate flex-1 min-w-0 text-xs" title={school || 'Chưa chọn cơ sở'}>
+          <div className="font-medium text-foreground truncate flex-1 min-w-0 text-xs" title={school || 'Chưa chọn cơ sở'}>
             {school ? (
-              <span>{school}</span>
+              <CenterProfileHoverCard centerName={school} side="left" align="start">
+                <span className="font-semibold text-foreground hover:text-primary hover:underline cursor-pointer transition-colors">
+                  {school}
+                </span>
+              </CenterProfileHoverCard>
             ) : (
               <span className="text-muted-foreground font-normal">Chưa chọn cơ sở</span>
             )}
-          </p>
+          </div>
         </div>
 
         {/* 3. Chương trình & Level dự kiến */}

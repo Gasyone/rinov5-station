@@ -59,6 +59,7 @@ export interface GenericSessionData {
   feedbackLink?: string
   resultLink?: string
   projectUrl?: string
+  hasSemesterEvaluation?: boolean
 }
 
 interface SessionHoverCardProps {

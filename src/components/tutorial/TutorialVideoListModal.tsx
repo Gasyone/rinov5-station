@@ -89,7 +89,7 @@ export function TutorialVideoListModal({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pr-8">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-600 text-white shadow-xs">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
                   <BookOpen className="h-4 w-4" />
                 </div>
                 <DialogTitle className="text-base font-bold text-foreground">

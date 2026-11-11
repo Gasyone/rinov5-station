@@ -14,6 +14,11 @@ export interface StudentCareDetailDialogProps {
 }
 
 export function StudentCareDetailDialog(props: StudentCareDetailDialogProps) {
+  if (!props.open) return null
+  return <StudentCareDetailDialogInner {...props} />
+}
+
+function StudentCareDetailDialogInner(props: StudentCareDetailDialogProps) {
   const [version, setVersion] = useState<1 | 2>(1)
 
   if (version === 2) {

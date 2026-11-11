@@ -32,6 +32,11 @@ export interface BookingTestResult {
   lwrLevel?: string
   lwrScore?: string
   path?: string
+  testSource?: 'lms' | 'manual'
+  uploadedFileName?: string
+  uploadedFileUrl?: string
+  mathComment?: string
+  learningRoadmap?: string
 }
 
 export interface BookingTest {
@@ -58,6 +63,7 @@ export interface BookingTest {
   testResult?: BookingTestResult
   resultLink?: string
   testLink?: string
+  testSource?: 'lms' | 'manual'
   createdBy?: string
   ops?: string
   teacher?: string
@@ -88,6 +94,19 @@ export const PROGRAM_LEVELS = [
 
 export const SUB_LEVELS = ["A1", "A", "B", "C"]
 
+export const MATH_LEVELS = [
+  "Colombus 4",
+  "Colombus 4 (0P2)",
+  "Colombus 5",
+  "Colombus 5 (0P2)",
+  "Archimedes 6",
+  "Tinh hoa_Archimedes 6",
+  "Archimedes 7",
+  "Tinh hoa_Archimedes 7",
+  "Einstein 8",
+  "Tinh hoa_Einstein 8",
+]
+
 const getRelativeDateTime = (daysOffset: number, timeStr: string) => {
   const d = new Date()
   d.setDate(d.getDate() + daysOffset)
@@ -98,6 +117,123 @@ const getRelativeDateTime = (daysOffset: number, timeStr: string) => {
 }
 
 export const mockBookingTests: BookingTest[] = [
+  {
+    id: "BK-BM003",
+    childName: "Bé Minh",
+    gender: "Nam",
+    parentName: "Trần Văn Nam",
+    parentRole: "Bố",
+    familyName: "Gia đình Trần Văn Nam",
+    phone: "0987654321",
+    familyMembers: [
+      { name: "Trần Văn Nam (Bố)", phone: "0987654321", isPrimary: true },
+    ],
+    status: "completed",
+    attendance: "confirmed",
+    subject: "math",
+    testSource: "lms",
+    eventType: "test",
+    program: "Chương trình Toán tư duy",
+    school: "RinoEdu Linh Đàm",
+    room: "Phòng Test 01",
+    classroom: "Phòng Test 01",
+    testTime: "2026-11-11 11:17",
+    expectedLevel: "Lớp 1",
+    testResult: {
+      level: "Colombus 4",
+      lwr: "18/20",
+      testSource: "lms",
+    },
+    resultLink: "https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600",
+    teacher: "Thu Hà",
+    tester: "Thu Hà",
+    createdBy: "Hệ thống Hotline",
+    notes: [
+      {
+        text: "Học sinh hoàn thành bài test LMS Toán tư duy lúc 11:17 ngày 11/11/2026",
+        author: "Trần Thị Mai",
+        timestamp: "2026-11-09 10:00",
+      },
+    ],
+  },
+  {
+    id: "BK-BM003-ALT",
+    childName: "Bảo Minh",
+    gender: "Nam",
+    parentName: "Trần Văn Nam",
+    parentRole: "Bố",
+    familyName: "Gia đình Trần Văn Nam",
+    phone: "0987654321",
+    familyMembers: [
+      { name: "Trần Văn Nam (Bố)", phone: "0987654321", isPrimary: true },
+    ],
+    status: "completed",
+    attendance: "confirmed",
+    subject: "math",
+    testSource: "manual",
+    eventType: "test",
+    program: "Chương trình Toán tư duy",
+    school: "RinoEdu Linh Đàm",
+    room: "Phòng Test 01",
+    classroom: "Phòng Test 01",
+    testTime: "2026-11-11 11:17",
+    expectedLevel: "Lớp 1",
+    testResult: {
+      level: "Colombus 4 (0P2)",
+      lwr: "15/20",
+      testSource: "manual",
+      uploadedFileName: "phieu_cham_toan_BM003.pdf",
+      uploadedFileUrl: "https://rinoedu.ai/ket-qua-cham-tay/phieu_cham_toan_BM003.pdf",
+    },
+    resultLink: "https://rinoedu.ai/ket-qua-cham-tay/phieu_cham_toan_BM003.pdf",
+    teacher: "Thu Hà",
+    tester: "Thu Hà",
+    createdBy: "Hệ thống Hotline",
+    notes: [
+      {
+        text: "Học sinh test bài chấm tay Toán tư duy lúc 11:17 ngày 11/11/2026",
+        author: "Trần Thị Mai",
+        timestamp: "2026-11-09 10:00",
+      },
+    ],
+  },
+  {
+    id: "BK-SEN01",
+    childName: "Hoàng Thị Sen 1",
+    gender: "Nữ",
+    parentName: "Hoàng Văn Nam",
+    parentRole: "Bố",
+    familyName: "Gia đình Hoàng Thị Sen 1",
+    phone: "0988776655",
+    familyMembers: [
+      { name: "Hoàng Văn Nam (Bố)", phone: "0988776655", isPrimary: true },
+    ],
+    status: "checkin",
+    attendance: "confirmed",
+    subject: "math",
+    testSource: "manual",
+    eventType: "test",
+    program: "Chương trình Toán tư duy",
+    school: "Trường Tech Test",
+    room: "Phòng Test 02",
+    classroom: "Phòng Test 02",
+    testTime: "2026-11-11 11:17",
+    expectedLevel: "Lớp 1",
+    testResult: {
+      level: "Archimedes 6",
+      testSource: "manual",
+    },
+    teacher: "Thu Hà",
+    tester: "Thu Hà",
+    createdBy: "Trần Thị Mai (Tư vấn tuyển sinh)",
+    notes: [
+      {
+        text: "Học sinh đang có lịch test Toán tư duy lúc 11:17 ngày 11/11/2026",
+        author: "Trần Thị Mai",
+        timestamp: "2026-11-09 10:00",
+      },
+    ],
+  },
   {
     id: "E0001",
     childName: "Nguyễn An",
@@ -189,29 +325,27 @@ export const mockBookingTests: BookingTest[] = [
       { name: "Phạm Tuấn (Bố)", phone: "0912333345", isPrimary: true },
       { name: "Bà ngoại", phone: "0912333346" },
     ],
-    status: "assessing",
-    isInterviewed: true,
-    isTested: false,
+    status: "completed",
+    isInterviewed: false,
+    isTested: true,
     attendance: "confirmed",
     subject: "math",
+    testSource: "manual",
     eventType: "test",
     program: "Toán tư duy",
     school: "RinoEdu Nguyễn Tuân",
     room: "Phòng M3",
     classroom: "Phòng M3",
     testTime: getRelativeDateTime(0, "19:30"),
-    expectedLevel: "Level 2B",
+    expectedLevel: "Colombus 5",
     testResult: {
-      level: "Level 3A",
-      subLevel: "C",
-      speaking: "7/8",
-      speakingAi: "7/8",
-      speakingScore: "1",
-      lwr: "33/40",
-      lwrLevel: "Movers",
-      lwrScore: "3.5",
+      level: "Archimedes 6",
+      lwr: "13/20",
+      testSource: "manual",
+      uploadedFileName: "phieu_cham_toan_quynh_chi.pdf",
+      uploadedFileUrl: "https://rinoedu.ai/ket-qua-cham-tay/phieu_cham_toan_quynh_chi.pdf",
     },
-    resultLink: "mock://booking-results/e0003",
+    resultLink: "https://rinoedu.ai/ket-qua-cham-tay/phieu_cham_toan_quynh_chi.pdf",
     testLink: "mock://booking-tests/e0003",
     createdBy: "Hung Dao",
     ops: "Hung Dao",
@@ -325,18 +459,14 @@ export const mockBookingTests: BookingTest[] = [
     room: "Phòng M1",
     classroom: "Phòng M1",
     testTime: getRelativeDateTime(-1, "15:30"),
-    expectedLevel: "Kindie 3",
+    expectedLevel: "Colombus 4",
+    testSource: "lms",
     testResult: {
-      level: "Columbus 5",
-      subLevel: "A1",
-      speaking: "-",
-      speakingAi: "5/8",
-      speakingScore: "0",
-      lwr: "12/40",
-      lwrLevel: "Starters",
-      lwrScore: "0",
+      level: "Colombus 4",
+      lwr: "8/20",
+      testSource: "lms",
     },
-    resultLink: "mock://booking-results/e0006",
+    resultLink: "https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600",
     testLink: "mock://booking-tests/e0006",
     createdBy: "Thanh Van",
     ops: "Thanh Van",
@@ -551,6 +681,7 @@ export const mockBookingTests: BookingTest[] = [
     status: "completed",
     attendance: "confirmed",
     subject: "math",
+    testSource: "lms",
     eventType: "test",
     program: "Toán tư duy GMaths",
     school: "RinoEdu Linh Đàm",
@@ -558,10 +689,11 @@ export const mockBookingTests: BookingTest[] = [
     classroom: "Phòng M2",
     testTime: getRelativeDateTime(-3, "10:00"),
     testResult: {
-      level: "Level 2B",
-      lwr: "28/40",
-      lwrLevel: "Movers",
+      level: "Colombus 5",
+      lwr: "16/20",
+      testSource: "lms",
     },
+    resultLink: "https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600",
     createdBy: "Thanh Van",
     ops: "Thanh Van",
     teacher: "Thay Hung",
@@ -673,6 +805,7 @@ export const mockBookingTests: BookingTest[] = [
     status: "completed",
     attendance: "confirmed",
     subject: "math",
+    testSource: "manual",
     eventType: "test",
     program: "Toán Olympiad",
     school: "RinoEdu Nguyễn Tuân",
@@ -680,10 +813,13 @@ export const mockBookingTests: BookingTest[] = [
     classroom: "Phòng M2",
     testTime: getRelativeDateTime(0, "15:30"),
     testResult: {
-      level: "Level 2B",
-      lwr: "32/40",
-      lwrLevel: "Movers",
+      level: "Einstein 8",
+      lwr: "17/20",
+      testSource: "manual",
+      uploadedFileName: "phieu_cham_quang_huy.pdf",
+      uploadedFileUrl: "https://rinoedu.ai/ket-qua-cham-tay/phieu_cham_quang_huy.pdf",
     },
+    resultLink: "https://rinoedu.ai/ket-qua-cham-tay/phieu_cham_quang_huy.pdf",
     createdBy: "Thanh Van",
     ops: "Thanh Van",
     teacher: "Thay Hung",

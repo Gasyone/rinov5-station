@@ -1,19 +1,17 @@
 'use client'
 
-import { useRef, useState } from 'react'
 import {
   Check,
+  ChevronDown,
   ExternalLink,
   Globe,
   Home,
   LogOut,
   Menu,
   Moon,
-  Search,
   Settings,
   ShieldCheck,
   Sun,
-  Lightbulb,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore, type DemoRole } from '@/stores/useAuthStore'
@@ -23,13 +21,23 @@ import { navigationGroups } from '@/config/navigation'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 
 const DEMO_ROLE_OPTIONS: Array<{ role: DemoRole; label: string; desc: string }> = [
   { role: 'csm', label: 'CS', desc: 'Chuyên cần, Dịch vụ & Rủi ro dừng học' },
   { role: 'teacher', label: 'Giáo viên (Teacher)', desc: 'Lớp của tôi & Chăm sóc chuyên môn' },
   { role: 'branch_manager', label: 'Quản lý Chi nhánh (BM)', desc: 'Góc nhìn Presets Quản trị' },
 ]
+
+const ROLE_LABELS_MAP: Record<DemoRole, string> = {
+  admin: 'Admin',
+  branch_manager: 'Quản lý Chi nhánh',
+  teacher: 'Giáo viên',
+  csm: 'CS (Chăm sóc KH)',
+  sale: 'Sale',
+  ops: 'Vận hành',
+  academic: 'Học vụ',
+}
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,9 +46,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { HeaderBrand } from './HeaderBrand'
-import { NotificationDropdown } from './NotificationDropdown'
+import { HeaderNotificationCenter } from './HeaderNotificationCenter'
 import { FeedbackPopover } from './FeedbackPopover'
 import { HeaderWorkdayDatePicker } from './HeaderWorkdayDatePicker'
 import { TutorialVideoButton } from '@/components/tutorial'
@@ -56,9 +63,6 @@ interface HeaderBarProps {
 }
 
 export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
-  const searchInputRef = useRef<HTMLInputElement>(null)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const switchRole = useAuthStore((s) => s.switchRole)
@@ -73,8 +77,6 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   const setLocale = useUIStore((s) => s.setLocale)
   const currentMenuId = useUIStore((s) => s.currentMenuId)
   const customHeaderTitle = useUIStore((s) => s.customHeaderTitle)
-  const isExplainMode = useUIStore((s) => s.isExplainMode)
-  const toggleExplainMode = useUIStore((s) => s.toggleExplainMode)
   const router = useRouter()
 
   const baseMenuId = currentMenuId ? currentMenuId.split('/')[0] : null
@@ -97,16 +99,12 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   }
 
   const initial = user?.name?.charAt(0) ?? user?.email?.charAt(0) ?? 'U'
-
-  const closeSearchIfIdle = () => {
-    if (searchValue.trim()) return
-    if (document.activeElement === searchInputRef.current) return
-    setIsSearchOpen(false)
-  }
+  const roleLabel = (user?.role && ROLE_LABELS_MAP[user.role]) || user?.role || 'Người dùng'
 
   return (
     <header className="ui-shell-header sticky top-0 z-50 flex h-11 flex-shrink-0 items-center justify-between bg-background/90 px-3 backdrop-blur-md md:pl-3 md:pr-4">
-      <div className="flex items-center gap-2 md:gap-3">
+      {/* Left: Mobile menu toggle, Brand Logo & Page Title */}
+      <div className="flex items-center gap-2 md:gap-3 shrink-0">
         <Button
           type="button"
           variant="ghost"
@@ -123,93 +121,21 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
         {menuLabel && (
           <div className="flex items-center gap-1.5 border-l border-border pl-2.5 md:pl-3">
             {GroupIcon && <GroupIcon className="h-4 w-4 text-muted-foreground/80 shrink-0" />}
-            <span className="text-sm font-semibold text-foreground tracking-tight truncate max-w-[160px] sm:max-w-none">
+            <span className="text-sm font-semibold text-foreground tracking-tight truncate max-w-[140px] sm:max-w-none">
               {menuLabel}
             </span>
           </div>
         )}
       </div>
 
-      {/* Center: Hôm nay & Lịch chọn ngày */}
-      <HeaderWorkdayDatePicker />
+      {/* Center: Ngày làm việc & Widget Thông báo 2 dòng */}
+      <div className="flex items-center justify-center gap-2 flex-1 min-w-0 mx-2">
+        <HeaderWorkdayDatePicker />
+        <HeaderNotificationCenter />
+      </div>
 
-      <div className="flex items-center gap-1.5 md:gap-2">
-        <div
-          className={cn(
-            'hidden h-8 items-center rounded-full border transition-[width,background-color,border-color,box-shadow] duration-200 md:flex',
-            isSearchOpen
-              ? 'w-64 border-border bg-background shadow-xs'
-              : 'w-8 border-transparent bg-transparent shadow-none'
-          )}
-          onMouseEnter={() => setIsSearchOpen(true)}
-          onMouseLeave={closeSearchIfIdle}
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Search"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
-            onClick={() => {
-              setIsSearchOpen(true)
-              window.requestAnimationFrame(() => searchInputRef.current?.focus())
-            }}
-          >
-            <Search className="h-3.5 w-3.5" />
-          </Button>
-          <div
-            className={cn(
-              'grid min-w-0 transition-[grid-template-columns,opacity] duration-200',
-              isSearchOpen ? 'grid-cols-[1fr] opacity-100' : 'grid-cols-[0fr] opacity-0'
-            )}
-          >
-            <Input
-              ref={searchInputRef}
-              value={searchValue}
-              onChange={(event) => setSearchValue(event.target.value)}
-              onFocus={() => setIsSearchOpen(true)}
-              onBlur={closeSearchIfIdle}
-              placeholder="Search..."
-              className="h-auto min-w-0 border-0 bg-transparent p-0 pr-3 text-xs shadow-none outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0"
-            />
-          </div>
-        </div>
-
-        {/* Switch Chế độ Thuyết minh PO (Explain Mode) */}
-        <div
-          className={cn(
-            'flex h-7 items-center gap-1.5 rounded-full border px-2 text-xs transition-colors select-none',
-            isExplainMode
-              ? 'border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200 shadow-2xs'
-              : 'border-border/70 bg-background/60 text-muted-foreground hover:bg-accent hover:text-foreground'
-          )}
-          title="Bật/Tắt Chế độ Thuyết minh Nghiệp vụ PO (Explain Mode)"
-        >
-          <Lightbulb
-            className={cn(
-              'h-3.5 w-3.5 transition-colors shrink-0',
-              isExplainMode
-                ? 'text-amber-500 fill-amber-500 animate-pulse'
-                : 'text-muted-foreground/70'
-            )}
-          />
-          <span className="hidden lg:inline text-[11px] font-medium tracking-tight">
-            Thuyết minh PO
-          </span>
-          <Switch
-            size="sm"
-            checked={isExplainMode}
-            onCheckedChange={() => {
-              toggleExplainMode()
-              if (!isExplainMode) {
-                toast.info('Đã bật Chế độ Thuyết minh PO! Nhấp vào các huy hiệu 💡 để xem ý đồ nghiệp vụ.')
-              }
-            }}
-            aria-label="Chế độ Thuyết minh PO"
-            className="data-[state=checked]:bg-amber-500"
-          />
-        </div>
-
+      {/* Right: Tutorials, Feedback, Settings & User Profile */}
+      <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
         {/* Video Hướng dẫn Sử dụng (Contextual Tutorials) */}
         <TutorialVideoButton />
 
@@ -292,22 +218,27 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Notifications */}
-        <NotificationDropdown />
-
-        {/* User menu */}
+        {/* User menu: Avatar, Tên & Vai trò */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="ghost"
-              size="icon-sm"
               aria-label="Tài khoản"
-              className="group inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none transition-colors hover:bg-accent data-[state=open]:bg-accent"
+              className="group inline-flex h-8 items-center gap-2 rounded-full border border-transparent pl-1 pr-2 py-0 hover:bg-accent data-[state=open]:bg-accent transition-colors text-left"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-sm">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-xs">
                 {initial}
               </div>
+              <div className="flex flex-col text-left leading-tight min-w-0">
+                <span className="text-xs font-semibold text-foreground tracking-tight truncate max-w-[90px] sm:max-w-[130px] md:max-w-[160px]">
+                  {user?.name ?? 'Admin Demo'}
+                </span>
+                <span className="text-[10px] text-muted-foreground truncate max-w-[90px] sm:max-w-[130px] md:max-w-[160px]">
+                  {roleLabel}
+                </span>
+              </div>
+              <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 p-0">
@@ -323,7 +254,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                   {user?.email ?? ''}
                 </p>
                 <p className="mt-1 text-xs font-semibold capitalize text-muted-foreground">
-                  {user?.role ?? ''}
+                  {roleLabel}
                 </p>
               </div>
             </div>

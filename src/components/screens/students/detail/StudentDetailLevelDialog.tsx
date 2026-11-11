@@ -24,6 +24,16 @@ interface StudentDetailLevelDialogProps {
 }
 
 const BASE_LEVEL_OPTIONS = [
+  'Colombus 4',
+  'Colombus 4 (0P2)',
+  'Colombus 5',
+  'Colombus 5 (0P2)',
+  'Archimedes 6',
+  'Tinh hoa_Archimedes 6',
+  'Archimedes 7',
+  'Tinh hoa_Archimedes 7',
+  'Einstein 8',
+  'Tinh hoa_Einstein 8',
   'Toán 1:6',
   'Toán 1:1',
   'Toán nâng cao',

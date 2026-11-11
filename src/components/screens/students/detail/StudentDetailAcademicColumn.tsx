@@ -27,6 +27,7 @@ export interface StudentDetailAcademicColumnProps {
   studentLevel?: string
   activeDeductingPackage?: StudentPackage | null
   nextQueuedPackage?: StudentPackage | null
+  isExpanded?: boolean
   onOpenAssignClass: (packageId?: string) => void
   onLeaveClass?: () => void
   onReserveClass?: () => void
@@ -41,6 +42,7 @@ export function StudentDetailAcademicColumn({
   studentCode,
   studentBranch,
   activeDeductingPackage,
+  isExpanded = true,
   onOpenAssignClass,
   onLeaveClass,
   onReserveClass,
@@ -48,7 +50,8 @@ export function StudentDetailAcademicColumn({
   onOpenRenewalDetail,
   onOpenEarlyReturn,
 }: StudentDetailAcademicColumnProps) {
-  const [isHistoryExpanded, setIsHistoryExpanded] = useState(true)
+  const [manualHistoryExpanded, setManualHistoryExpanded] = useState<boolean | null>(null)
+  const isHistoryExpanded = manualHistoryExpanded !== null ? manualHistoryExpanded : Boolean(isExpanded)
   const [selectedClassRecord, setSelectedClassRecord] = useState<ClassRecord | null>(null)
   const [isClassDetailOpen, setIsClassDetailOpen] = useState(false)
   const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveReserveRequest | null>(null)
@@ -162,6 +165,7 @@ export function StudentDetailAcademicColumn({
               studentBranch={studentBranch}
               studentLevel={program.level}
               isPast={false}
+              isExpanded={isExpanded}
               onOpenClassDetail={handleOpenClassDetail}
               onOpenAssignClass={() => onOpenAssignClass(activeDeductingPackage?.id)}
               onLeaveClass={onLeaveClass}
@@ -178,6 +182,7 @@ export function StudentDetailAcademicColumn({
           <div className="space-y-2">
             <StudentDetailPlacementStatusBanner
               program={program}
+              isExpanded={isExpanded}
               onOpenAssignClass={() => onOpenAssignClass(activeDeductingPackage?.id)}
               onOpenLeaveRequest={handleOpenLeaveRequest}
               onOpenEarlyReturn={onOpenEarlyReturn}
@@ -191,6 +196,7 @@ export function StudentDetailAcademicColumn({
                 studentBranch={studentBranch}
                 studentLevel={program.level}
                 isPast={false}
+                isExpanded={isExpanded}
                 onOpenClassDetail={handleOpenClassDetail}
                 onOpenAssignClass={() => onOpenAssignClass(activeDeductingPackage?.id)}
                 onLeaveClass={onLeaveClass}
@@ -213,7 +219,7 @@ export function StudentDetailAcademicColumn({
           {program.pastClasses.length > 0 && (
             <button
               type="button"
-              onClick={() => setIsHistoryExpanded((prev) => !prev)}
+              onClick={() => setManualHistoryExpanded(!isHistoryExpanded)}
               className="text-xs font-normal text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors select-none"
             >
               <span>{isHistoryExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
@@ -238,11 +244,11 @@ export function StudentDetailAcademicColumn({
                   onSelectSession={(sess) => setSelectedSessionForModal(sess)}
                 />
               ))
-            ) : (
-              <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 py-2.5 px-3 text-center text-xs text-muted-foreground italic">
+            ) : isExpanded ? (
+              <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 py-2 px-3 text-center text-xs text-muted-foreground italic">
                 Chưa có lịch sử lớp học trước đó trong lộ trình này.
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>

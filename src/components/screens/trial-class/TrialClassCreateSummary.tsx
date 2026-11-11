@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { CenterProfileHoverCard } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import type { TrialSessionSelection } from './trialClassTypes'
 import { PoExplainSectionWrapper } from './explain'
@@ -209,12 +210,16 @@ export function TrialClassCreateSummary({
             </div>
           </div>
 
-          {/* 3. Cơ sở (Tách dòng riêng) */}
+          {/* 3. Cơ sở (Tách dòng riêng, hover xem profile trung tâm) */}
           <div className="flex items-start gap-2.5 min-w-0">
             <MapPin className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 truncate" title={school || 'Chưa chọn cơ sở'}>
               {school ? (
-                <span className="font-semibold text-foreground">{school}</span>
+                <CenterProfileHoverCard centerName={school} side="left" align="start">
+                  <span className="font-semibold text-foreground hover:text-primary hover:underline cursor-pointer transition-colors">
+                    {school}
+                  </span>
+                </CenterProfileHoverCard>
               ) : (
                 <span className="text-muted-foreground font-normal">Chưa chọn cơ sở</span>
               )}
@@ -287,7 +292,9 @@ export function TrialClassCreateSummary({
                   </span>
                 </span>
               ) : (
-                <span className="text-muted-foreground font-normal">Chưa chọn học viên & phụ huynh</span>
+                <span className="text-muted-foreground font-normal">
+                  Chưa chọn học viên{parentName ? ` (${parentName}${phone ? ` - ${phone}` : ''})` : ''}
+                </span>
               )}
             </div>
             {phone && (

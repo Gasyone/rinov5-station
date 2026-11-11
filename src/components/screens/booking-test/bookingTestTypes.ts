@@ -60,6 +60,7 @@ export interface AssessmentDraft {
   feedbackAnswers: Record<string, FeedbackAnswer>
   scoreSelections: Record<string, ScoreValue>
   oldForm: AssessmentOldFormDraft
+  generalComment?: string
   level: string
   subLevel: string
   speaking: string

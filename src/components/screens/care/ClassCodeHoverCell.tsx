@@ -330,11 +330,13 @@ export function ClassCodeHoverCell({
         </HoverCardContent>
       </HoverCard>
 
-      <ClassesDetailDialog
-        cls={classDetail}
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-      />
+      {isDetailOpen && (
+        <ClassesDetailDialog
+          cls={classDetail}
+          open={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+        />
+      )}
     </>
   )
 }

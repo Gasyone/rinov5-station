@@ -12,10 +12,12 @@ interface BookingTestTableProps {
   bookings: BookingTest[]
   selectedIds: Set<string>
   copiedKey: string
+  activeSubject?: string
   onToggleAll: (checked: boolean, ids: string[]) => void
   onToggleOne: (id: string, checked: boolean) => void
   onRowClick: (bookingId: string) => void
   onOpenAssessment: (bookingId: string) => void
+  onOpenManualUpload?: (bookingId: string) => void
   onUpdateBooking: (bookingId: string, updater: (booking: BookingTest) => BookingTest) => void
   onCopy: (text: string, key: string) => Promise<void>
   onCall: (phone?: string) => void
@@ -33,10 +35,12 @@ export function BookingTestTable({
   bookings,
   selectedIds,
   copiedKey,
+  activeSubject = 'english',
   onToggleAll,
   onToggleOne,
   onRowClick,
   onOpenAssessment,
+  onOpenManualUpload,
   onUpdateBooking,
   onCopy,
   onCall,
@@ -70,7 +74,7 @@ export function BookingTestTable({
                   aria-label="Chọn tất cả"
                 />
               </th>
-              <th className="sticky top-0 left-8 z-50 w-[220px] min-w-[200px] xl:w-[240px] 2xl:w-[260px] px-2.5 bg-muted text-left border-none">
+              <th className="sticky top-0 left-8 z-50 w-[270px] min-w-[250px] xl:w-[285px] 2xl:w-[300px] px-2 xl:px-2.5 bg-muted text-left border-none">
                 Học viên
               </th>
               <th className="sticky top-0 z-40 bg-muted w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2.5 text-left">
@@ -80,7 +84,7 @@ export function BookingTestTable({
                 Lịch test
               </th>
               <th className="sticky top-0 z-40 bg-muted w-[195px] min-w-[180px] xl:w-[210px] 2xl:w-[230px] px-2.5 text-left">
-                Speaking & LWR
+                {activeSubject === 'math' ? 'LWR Level' : 'Speaking & LWR'}
               </th>
               <th className="sticky top-0 z-40 bg-muted w-[125px] min-w-[115px] xl:w-[135px] 2xl:w-[145px] px-2 text-left">
                 Kết quả
@@ -105,6 +109,7 @@ export function BookingTestTable({
                 onToggle={onToggleOne}
                 onRowClick={onRowClick}
                 onOpenAssessment={onOpenAssessment}
+                onOpenManualUpload={onOpenManualUpload}
                 onUpdateBooking={onUpdateBooking}
                 onCopy={onCopy}
                 onCall={onCall}

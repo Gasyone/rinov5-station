@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { useUIStore } from '@/stores/useUIStore'
 import type { RosterStudent } from './classesDetailTypes'
 import { getInitials } from './classesSessionDetailHelpers'
 import { getStudentNameParts } from './classesDetailHelpers'
@@ -20,6 +21,10 @@ import {
   type SemesterStudentEval,
   EMPTY_EVAL,
 } from './classesSemesterEvaluationHelpers'
+import {
+  SEMESTER_EVAL_I18N,
+  type EvaluationLang,
+} from './classesSemesterEvaluationI18n'
 
 export type { SemesterStudentEval } from './classesSemesterEvaluationHelpers'
 
@@ -107,7 +112,9 @@ export function ClassesSemesterEvaluationDialog({
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(students[0]?.id || null)
   const [viewMode, setViewMode] = useState<'table' | 'form'>('table')
   const [viewAllAttended, setViewAllAttended] = useState(false)
-
+  const globalLocale = useUIStore((s) => s.locale)
+  const lang: EvaluationLang = globalLocale === 'en' ? 'en' : 'vi'
+  const t = SEMESTER_EVAL_I18N[lang]
 
   const displayedStudents = useMemo(() => {
     if (viewAllAttended && fullRoster && fullRoster.length > 0) {
@@ -139,7 +146,7 @@ export function ClassesSemesterEvaluationDialog({
       ...currentEval,
       isSubmitted: true,
     })
-    toast.success(`Đã cập nhật đánh giá cuối kỳ cho ${selectedStudent.name}`)
+    toast.success(t.updatedSuccessToast(selectedStudent.name))
   }
 
   return (
@@ -148,9 +155,9 @@ export function ClassesSemesterEvaluationDialog({
         <DialogHeader className="px-4 py-2 border-b shrink-0 flex flex-row items-center justify-between gap-3 bg-background">
           <div className="flex items-center gap-2 min-w-0">
             <DialogTitle className="text-sm font-bold text-foreground truncate">
-              Semester Evaluation / Đánh giá cuối kỳ
+              {t.dialogTitle}
             </DialogTitle>
-            <span className="text-xs text-muted-foreground truncate hidden sm:inline">· Buổi kiểm tra: {sessionTopic}</span>
+            <span className="text-xs text-muted-foreground truncate hidden sm:inline">· {t.sessionPrefix}: {sessionTopic}</span>
           </div>
           <div className="flex items-center gap-2.5 pr-8 shrink-0">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground cursor-pointer select-none">
@@ -160,7 +167,7 @@ export function ClassesSemesterEvaluationDialog({
                 onChange={(e) => setViewAllAttended(e.target.checked)}
                 className="h-3.5 w-3.5 rounded border-zinc-300 text-primary focus:ring-primary cursor-pointer bg-white dark:bg-zinc-900"
               />
-              <span className="hidden md:inline">View all attended</span>
+              <span className="hidden md:inline">{t.viewAllAttended}</span>
             </label>
             <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg border">
               <Button
@@ -176,7 +183,7 @@ export function ClassesSemesterEvaluationDialog({
                 )}
               >
                 <Table className="h-3 w-3" />
-                Table
+                {t.tableMode}
               </Button>
               <Button
                 type="button"
@@ -191,7 +198,7 @@ export function ClassesSemesterEvaluationDialog({
                 )}
               >
                 <PenSquare className="h-3 w-3" />
-                Form
+                {t.formMode}
               </Button>
             </div>
           </div>
@@ -206,13 +213,14 @@ export function ClassesSemesterEvaluationDialog({
                 setSelectedStudentId(id)
                 setViewMode('form')
               }}
+              lang={lang}
             />
           ) : (
             <>
               {/* Left Student List Sidebar */}
               <aside className="w-[240px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
                 <div className="px-3 py-1.5 border-b text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Học sinh ({displayedStudents.length})
+                  {t.rosterHeader} ({displayedStudents.length})
                 </div>
                 <div className="flex-1 overflow-y-auto p-1 space-y-0.5 custom-scrollbar bg-white dark:bg-zinc-950">
                   {displayedStudents.map((student) => {
@@ -275,14 +283,14 @@ export function ClassesSemesterEvaluationDialog({
                     <div className="flex items-center justify-between pb-1.5 shrink-0 border-b">
                       <div>
                         <h3 className="text-sm font-bold text-foreground">
-                          Nhận xét cho học viên: <span className="text-primary">{selectedStudent.name}</span>
+                          {t.evalForStudent}: <span className="text-primary">{selectedStudent.name}</span>
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">Mã học viên: {selectedStudent.code}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{t.studentCode}: {selectedStudent.code}</p>
                       </div>
                       {currentEval.isSubmitted && (
                         <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
                           <Check className="h-3 w-3 stroke-[2.5px]" />
-                          Đã hoàn thành đánh giá
+                          {t.evalCompletedBadge}
                         </span>
                       )}
                     </div>
@@ -290,7 +298,7 @@ export function ClassesSemesterEvaluationDialog({
                     {/* Section 1: Ý THỨC HỌC TẬP */}
                     <div className="space-y-1.5">
                       <SectionHeader
-                        title="Ý thức học tập"
+                        title={t.sectionAttitude}
                         ratingValue={currentEval.conductRating}
                         onRatingChange={(val) => handleUpdateField('conductRating', val)}
                       />
@@ -301,12 +309,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.conductAttendance === 'full'}
                             onChange={() => handleUpdateField('conductAttendance', 'full')}
-                            label="Đi học đầy đủ"
+                            label={t.attFull}
                           />
                           <CustomRadio
                             checked={currentEval.conductAttendance === 'not_full'}
                             onChange={() => handleUpdateField('conductAttendance', 'not_full')}
-                            label="Chưa đi học đầy đủ"
+                            label={t.attNotFull}
                           />
                         </div>
 
@@ -315,12 +323,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.conductPunctual === 'on_time'}
                             onChange={() => handleUpdateField('conductPunctual', 'on_time')}
-                            label="Đi học đúng giờ"
+                            label={t.attPunctual}
                           />
                           <CustomRadio
                             checked={currentEval.conductPunctual === 'late'}
                             onChange={() => handleUpdateField('conductPunctual', 'late')}
-                            label="Vẫn còn đi học muộn"
+                            label={t.attLate}
                           />
                         </div>
 
@@ -329,12 +337,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.conductHw === 'done'}
                             onChange={() => handleUpdateField('conductHw', 'done')}
-                            label="Hoàn thành đầy đủ BTVN"
+                            label={t.attHwDone}
                           />
                           <CustomRadio
                             checked={currentEval.conductHw === 'not_done'}
                             onChange={() => handleUpdateField('conductHw', 'not_done')}
-                            label="Chưa hoàn thành đầy đủ BTVN"
+                            label={t.attHwNotDone}
                           />
                         </div>
 
@@ -343,12 +351,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.conductFocus === 'focus'}
                             onChange={() => handleUpdateField('conductFocus', 'focus')}
-                            label="Tập trung trong lớp học"
+                            label={t.attFocus}
                           />
                           <CustomRadio
                             checked={currentEval.conductFocus === 'distracted'}
                             onChange={() => handleUpdateField('conductFocus', 'distracted')}
-                            label="Có lúc chưa tập trung trong lớp học"
+                            label={t.attDistracted}
                           />
                         </div>
 
@@ -357,12 +365,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.conductActive === 'active'}
                             onChange={() => handleUpdateField('conductActive', 'active')}
-                            label="Sôi nổi, hào hứng trong buổi học"
+                            label={t.attActive}
                           />
                           <CustomRadio
                             checked={currentEval.conductActive === 'passive'}
                             onChange={() => handleUpdateField('conductActive', 'passive')}
-                            label="Cần được động viên, khích lệ thường xuyên"
+                            label={t.attPassive}
                           />
                         </div>
                       </div>
@@ -371,7 +379,7 @@ export function ClassesSemesterEvaluationDialog({
                     {/* Section 2: KIẾN THỨC */}
                     <div className="space-y-1.5">
                       <SectionHeader
-                        title="Kiến thức"
+                        title={t.sectionKnowledge}
                         ratingValue={currentEval.knowledgeRating}
                         onRatingChange={(val) => handleUpdateField('knowledgeRating', val)}
                       />
@@ -379,22 +387,22 @@ export function ClassesSemesterEvaluationDialog({
                       <div className="space-y-1.5 pt-1">
                         {/* Vốn từ vựng Title & Radios */}
                         <div className="space-y-0.5">
-                          <span className="block text-xs font-bold text-foreground">Vốn từ vựng</span>
+                          <span className="block text-xs font-bold text-foreground">{t.vocabTitle}</span>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.vocabLevel === 'rich'}
                               onChange={() => handleUpdateField('vocabLevel', 'rich')}
-                              label="Vốn từ vựng phong phú"
+                              label={t.vocabRich}
                             />
                             <CustomRadio
                               checked={currentEval.vocabLevel === 'basic'}
                               onChange={() => handleUpdateField('vocabLevel', 'basic')}
-                              label="Vốn từ vựng cơ bản"
+                              label={t.vocabBasic}
                             />
                             <CustomRadio
                               checked={currentEval.vocabLevel === 'needs_improvement'}
                               onChange={() => handleUpdateField('vocabLevel', 'needs_improvement')}
-                              label="Cần trau dồi vốn từ vựng"
+                              label={t.vocabNeedsImprovement}
                             />
                           </div>
                         </div>
@@ -402,20 +410,20 @@ export function ClassesSemesterEvaluationDialog({
                         {/* Vocabulary Textareas */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div className="space-y-0.5">
-                            <span className="block text-[10.5px] font-bold text-foreground">Từ vựng con nhớ & dùng linh hoạt</span>
+                            <span className="block text-[10.5px] font-bold text-foreground">{t.vocabLearnedLabel}</span>
                             <Textarea
                               value={currentEval.vocabLearned}
                               onChange={(e) => handleUpdateField('vocabLearned', e.target.value)}
-                              placeholder="Phân cách bởi dấu chấm phẩy ;"
+                              placeholder={t.vocabLearnedPlaceholder}
                               className="text-xs min-h-[46px] bg-background border-zinc-200 rounded-lg shadow-2xs py-1 px-2.5"
                             />
                           </div>
                           <div className="space-y-0.5">
-                            <span className="block text-[10.5px] font-bold text-foreground">Từ vựng con chưa ghi nhớ</span>
+                            <span className="block text-[10.5px] font-bold text-foreground">{t.vocabNotLearnedLabel}</span>
                             <Textarea
                               value={currentEval.vocabNotLearned}
                               onChange={(e) => handleUpdateField('vocabNotLearned', e.target.value)}
-                              placeholder="Chủ điểm từ vựng HS chưa ghi nhớ"
+                              placeholder={t.vocabNotLearnedPlaceholder}
                               className="text-xs min-h-[46px] bg-background border-zinc-200 rounded-lg shadow-2xs py-1 px-2.5"
                             />
                           </div>
@@ -423,22 +431,22 @@ export function ClassesSemesterEvaluationDialog({
 
                         {/* Vốn ngữ pháp Title & Radios */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-xs font-bold text-foreground">Vốn ngữ pháp</span>
+                          <span className="block text-xs font-bold text-foreground">{t.grammarTitle}</span>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.grammarLevel === 'proficient'}
                               onChange={() => handleUpdateField('grammarLevel', 'proficient')}
-                              label="Ngữ pháp thành thạo"
+                              label={t.grammarProficient}
                             />
                             <CustomRadio
                               checked={currentEval.grammarLevel === 'basic'}
                               onChange={() => handleUpdateField('grammarLevel', 'basic')}
-                              label="Ngữ pháp cơ bản"
+                              label={t.grammarBasic}
                             />
                             <CustomRadio
                               checked={currentEval.grammarLevel === 'needs_improvement'}
                               onChange={() => handleUpdateField('grammarLevel', 'needs_improvement')}
-                              label="Cần trau dồi ngữ pháp"
+                              label={t.grammarNeedsImprovement}
                             />
                           </div>
                         </div>
@@ -446,20 +454,20 @@ export function ClassesSemesterEvaluationDialog({
                         {/* Grammar Textareas */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div className="space-y-0.5">
-                            <span className="block text-[10.5px] font-bold text-foreground">Ngữ pháp đã thành thạo</span>
+                            <span className="block text-[10.5px] font-bold text-foreground">{t.grammarLearnedLabel}</span>
                             <Textarea
                               value={currentEval.grammarLearned}
                               onChange={(e) => handleUpdateField('grammarLearned', e.target.value)}
-                              placeholder="Các cấu trúc cách nhau bởi ;"
+                              placeholder={t.grammarLearnedPlaceholder}
                               className="text-xs min-h-[46px] bg-background border-zinc-200 rounded-lg shadow-2xs py-1 px-2.5"
                             />
                           </div>
                           <div className="space-y-0.5">
-                            <span className="block text-[10.5px] font-bold text-foreground">Ngữ pháp chưa thành thạo</span>
+                            <span className="block text-[10.5px] font-bold text-foreground">{t.grammarNotLearnedLabel}</span>
                             <Textarea
                               value={currentEval.grammarNotLearned}
                               onChange={(e) => handleUpdateField('grammarNotLearned', e.target.value)}
-                              placeholder="Các cấu trúc cách nhau bởi ;"
+                              placeholder={t.grammarNotLearnedPlaceholder}
                               className="text-xs min-h-[46px] bg-background border-zinc-200 rounded-lg shadow-2xs py-1 px-2.5"
                             />
                           </div>
@@ -470,7 +478,7 @@ export function ClassesSemesterEvaluationDialog({
                     {/* Section 3: KỸ NĂNG */}
                     <div className="space-y-1.5">
                       <SectionHeader
-                        title="Kỹ năng"
+                        title={t.sectionSkills}
                         ratingValue={currentEval.skillsRating}
                         onRatingChange={(val) => handleUpdateField('skillsRating', val)}
                       />
@@ -478,152 +486,152 @@ export function ClassesSemesterEvaluationDialog({
                       <div className="space-y-1.5 pt-1">
                         {/* Kỹ năng nghe */}
                         <div className="space-y-0.5">
-                          <span className="block text-xs font-bold text-foreground">Kỹ năng nghe</span>
+                          <span className="block text-xs font-bold text-foreground">{t.listeningTitle}</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.listeningReaction === 'good'}
                               onChange={() => handleUpdateField('listeningReaction', 'good')}
-                              label="Nghe hiểu và phản xạ tốt"
+                              label={t.listeningReactionGood}
                             />
                             <CustomRadio
                               checked={currentEval.listeningReaction === 'slow'}
                               onChange={() => handleUpdateField('listeningReaction', 'slow')}
-                              label="Phản xạ còn chậm trước yêu cầu"
+                              label={t.listeningReactionSlow}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.listeningPractice === 'proficient'}
                               onChange={() => handleUpdateField('listeningPractice', 'proficient')}
-                              label="Thực hành thành thạo các dạng bài nghe"
+                              label={t.listeningPracticeProficient}
                             />
                             <CustomRadio
                               checked={currentEval.listeningPractice === 'needs_practice'}
                               onChange={() => handleUpdateField('listeningPractice', 'needs_practice')}
-                              label="Cần rèn luyện thêm các dạng bài nghe"
+                              label={t.listeningPracticeNeedsPractice}
                             />
                           </div>
                         </div>
 
                         {/* Kỹ năng nói */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-xs font-bold text-foreground">Kỹ năng nói</span>
+                          <span className="block text-xs font-bold text-foreground">{t.speakingTitle}</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.speakingVolume === 'loud'}
                               onChange={() => handleUpdateField('speakingVolume', 'loud')}
-                              label="Giọng nói to, rõ ràng"
+                              label={t.speakingVolumeLoud}
                             />
                             <CustomRadio
                               checked={currentEval.speakingVolume === 'soft'}
                               onChange={() => handleUpdateField('speakingVolume', 'soft')}
-                              label="Giọng nói đôi khi nhỏ, chưa rõ"
+                              label={t.speakingVolumeSoft}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.speakingPronunciation === 'correct'}
                               onChange={() => handleUpdateField('speakingPronunciation', 'correct')}
-                              label="Phát âm đúng các âm cuối"
+                              label={t.speakingPronunciationCorrect}
                             />
                             <CustomRadio
                               checked={currentEval.speakingPronunciation === 'incorrect'}
                               onChange={() => handleUpdateField('speakingPronunciation', 'incorrect')}
-                              label="Phát âm chưa chuẩn âm cuối"
+                              label={t.speakingPronunciationIncorrect}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.speakingFluency === 'fluent'}
                               onChange={() => handleUpdateField('speakingFluency', 'fluent')}
-                              label="Nói trôi chảy, lưu loát"
+                              label={t.speakingFluencyFluent}
                             />
                             <CustomRadio
                               checked={currentEval.speakingFluency === 'hesitant'}
                               onChange={() => handleUpdateField('speakingFluency', 'hesitant')}
-                              label="Thỉnh thoảng còn nói ngập ngừng"
+                              label={t.speakingFluencyHesitant}
                             />
                           </div>
                         </div>
 
                         {/* Kỹ năng đọc */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-xs font-bold text-foreground">Kỹ năng đọc</span>
+                          <span className="block text-xs font-bold text-foreground">{t.readingTitle}</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.readingComprehension === 'good'}
                               onChange={() => handleUpdateField('readingComprehension', 'good')}
-                              label="Đọc hiểu tốt và làm đúng yêu cầu"
+                              label={t.readingComprehensionGood}
                             />
                             <CustomRadio
                               checked={currentEval.readingComprehension === 'needs_improvement'}
                               onChange={() => handleUpdateField('readingComprehension', 'needs_improvement')}
-                              label="Cần nắm vững toàn bộ yêu cầu đề bài"
+                              label={t.readingComprehensionNeedsImprovement}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.readingDetail === 'good'}
                               onChange={() => handleUpdateField('readingDetail', 'good')}
-                              label="Hiểu nội dung chính & chi tiết quan trọng"
+                              label={t.readingDetailGood}
                             />
                             <CustomRadio
                               checked={currentEval.readingDetail === 'poor'}
                               onChange={() => handleUpdateField('readingDetail', 'poor')}
-                              label="Chưa hiểu rõ nội dung chính"
+                              label={t.readingDetailPoor}
                             />
                           </div>
                         </div>
 
                         {/* Kỹ năng viết */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-xs font-bold text-foreground">Kỹ năng viết</span>
+                          <span className="block text-xs font-bold text-foreground">{t.writingTitle}</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.writingSpelling === 'correct'}
                               onChange={() => handleUpdateField('writingSpelling', 'correct')}
-                              label="Viết đúng chính tả"
+                              label={t.writingSpellingCorrect}
                             />
                             <CustomRadio
                               checked={currentEval.writingSpelling === 'incorrect'}
                               onChange={() => handleUpdateField('writingSpelling', 'incorrect')}
-                              label="Đôi khi viết sai chính tả"
+                              label={t.writingSpellingIncorrect}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.writingVocab === 'rich'}
                               onChange={() => handleUpdateField('writingVocab', 'rich')}
-                              label="Từ vựng phong phú"
+                              label={t.writingVocabRich}
                             />
                             <CustomRadio
                               checked={currentEval.writingVocab === 'limited'}
                               onChange={() => handleUpdateField('writingVocab', 'limited')}
-                              label="Từ vựng chưa đa dạng"
+                              label={t.writingVocabLimited}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.writingExpression === 'clear'}
                               onChange={() => handleUpdateField('writingExpression', 'clear')}
-                              label="Diễn đạt ý tưởng rõ ràng, mạch lạc"
+                              label={t.writingExpressionClear}
                             />
                             <CustomRadio
                               checked={currentEval.writingExpression === 'unclear'}
                               onChange={() => handleUpdateField('writingExpression', 'unclear')}
-                              label="Diễn đạt chưa rõ ràng"
+                              label={t.writingExpressionUnclear}
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.writingGrammar === 'correct'}
                               onChange={() => handleUpdateField('writingGrammar', 'correct')}
-                              label="Viết đúng ngữ pháp & cấu trúc câu"
+                              label={t.writingGrammarCorrect}
                             />
                             <CustomRadio
                               checked={currentEval.writingGrammar === 'incorrect'}
                               onChange={() => handleUpdateField('writingGrammar', 'incorrect')}
-                              label="Còn mắc lỗi ngữ pháp"
+                              label={t.writingGrammarIncorrect}
                             />
                           </div>
                         </div>
@@ -633,7 +641,7 @@ export function ClassesSemesterEvaluationDialog({
                     {/* Section 4: TƯƠNG TÁC */}
                     <div className="space-y-1.5">
                       <SectionHeader
-                        title="Tương tác"
+                        title={t.sectionInteraction}
                         ratingValue={currentEval.interactionRating}
                         onRatingChange={(val) => handleUpdateField('interactionRating', val)}
                       />
@@ -644,12 +652,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.interClassActivity === 'active'}
                             onChange={() => handleUpdateField('interClassActivity', 'active')}
-                            label="Tích cực tham gia các hoạt động"
+                            label={t.interClassActive}
                           />
                           <CustomRadio
                             checked={currentEval.interClassActivity === 'inactive'}
                             onChange={() => handleUpdateField('interClassActivity', 'inactive')}
-                            label="Ít tham gia các hoạt động"
+                            label={t.interClassInactive}
                           />
                         </div>
 
@@ -658,12 +666,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.interFocus === 'attentive'}
                             onChange={() => handleUpdateField('interFocus', 'attentive')}
-                            label="Chăm chú nghe giảng"
+                            label={t.interFocusAttentive}
                           />
                           <CustomRadio
                             checked={currentEval.interFocus === 'inattentive'}
                             onChange={() => handleUpdateField('interFocus', 'inattentive')}
-                            label="Chưa chăm chú nghe giảng"
+                            label={t.interFocusInattentive}
                           />
                         </div>
 
@@ -672,12 +680,12 @@ export function ClassesSemesterEvaluationDialog({
                           <CustomRadio
                             checked={currentEval.interContribution === 'voluntary'}
                             onChange={() => handleUpdateField('interContribution', 'voluntary')}
-                            label="Hăng hái giơ tay phát biểu"
+                            label={t.interContributionVoluntary}
                           />
                           <CustomRadio
                             checked={currentEval.interContribution === 'forced'}
                             onChange={() => handleUpdateField('interContribution', 'forced')}
-                            label="Ít tương tác, chưa chủ động phát biểu"
+                            label={t.interContributionForced}
                           />
                         </div>
                       </div>
@@ -691,20 +699,20 @@ export function ClassesSemesterEvaluationDialog({
                         onClick={handleUpdate}
                         className="h-8 px-5 text-xs font-semibold rounded-lg bg-pink-600 hover:bg-pink-700 dark:bg-pink-700 dark:hover:bg-pink-800 text-white shrink-0 cursor-pointer"
                       >
-                        Cập Nhật
+                        {t.updateBtn}
                       </Button>
 
                       {currentEval.isSubmitted && (
                         <span className="flex items-center gap-1 text-xs font-bold text-emerald-600">
                           <CheckCircle2 className="h-4 w-4" />
-                          Đã đánh giá thành công
+                          {t.updateSuccessBanner}
                         </span>
                       )}
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground italic text-xs">
-                    Vui lòng chọn một học sinh từ danh sách bên trái để thực hiện đánh giá.
+                    {t.pleaseSelectStudent}
                   </div>
                 )}
               </main>

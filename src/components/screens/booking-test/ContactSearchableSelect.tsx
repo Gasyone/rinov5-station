@@ -13,6 +13,7 @@ export interface ContactChild {
   age?: number | string
   currentSchool?: string
   academicPerformance?: string
+  targetSubject?: string
 }
 
 export interface ContactPerson {

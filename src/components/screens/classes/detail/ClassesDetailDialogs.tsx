@@ -82,14 +82,16 @@ export function ClassesDetailDialogs({
         onConfirm={onStatusChangeConfirm}
       />
 
-      <StudentDetailDialog
-        studentId={selectedStudentId}
-        open={!!selectedStudentId}
-        onOpenChange={(open) => {
-          if (!open) setSelectedStudentId(null)
-        }}
-        fromClassName={cls.name}
-      />
+      {selectedStudentId && (
+        <StudentDetailDialog
+          studentId={selectedStudentId}
+          open={!!selectedStudentId}
+          onOpenChange={(open) => {
+            if (!open) setSelectedStudentId(null)
+          }}
+          fromClassName={cls.name}
+        />
+      )}
     </>
   )
 }

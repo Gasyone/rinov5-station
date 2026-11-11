@@ -126,14 +126,24 @@ export const DEFAULT_SECTION_A2_TEXT = `Từ vựng & Phonics: Con nhớ khá t�
 
 Cấu trúc & Mẫu câu: Con hiện chưa phản xạ được mẫu câu I see with my … và vẫn cần cô nhắc lại nhiều lần trước khi có thể sử dụng đúng cấu trúc.`
 
-export const DEFAULT_SECTION_B1_TEXT = `Tháng tới, các con sẽ học 2 chủ đề mới: Zoo Animals và Fun Shapes với nhiều hoạt động hấp dẫn:
-Học từ vựng về động vật: bears, elephants, giraffes, lions
-Học từ vựng về hình khối: circle, square, star, triangle
-Luyện mẫu câu: Do you like bears? / What shape is it?
-Học phát âm: Vv với violin, vase; Ww với watch, window; Xx với box, fox
-Đọc truyện ngắn và luyện hội thoại: How old are you?, This is for you.
-Tham gia hoạt động CLIL: vận động với climb, stomp và ôn số đếm
-Làm mini project: làm mặt nạ động vật và làm búp bê.`
+export const DEFAULT_SECTION_B1_TEXT = `Buổi 1: Chủ đề Zoo Animals - Từ vựng & Phát âm
+- Học từ vựng về động vật: bears, elephants, giraffes, lions
+- Luyện mẫu câu tương tác: Do you like bears? - Yes, I do / No, I don't
+- Học phát âm âm Vv với các từ: violin, vase
+
+Buổi 2: Chủ đề Fun Shapes - Hình khối & Hội thoại
+- Học từ vựng về hình khối: circle, square, star, triangle
+- Luyện mẫu câu hỏi đáp: What shape is it? - It's a star
+- Học phát âm âm Ww với các từ: watch, window
+
+Buổi 3: Đọc truyện ngắn & Hoạt động vận động CLIL
+- Đọc truyện ngắn và luyện hội thoại: How old are you?, This is for you
+- Tham gia hoạt động CLIL: vận động với climb, stomp và ôn số đếm
+
+Buổi 4: Mini Project & Ôn tập tổng hợp
+- Học phát âm âm Xx với các từ: box, fox
+- Làm mini project: làm mặt nạ động vật và làm búp bê
+- Luyện nói và thuyết trình giới thiệu sản phẩm trước lớp`
 
 // Base realistic seed reports for demonstration
 function createSeedReport(

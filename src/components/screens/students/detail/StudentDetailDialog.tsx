@@ -11,6 +11,7 @@ export interface StudentDetailDialogProps {
 }
 
 export function StudentDetailDialog(props: StudentDetailDialogProps) {
+  if (!props.open) return null
   return <StudentDetailDialogV2 {...props} />
 }
 

@@ -112,6 +112,13 @@ export function CalendarClassScheduleFilterPanel({
                 ? prev.conditionFilters.filter((c) => c !== 'opening')
                 : [...prev.conditionFilters, 'opening'],
             }
+          } else if (value === 'cond:semester_eval') {
+            return {
+              ...prev,
+              conditionFilters: prev.conditionFilters.includes('semester_eval')
+                ? prev.conditionFilters.filter((c) => c !== 'semester_eval')
+                : [...prev.conditionFilters, 'semester_eval'],
+            }
           } else if (value.startsWith('type:')) {
             const typeVal = value.replace('type:', '')
             return {
@@ -387,6 +394,10 @@ export function CalendarClassScheduleFilterPanel({
         label: 'Buổi kiểm tra',
       },
       {
+        value: 'cond:semester_eval',
+        label: 'Có đánh giá cuối kỳ',
+      },
+      {
         value: 'type:opening',
         label: 'Buổi khai giảng',
       },
@@ -411,6 +422,7 @@ export function CalendarClassScheduleFilterPanel({
       ...(draftFilters.statusFilters || []).map((s) => `status:${s}`),
       ...(draftFilters.sessionTypeFilters || []).map((t) => `type:${t}`),
       ...(draftFilters.conditionFilters.includes('opening') ? ['type:opening'] : []),
+      ...(draftFilters.conditionFilters.includes('semester_eval') ? ['cond:semester_eval'] : []),
     ],
     [draftFilters.statusFilters, draftFilters.sessionTypeFilters, draftFilters.conditionFilters]
   )

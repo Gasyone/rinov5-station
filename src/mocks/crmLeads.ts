@@ -656,6 +656,17 @@ export const mockLeads: Lead[] = [
     expectedPackage: 'Gói Kindy 6T',
     expectedAmount: '12.500.000đ',
     winProbability: 30,
+    schoolName: 'Mầm non Tuổi Thơ (Quận 1)',
+    academicPerformance: 'Nhanh nhẹn, tiếp thu tốt',
+    otherChildren: [
+      {
+        name: 'Trần Minh Tuấn',
+        birthYear: 2018,
+        age: 8,
+        school: 'Tiểu học Đa Kao (Quận 1)',
+        targetSubject: 'Toán Tư Duy 1:6',
+      },
+    ],
   },
   {
     id: 'lead-004',

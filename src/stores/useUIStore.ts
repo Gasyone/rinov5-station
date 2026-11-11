@@ -86,11 +86,17 @@ export const useUIStore = create<UIState>()(
       },
 
       setCurrentMenuId: (menuId: string | null) => {
-        set({ currentMenuId: menuId, customHeaderTitle: null })
+        set((state) => {
+          if (state.currentMenuId === menuId && state.customHeaderTitle === null) return state
+          return { currentMenuId: menuId, customHeaderTitle: null }
+        })
       },
 
       setCustomHeaderTitle: (title: string | null) => {
-        set({ customHeaderTitle: title })
+        set((state) => {
+          if (state.customHeaderTitle === title) return state
+          return { customHeaderTitle: title }
+        })
       },
 
       workdayDate: new Date().toISOString().split('T')[0],

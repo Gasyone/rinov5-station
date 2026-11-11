@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Users, AlertTriangle, UserPlus } from 'lucide-react'
+import { Users, AlertTriangle, UserPlus, ClipboardCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PersonnelHoverCard } from '@/components/shared'
 import { SessionHoverCard } from './SessionHoverCard'
@@ -127,6 +127,9 @@ export function SessionCard({
   } else if (isToday) {
     bgClass = 'bg-emerald-50/90 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 shadow-xs'
     borderLeftColor = 'bg-emerald-500'
+  } else if (session.hasSemesterEvaluation) {
+    bgClass = 'bg-amber-50/70 hover:bg-amber-100/70 dark:bg-amber-950/30 dark:hover:bg-amber-950/50 border border-amber-300/80 dark:border-amber-800/80 shadow-xs'
+    borderLeftColor = 'bg-amber-500'
   } else {
     // upcoming / default
     bgClass = 'bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-border/80 dark:border-zinc-800 shadow-xs'
@@ -163,6 +166,15 @@ export function SessionCard({
               {timeDisplay}
             </span>
             <div className="flex items-center gap-1 shrink-0">
+              {session.hasSemesterEvaluation && (
+                <div
+                  title="Buổi có đánh giá cuối kỳ (Semester Evaluation)"
+                  className="inline-flex h-4.5 items-center gap-1 rounded px-1.5 text-[10.5px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0 shadow-2xs"
+                >
+                  <ClipboardCheck className="h-3 w-3 shrink-0 text-amber-700 dark:text-amber-400 stroke-[2.2]" />
+                  <span className="leading-none hidden xl:inline">ĐG cuối kỳ</span>
+                </div>
+              )}
               {newStudentsCount > 0 && (
                 <div
                   title={`Có ${newStudentsCount} học sinh thêm mới${

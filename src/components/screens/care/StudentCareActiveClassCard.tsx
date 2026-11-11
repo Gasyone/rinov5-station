@@ -57,12 +57,6 @@ export function StudentCareActiveClassCard({
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
   const [sessionOverrides, setSessionOverrides] = useState<Record<string, number>>({})
 
-  // Reset selectedCSName khi chuyển học viên
-  const [prevStudentId, setPrevStudentId] = useState<string | null>(student?.studentId || null)
-  if (student && student.studentId !== prevStudentId) {
-    setPrevStudentId(student.studentId)
-    setSelectedCSName(null)
-  }
 
   // Tra cứu dữ liệu gốc từ mockStudents để đồng bộ 100% với màn /app/class_placement
   const matchedMockStudent = useMemo(() => {
@@ -423,21 +417,23 @@ export function StudentCareActiveClassCard({
       </div>
 
       {/* Modal Đi học lại trước hạn */}
-      <StudentCareEarlyReturnDialog
-        open={isEarlyReturnOpen}
-        onOpenChange={setIsEarlyReturnOpen}
-        studentName={student?.studentName || 'Hoàng Bảo Nam'}
-        studentCode={student?.customerCode || student?.studentId || 'HV-2024-0012'}
-        studentId={student?.studentId}
-        packageName={pkg.packageName || (pkgIsEnglish ? 'Gói Tiếng Anh IELTS Standard' : 'Toán Tư Duy STEM Rino')}
-        className={pkg.className || (pkgIsEnglish ? 'IELTS Junior v2.1' : 'Toán tư duy Archimedes 5')}
-        classCode={classCode}
-        isHoldingClass={isHoldingClass}
-        expectedReturnDate={isHoldingClass ? '16/09/2026' : '01/08/2026'}
-        reserveDuration={isHoldingClass ? '15/06/2026 ➔ 15/09/2026' : '01/06/2026 ➔ 31/07/2026'}
-        remainingSessions={remainingSessions}
-        branchName={currentBranchName}
-      />
+      {isEarlyReturnOpen && (
+        <StudentCareEarlyReturnDialog
+          open={isEarlyReturnOpen}
+          onOpenChange={setIsEarlyReturnOpen}
+          studentName={student?.studentName || 'Hoàng Bảo Nam'}
+          studentCode={student?.customerCode || student?.studentId || 'HV-2024-0012'}
+          studentId={student?.studentId}
+          packageName={pkg.packageName || (pkgIsEnglish ? 'Gói Tiếng Anh IELTS Standard' : 'Toán Tư Duy STEM Rino')}
+          className={pkg.className || (pkgIsEnglish ? 'IELTS Junior v2.1' : 'Toán tư duy Archimedes 5')}
+          classCode={classCode}
+          isHoldingClass={isHoldingClass}
+          expectedReturnDate={isHoldingClass ? '16/09/2026' : '01/08/2026'}
+          reserveDuration={isHoldingClass ? '15/06/2026 ➔ 15/09/2026' : '01/06/2026 ➔ 31/07/2026'}
+          remainingSessions={remainingSessions}
+          branchName={currentBranchName}
+        />
+      )}
     </div>
   )
 }

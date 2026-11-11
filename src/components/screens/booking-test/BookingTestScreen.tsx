@@ -20,6 +20,7 @@ import { BookingTestToolbar } from './BookingTestToolbar'
 import { BookingTestTable } from './BookingTestTable'
 import { BookingTestDetailDialog } from './BookingTestDetailDialog'
 import { BookingTestAssessmentDialog } from './BookingTestAssessmentDialog'
+import { BookingTestManualUploadDialog } from './BookingTestManualUploadDialog'
 import { useBookingTestData } from './useBookingTestData'
 import { useBookingTestActions } from './useBookingTestActions'
 
@@ -51,6 +52,7 @@ export function BookingTestScreen() {
 
   const [detailBookingId, setDetailBookingId] = useState('')
   const [assessmentBookingId, setAssessmentBookingId] = useState('')
+  const [manualUploadBookingId, setManualUploadBookingId] = useState('')
   const [assessmentDraft, setAssessmentDraft] = useState<AssessmentDraft>(() =>
     buildEmptyAssessmentDraft()
   )
@@ -107,6 +109,7 @@ export function BookingTestScreen() {
 
   const detailBooking = bookings.find((booking) => booking.id === detailBookingId) ?? null
   const assessmentBooking = bookings.find((booking) => booking.id === assessmentBookingId) ?? null
+  const manualUploadBooking = bookings.find((booking) => booking.id === manualUploadBookingId) ?? null
 
   const actions = useBookingTestActions({
     bookings,
@@ -177,10 +180,12 @@ export function BookingTestScreen() {
             bookings={pagedBookings}
             selectedIds={selectedIds}
             copiedKey={copiedKey}
+            activeSubject={activeSubject}
             onToggleAll={actions.toggleSelectAll}
             onToggleOne={actions.toggleSelectOne}
             onRowClick={setDetailBookingId}
             onOpenAssessment={actions.openAssessmentDialog}
+            onOpenManualUpload={setManualUploadBookingId}
             onUpdateBooking={actions.updateBooking}
             onCopy={actions.copyToClipboard}
             onCall={actions.triggerDeskCall}
@@ -259,6 +264,16 @@ export function BookingTestScreen() {
         }}
         onDraftChange={setAssessmentDraft}
         onSave={actions.saveAssessment}
+      />
+
+      <BookingTestManualUploadDialog
+        open={Boolean(manualUploadBookingId)}
+        booking={manualUploadBooking}
+        authorName={authorName}
+        onOpenChange={(open) => {
+          if (!open) setManualUploadBookingId('')
+        }}
+        onUpdateBooking={actions.updateBooking}
       />
     </div>
   )

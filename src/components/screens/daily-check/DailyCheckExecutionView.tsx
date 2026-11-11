@@ -182,7 +182,7 @@ export function DailyCheckExecutionView({
     if (manualEvals[key] !== undefined) {
       return manualEvals[key]
     }
-    if (existingTodaySub) {
+    if (selectedBranch !== 'CS1 Linh Đàm' && existingTodaySub) {
       if (selectedShift === 'dau_ca') {
         const found = existingTodaySub.daytimeItems.find((i) => i.name === itemName)
         if (found) return found.status
@@ -196,7 +196,15 @@ export function DailyCheckExecutionView({
 
   const handleSetItemStatus = (itemName: string, status: 'pass' | 'fail') => {
     const key = `${selectedBranch}-${selectedShift}-${itemName}`
-    setManualEvals((prev) => ({ ...prev, [key]: status }))
+    setManualEvals((prev) => {
+      const next = { ...prev }
+      if (next[key] === status) {
+        delete next[key]
+      } else {
+        next[key] = status
+      }
+      return next
+    })
   }
 
   const handlePassAll = () => {
@@ -368,7 +376,7 @@ export function DailyCheckExecutionView({
       const key = `${selectedBranch}-dau_ca-${name}`
       const manual = manualEvals[key]
       let status: 'pass' | 'fail' | 'pending' = manual ? manual : 'pending'
-      if (status === 'pending' && todaySub) {
+      if (status === 'pending' && selectedBranch !== 'CS1 Linh Đàm' && todaySub) {
         const found = todaySub.daytimeItems.find((i) => i.name === name)
         if (found) status = found.status
       }
@@ -406,7 +414,7 @@ export function DailyCheckExecutionView({
       const key = `${selectedBranch}-cuoi_ca-${name}`
       const manual = manualEvals[key]
       let status: 'pass' | 'fail' | 'pending' = manual ? manual : 'pending'
-      if (status === 'pending' && todaySub) {
+      if (status === 'pending' && selectedBranch !== 'CS1 Linh Đàm' && todaySub) {
         const found = todaySub.closingItems.find((i) => i.name === name)
         if (found) status = found.status === 'done' ? 'pass' : 'fail'
       }

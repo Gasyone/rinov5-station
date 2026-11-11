@@ -664,6 +664,7 @@ export function OperationsAlertScreen() {
   if (activeDetailStudentId) {
     return (
       <StudentCareDetailPage
+        key={activeDetailStudentId}
         studentId={activeDetailStudentId}
         onBack={() => {
           handleSelectStudentDetail(null)

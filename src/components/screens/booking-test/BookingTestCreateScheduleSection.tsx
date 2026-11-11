@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Calendar as CalendarIcon } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
@@ -41,6 +41,7 @@ interface BookingTestCreateScheduleSectionProps {
   dailySlotsSummary: Array<{
     slot: string
     availableCount: number
+    totalDutyCount?: number
   }>
   selectedTeacher?: string
   teacherSlotConflicts?: Record<string, string>
@@ -61,7 +62,6 @@ export function BookingTestCreateScheduleSection({
 }: BookingTestCreateScheduleSectionProps) {
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const isTeacherFirst = mode === 'teacher_first'
-  const hasFacilityAndDate = Boolean(school && testDate)
 
   const isFirst4Selected = dateOptions.first4.some((d) => d.dateStr === testDate)
 
@@ -213,13 +213,13 @@ export function BookingTestCreateScheduleSection({
           </div>
 
           {/* Thông tin ngữ cảnh */}
-          {!hasFacilityAndDate ? (
+          {!school ? (
             <span className="text-xs text-muted-foreground/80 font-normal hidden sm:inline">
-              {!school && !testDate
-                ? '(Chọn cơ sở và ngày để xem số lượng giáo viên rảnh)'
-                : !school
-                ? '(Chọn cơ sở để xem số lượng giáo viên rảnh)'
-                : '(Chọn ngày để xem số lượng giáo viên rảnh)'}
+              (Chọn cơ sở để xem các khung giờ trực khả dụng)
+            </span>
+          ) : !testDate ? (
+            <span className="text-xs text-muted-foreground/80 font-normal hidden sm:inline">
+              (Chọn ngày để xem các khung giờ trực khả dụng)
             </span>
           ) : isTeacherFirst && selectedTeacher ? (
             <span className="text-xs text-muted-foreground font-normal truncate max-w-[200px] sm:max-w-none">
@@ -232,103 +232,156 @@ export function BookingTestCreateScheduleSection({
           )}
         </div>
 
-        {/* Lưới các khung giờ test (Chỉ hiển thị giờ bắt đầu) */}
-        <div className="space-y-2">
-          {displayedGroups.map((group) => (
-            <div key={group.title} className="space-y-1">
-              {activePeriod === 'all' && (
-                <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 pb-0.5">
-                  <span>{group.icon}</span>
-                  <span>{group.title}</span>
-                </div>
-              )}
-
-              {/* Lưới 4 cột rộng rãi cho các ca test */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {group.slots.map((slot) => {
-                  const isSlotSelected = selectedSlot === slot
-                  const slotSummary = dailySlotsSummary.find((s) => s.slot === slot)
-                  const generalAvailableCount = slotSummary ? slotSummary.availableCount : 0
-
-                  const hasTeacher = Boolean(selectedTeacher && selectedTeacher !== '')
-                  const isTeacherBusy = hasTeacher && Boolean(teacherSlotConflicts[slot])
-                  const teacherConflictDetail = hasTeacher ? teacherSlotConflicts[slot] : undefined
-                  const isTeacherAvailable = hasTeacher && !isTeacherBusy
-
-                  const isFull = hasFacilityAndDate && generalAvailableCount === 0 && !hasTeacher
-                  const fullRange = getSlotTimeRange(slot, 30)
-
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => onSlotChange(slot)}
-                      title={
-                        teacherConflictDetail
-                          ? `⚠️ ${teacherConflictDetail}`
-                          : isFull
-                          ? `⚠️ Ca ${fullRange} đã hết giáo viên trực rảnh (0 rảnh)`
-                          : `Ca ${fullRange}`
-                      }
-                      className={cn(
-                        'flex items-center justify-between rounded-md border px-2.5 py-1 text-xs transition-all cursor-pointer h-8.5 min-w-0',
-                        isSlotSelected
-                          ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs ring-2 ring-primary/20'
-                          : !hasFacilityAndDate
-                          ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
-                          : isTeacherFirst && hasTeacher
-                          ? isTeacherAvailable
-                            ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
-                            : 'border-border/50 bg-background/50 text-muted-foreground opacity-60 hover:opacity-90 border-dashed'
-                          : generalAvailableCount > 0
-                          ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
-                          : 'border-rose-200/70 dark:border-rose-900/50 bg-rose-50/40 dark:bg-rose-950/20 text-muted-foreground opacity-80 border-dashed hover:opacity-100 hover:border-rose-400'
-                      )}
-                    >
-                      {/* CHỈ HIỂN THỊ GIỜ BẮT ĐẦU */}
-                      <span
-                        className={cn(
-                          'font-bold text-xs tabular-nums shrink-0',
-                          !isSlotSelected && isFull ? 'text-muted-foreground' : ''
-                        )}
-                      >
-                        {slot}
-                      </span>
-
-                      {/* Nhãn trạng thái */}
-                      {(isSlotSelected || hasFacilityAndDate) && (
-                        <span
-                          className={cn(
-                            'text-[10.5px] font-medium shrink-0 ml-1 transition-colors truncate',
-                            isSlotSelected
-                              ? 'bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 rounded font-semibold'
-                              : isTeacherFirst && hasTeacher
-                              ? isTeacherAvailable
-                                ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                                : 'text-rose-600 dark:text-rose-400 font-medium'
-                              : generalAvailableCount > 0
-                              ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                              : 'text-rose-600 dark:text-rose-400 font-semibold bg-rose-100/70 dark:bg-rose-900/40 px-1 py-0.2 rounded'
-                          )}
-                        >
-                          {isSlotSelected
-                            ? 'Đã chọn'
-                            : isTeacherFirst && hasTeacher
-                            ? isTeacherAvailable
-                              ? 'Khả dụng'
-                              : 'Bận'
-                            : generalAvailableCount > 0
-                            ? `${generalAvailableCount} rảnh`
-                            : 'Hết chỗ'}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+        {/* Lưới các khung giờ test: Placeholder khi chưa chọn cơ sở hoặc khi không có ai trực */}
+        {!school ? (
+          <div className="flex flex-col items-center justify-center py-7 px-4 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center space-y-2 my-1">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted text-muted-foreground/70">
+              <Clock className="h-4.5 w-4.5" />
             </div>
-          ))}
-        </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-foreground">
+                Chưa chọn cơ sở
+              </p>
+              <p className="text-[11px] text-muted-foreground max-w-sm leading-relaxed">
+                Vui lòng chọn cơ sở bên trên để hiển thị các khung giờ test được phân bổ từ màn Đăng ký lịch trực.
+              </p>
+            </div>
+          </div>
+        ) : !testDate ? (
+          <div className="flex flex-col items-center justify-center py-7 px-4 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center space-y-2 my-1">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted text-muted-foreground/70">
+              <CalendarIcon className="h-4.5 w-4.5" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-foreground">
+                Chưa chọn ngày
+              </p>
+              <p className="text-[11px] text-muted-foreground max-w-sm leading-relaxed">
+                Vui lòng chọn ngày đánh giá năng lực để hiển thị các khung giờ có người trực.
+              </p>
+            </div>
+          </div>
+        ) : !dailySlotsSummary.some((s) => (s.totalDutyCount ?? s.availableCount) > 0) ? (
+          <div className="flex flex-col items-center justify-center py-7 px-4 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center space-y-2 my-1">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted text-muted-foreground/70">
+              <Clock className="h-4.5 w-4.5" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-foreground">
+                Không có ca trực nào trong ngày đã chọn
+              </p>
+              <p className="text-[11px] text-muted-foreground max-w-sm leading-relaxed">
+                Cơ sở <span className="font-semibold text-foreground">{school}</span> chưa có nhân sự phân bổ lịch trực vào ngày này. Vui lòng chọn ngày khác hoặc phân bổ ca trực tại màn Đăng ký lịch trực.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {displayedGroups.map((group) => {
+              // "vì các khung giờ lấy theo các khung giờ được phân bổ từ màn Đăng ký lịch trực, không có ai trực thì không có dải giờ đó"
+              const availableDutySlots = group.slots.filter((slot) => {
+                const slotSummary = dailySlotsSummary.find((s) => s.slot === slot)
+                return Boolean(slotSummary && (slotSummary.totalDutyCount ?? slotSummary.availableCount) > 0)
+              })
+
+              return (
+                <div key={group.title} className="space-y-1">
+                  {activePeriod === 'all' && (
+                    <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 pb-0.5">
+                      <span>{group.icon}</span>
+                      <span>{group.title}</span>
+                    </div>
+                  )}
+
+                  {availableDutySlots.length === 0 ? (
+                    <div className="py-2.5 px-3 text-center text-xs text-muted-foreground/80 border border-dashed border-border/60 rounded-md bg-muted/10">
+                      Không có ca trực nào trong {group.title.toLowerCase()} tại {school}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                      {availableDutySlots.map((slot) => {
+                        const isSlotSelected = selectedSlot === slot
+                        const slotSummary = dailySlotsSummary.find((s) => s.slot === slot)
+                        const generalAvailableCount = slotSummary ? slotSummary.availableCount : 0
+
+                        const hasTeacher = Boolean(selectedTeacher && selectedTeacher !== '')
+                        const isTeacherBusy = hasTeacher && Boolean(teacherSlotConflicts[slot])
+                        const teacherConflictDetail = hasTeacher ? teacherSlotConflicts[slot] : undefined
+                        const isTeacherAvailable = hasTeacher && !isTeacherBusy
+
+                        const isFull = generalAvailableCount === 0 && !hasTeacher
+                        const fullRange = getSlotTimeRange(slot, 30)
+
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => onSlotChange(slot)}
+                            title={
+                              teacherConflictDetail
+                                ? `⚠️ ${teacherConflictDetail}`
+                                : isFull
+                                ? `⚠️ Ca ${fullRange} đã hết giáo viên trực rảnh (0 rảnh)`
+                                : `Ca ${fullRange}`
+                            }
+                            className={cn(
+                              'flex items-center justify-between rounded-md border px-2.5 py-1 text-xs transition-all cursor-pointer h-8.5 min-w-0',
+                              isSlotSelected
+                                ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs ring-2 ring-primary/20'
+                                : isTeacherFirst && hasTeacher
+                                ? isTeacherAvailable
+                                  ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
+                                  : 'border-border/50 bg-background/50 text-muted-foreground opacity-60 hover:opacity-90 border-dashed'
+                                : generalAvailableCount > 0
+                                ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
+                                : 'border-rose-200/70 dark:border-rose-900/50 bg-rose-50/40 dark:bg-rose-950/20 text-muted-foreground opacity-80 border-dashed hover:opacity-100 hover:border-rose-400'
+                            )}
+                          >
+                            {/* CHỈ HIỂN THỊ GIỜ BẮT ĐẦU */}
+                            <span
+                              className={cn(
+                                'font-bold text-xs tabular-nums shrink-0',
+                                !isSlotSelected && isFull ? 'text-muted-foreground' : ''
+                              )}
+                            >
+                              {slot}
+                            </span>
+
+                            {/* Nhãn trạng thái */}
+                            <span
+                              className={cn(
+                                'text-[10.5px] font-medium shrink-0 ml-1 transition-colors truncate',
+                                isSlotSelected
+                                  ? 'bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 rounded font-semibold'
+                                  : isTeacherFirst && hasTeacher
+                                  ? isTeacherAvailable
+                                    ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                                    : 'text-rose-600 dark:text-rose-400 font-medium'
+                                  : generalAvailableCount > 0
+                                  ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                                  : 'text-rose-600 dark:text-rose-400 font-semibold bg-rose-100/70 dark:bg-rose-900/40 px-1 py-0.2 rounded'
+                              )}
+                            >
+                              {isSlotSelected
+                                ? 'Đã chọn'
+                                : isTeacherFirst && hasTeacher
+                                ? isTeacherAvailable
+                                  ? 'Khả dụng'
+                                  : 'Bận'
+                                : generalAvailableCount > 0
+                                ? `${generalAvailableCount} rảnh`
+                                : 'Hết chỗ'}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

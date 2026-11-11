@@ -27,6 +27,7 @@ import type { StudentProgram } from './studentDetailTypes'
 
 export interface StudentDetailPlacementStatusBannerProps {
   program: StudentProgram
+  isExpanded?: boolean
   onOpenAssignClass: () => void
   onOpenLeaveRequest?: () => void
   onOpenEarlyReturn?: () => void
@@ -36,6 +37,7 @@ export interface StudentDetailPlacementStatusBannerProps {
 
 export function StudentDetailPlacementStatusBanner({
   program,
+  isExpanded = true,
   onOpenAssignClass,
   onOpenLeaveRequest,
   onOpenEarlyReturn,
@@ -134,7 +136,7 @@ export function StudentDetailPlacementStatusBanner({
       'LD_TOAN_00010'
 
     return (
-      <div className="rounded-xl border border-sky-300/80 bg-sky-50/50 dark:bg-sky-950/25 dark:border-sky-800/60 p-2 sm:p-2.5 select-none animate-in fade-in-50 duration-200">
+      <div className="rounded-xl border border-sky-300/80 bg-sky-50/50 dark:bg-sky-950/25 dark:border-sky-800/60 p-2 sm:p-2.5 select-none animate-in fade-in-50 duration-200 space-y-1">
         <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-center">
           <div className="flex items-center justify-center gap-1.5 flex-wrap min-w-0">
             <span className="p-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 shrink-0">
@@ -165,6 +167,13 @@ export function StudentDetailPlacementStatusBanner({
             <ExternalLink className="h-2.5 w-2.5 ml-1 opacity-60" />
           </Button>
         </div>
+        {isExpanded && (
+          <div className="flex items-center justify-center gap-2 pt-1 border-t border-sky-200/50 dark:border-sky-900/30 text-[11px] text-muted-foreground flex-wrap text-center">
+            <span>Lý do: <strong className="font-semibold text-foreground">Đổi lịch học / Điều chỉnh lộ trình</strong></span>
+            <span className="text-border/60">•</span>
+            <span>Học viên đã hoàn tất thủ tục rút lớp cũ, chờ xếp lớp mới</span>
+          </div>
+        )}
       </div>
     )
   }
@@ -449,7 +458,7 @@ export function StudentDetailPlacementStatusBanner({
 
   // 9. Mặc định: Trạng thái CHỜ XẾP LỚP / CHƯA GHÉP LỚP (wait_for_assignment)
   return (
-    <div className="rounded-xl border border-indigo-200/80 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/20 p-2 sm:p-2.5 select-none animate-in fade-in-50 duration-200">
+    <div className="rounded-xl border border-indigo-200/80 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/20 p-2 sm:p-2.5 select-none animate-in fade-in-50 duration-200 space-y-1">
       <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-center">
         <div className="flex items-center justify-center gap-1.5 flex-wrap min-w-0">
           <span className="p-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
@@ -476,6 +485,13 @@ export function StudentDetailPlacementStatusBanner({
           <ExternalLink className="h-2.5 w-2.5 ml-1 opacity-60" />
         </Button>
       </div>
+      {isExpanded && (
+        <div className="flex items-center justify-center gap-2 pt-1 border-t border-indigo-200/50 dark:border-indigo-900/30 text-[11px] text-muted-foreground flex-wrap text-center">
+          <span>Trình độ mục tiêu: <strong className="font-semibold text-foreground">{program.level || 'Chưa cập nhật'}</strong></span>
+          <span className="text-border/60">•</span>
+          <span>Học viên đã sẵn sàng để phân bổ vào lớp học</span>
+        </div>
+      )}
     </div>
   )
 }

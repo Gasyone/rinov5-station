@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
-import { MapPin } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 import { InlineSelect } from '@/components/controls'
+import { CenterProfileHoverCard } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import type { CenterInfoItem } from './trialClassConstants'
 import { PoExplainSectionWrapper } from './explain'
@@ -83,12 +84,12 @@ export function TrialClassCreateProgramSection({
         </div>
       </div>
 
-      {/* Liệt kê text link 3 cơ sở gần nhất (khoảng cách) để người dùng chọn nhanh */}
+      {/* Liệt kê các cơ sở đề xuất để người dùng chọn nhanh (tạm ẩn khoảng cách, hover xem profile cơ sở) */}
       <PoExplainSectionWrapper sectionId="nearest-centers" side="bottom" align="start">
         <div className="flex flex-wrap items-center gap-1.5 text-xs pt-0.5">
           <span className="text-xs text-muted-foreground font-medium flex items-center gap-1 shrink-0">
-            <MapPin className="h-3 w-3 text-primary" />
-            <span>Gần Nhất:</span>
+            <Building2 className="h-3 w-3 text-primary" />
+            <span>Cơ sở đề xuất:</span>
           </span>
           <div className="flex flex-wrap items-center gap-2">
             {top3ClosestCenters.map((item, idx) => {
@@ -96,22 +97,20 @@ export function TrialClassCreateProgramSection({
               return (
                 <div key={item.name} className="flex items-center gap-2">
                   {idx > 0 && <span className="text-muted-foreground/30 text-xs">•</span>}
-                  <button
-                    type="button"
-                    onClick={() => onSchoolChange(item.name)}
-                    className={cn(
-                      'text-[11.5px] transition-colors cursor-pointer text-left',
-                      isSelected
-                        ? 'text-primary font-bold underline underline-offset-4 decoration-primary decoration-2'
-                        : 'text-primary/80 hover:text-primary hover:underline underline-offset-2'
-                    )}
-                    title={`${item.name} (${item.distanceStr}) - ${item.address}`}
-                  >
-                    <span>{item.name}</span>{' '}
-                    <span className="text-[10.5px] text-muted-foreground font-normal">
-                      ({item.distanceStr})
-                    </span>
-                  </button>
+                  <CenterProfileHoverCard centerName={item.name} side="bottom" align="start">
+                    <button
+                      type="button"
+                      onClick={() => onSchoolChange(item.name)}
+                      className={cn(
+                        'text-[11.5px] transition-colors cursor-pointer text-left inline-flex items-center gap-1 group',
+                        isSelected
+                          ? 'text-primary font-bold underline underline-offset-4 decoration-primary decoration-2'
+                          : 'text-primary/80 hover:text-primary hover:underline underline-offset-2'
+                      )}
+                    >
+                      <span className="group-hover:text-primary transition-colors">{item.name}</span>
+                    </button>
+                  </CenterProfileHoverCard>
                 </div>
               )
             })}

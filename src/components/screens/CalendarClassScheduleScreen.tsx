@@ -34,7 +34,7 @@ export function CalendarClassScheduleScreen() {
       .filter((session) => session.type !== 'digi_session')
       .map((session, idx) => {
         const updatedSession = { ...session }
-        if (idx % 7 === 0) {
+        if (idx % 7 === 0 && !session.hasSemesterEvaluation) {
           updatedSession.status = 'rescheduled' as const
           updatedSession.statusLabel = 'Đổi ngày'
         }

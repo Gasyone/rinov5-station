@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Check, Copy, ExternalLink, MapPin, Plus } from 'lucide-react'
+import { Check, Copy, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import { FieldLabel } from '@/components/shared'
 import { Button } from '@/components/ui/button'
@@ -69,6 +69,16 @@ export function BookingTestCreateStudentForm({
 }: BookingTestCreateStudentFormProps) {
   const selectedChild = selectedContactObj?.children.find((c) => c.id === childId)
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null)
+  const [isChangingParent, setIsChangingParent] = useState(false)
+
+  const parentDisplayName =
+    selectedContactObj?.name || leadInfo?.parentName || 'Chưa gán phụ huynh'
+  const parentRoleDisplay =
+    selectedContactObj?.role || leadInfo?.parentRole || 'Phụ huynh'
+  const parentPhoneDisplay =
+    selectedContactObj?.phone || leadInfo?.phone || '---'
+  const parentAddressDisplay =
+    selectedContactObj?.address || leadInfo?.address || ''
 
   const handleCopyPhone = async (phoneToCopy: string) => {
     if (!phoneToCopy || phoneToCopy === '---') return
@@ -94,209 +104,163 @@ export function BookingTestCreateStudentForm({
   }
 
   return (
-    <div
-      className={
-        className ||
-        'w-full space-y-2'
-      }
-    >
-      {/* SECTION 1: CONTACT VÀ HỌC VIÊN */}
+    <div className={className || 'w-full space-y-2.5'}>
+      {/* KHỐI 1: CHỌN CON & THÔNG TIN CON (GỘP CHUNG, CÁCH NHAU ĐƯỜNG LINE) */}
       <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2">
-        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b">
-          Contact & Học viên
-        </div>
+        {/* Dòng cảnh báo / nhắc nhở chọn con đưa lên trên cùng */}
+        {!childId && selectedContactObj && (
+          <p className="text-[11.5px] text-amber-600 dark:text-amber-400 font-medium">
+            * Vui lòng chọn con để hoàn tất đặt lịch
+          </p>
+        )}
 
-        {leadInfo ? (
-          <div className="space-y-2 pt-0.5">
-            {/* Khối Phụ huynh (Contact) - Phẳng, kèm vai trò trong ngoặc */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-foreground text-xs">
-                  {leadInfo.parentName}
-                  <span className="text-muted-foreground font-normal ml-1">
-                    ({leadInfo.parentRole || 'Mẹ'})
-                  </span>
-                </span>
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground font-normal text-xs tabular-nums">{leadInfo.phone}</span>
-                  {leadInfo.phone && leadInfo.phone !== '---' && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleCopyPhone(leadInfo.phone)
-                      }}
-                      className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                      title="Sao chép số điện thoại phụ huynh"
-                    >
-                      {copiedPhone === leadInfo.phone ? (
-                        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-              {leadInfo.address && (
-                <div className="flex items-center justify-between gap-1.5 text-xs text-muted-foreground/80">
-                  <div className="flex items-center gap-1.5 min-w-0 pr-1">
-                    <MapPin className="h-3 w-3 text-rose-500/80 shrink-0" />
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(leadInfo.address)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="leading-snug truncate hover:underline hover:text-foreground transition-colors cursor-pointer"
-                      title={`Xem vị trí trên Google Maps: ${leadInfo.address}`}
-                    >
-                      {leadInfo.address}
-                    </a>
-                  </div>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(leadInfo.address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-0.5 text-primary hover:underline font-medium text-xs shrink-0 transition-colors cursor-pointer hover:text-primary/80 whitespace-nowrap"
-                    title={`Mở bản đồ Google Maps cho: ${leadInfo.address}`}
-                  >
-                    <span>Xem bản đồ</span>
-                    <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                </div>
-              )}
+        {/* Dropdown chọn con */}
+        <InlineSelect
+          value={childId}
+          onValueChange={(val) => {
+            if (val === 'add_new_child') {
+              onAddNewChild?.()
+            } else {
+              onChildChange(val)
+            }
+          }}
+          options={childSelectOptions}
+          placeholder={
+            selectedContactObj
+              ? 'Chọn con / học viên'
+              : 'Vui lòng chọn phụ huynh trước'
+          }
+          disabled={!selectedContactObj}
+          ariaLabel="Chọn con / học viên"
+        />
+
+        {/* Đường line phân cách nhẹ giữa dropdown chọn con và thông tin con */}
+        <div className="border-t border-border/60" />
+
+        {/* Thông tin con */}
+        {selectedChild ? (
+          <div className="space-y-1 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-foreground text-xs">{selectedChild.name}</span>
+              <span className="text-muted-foreground text-xs">
+                {selectedChild.age ? `${selectedChild.age} tuổi` : ''}
+                {selectedChild.dob ? ` (${selectedChild.dob})` : ''}
+              </span>
             </div>
-
-            {/* Dải phân cách nhẹ */}
-            <div className="border-t border-border/50" />
-
-            {/* Khối Con / Bé - Phẳng, tinh gọn */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-foreground text-xs">{leadInfo.childName}</span>
-                <span className="text-muted-foreground text-xs">
-                  {leadInfo.age ? `${leadInfo.age} tuổi` : ''}
-                  {leadInfo.dob ? ` (${leadInfo.dob})` : ''}
+            <div className="space-y-1 text-xs pt-0.5">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-muted-foreground shrink-0">Trường:</span>
+                <span className="font-normal text-muted-foreground text-right truncate">
+                  {selectedChild.currentSchool || 'Tiểu học Lương Định Của (Quận 3)'}
                 </span>
               </div>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-start justify-between gap-1">
-                  <span className="text-muted-foreground shrink-0">Trường:</span>
-                  <span className="font-normal text-muted-foreground text-right truncate">
-                    {leadInfo.currentSchool || 'Tiểu học Lương Định Của (Quận 3)'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-muted-foreground shrink-0">Học lực:</span>
-                  <span className="font-normal text-muted-foreground text-right">
-                    {leadInfo.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu'}
-                  </span>
-                </div>
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-muted-foreground shrink-0">Học lực:</span>
+                <span className="font-normal text-muted-foreground text-right">
+                  {selectedChild.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu'}
+                </span>
               </div>
             </div>
           </div>
         ) : (
-          <>
-            {/* Chọn Contact / Phụ huynh (Searchable + Mở Modal tạo mới ở đầu) */}
-            <FieldLabel label="Contact / Phụ huynh" required>
-              <ContactSearchableSelect
-                value={contactId}
-                onValueChange={onContactChange}
-                contacts={contactsList}
-                onAddNewContact={onAddNewContact}
-                placeholder="Tìm kiếm tên hoặc SĐT phụ huynh..."
-              />
-            </FieldLabel>
-
-            {selectedContactObj?.address && (
-              <div className="flex items-center justify-between gap-1.5 text-xs text-muted-foreground/80 -mt-1 px-0.5">
-                <div className="flex items-center gap-1.5 min-w-0 pr-1">
-                  <MapPin className="h-3 w-3 text-rose-500/80 shrink-0" />
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedContactObj.address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="leading-snug truncate hover:underline hover:text-foreground transition-colors cursor-pointer"
-                    title={`Xem vị trí trên Google Maps: ${selectedContactObj.address}`}
-                  >
-                    {selectedContactObj.address}
-                  </a>
-                </div>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedContactObj.address)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 text-primary hover:underline font-medium text-xs shrink-0 transition-colors cursor-pointer hover:text-primary/80 whitespace-nowrap"
-                  title={`Mở bản đồ Google Maps cho: ${selectedContactObj.address}`}
-                >
-                  <span>Xem bản đồ</span>
-                  <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-              </div>
-            )}
-
-            {/* Chọn Con / Học viên */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-foreground">
-                  Con / Học viên <span className="text-destructive">*</span>
-                </label>
-                {selectedContactObj && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={onAddNewChild}
-                    className="h-5 px-1.5 text-xs font-medium text-primary hover:bg-primary/10 gap-1 cursor-pointer"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Thêm con</span>
-                  </Button>
-                )}
-              </div>
-              <InlineSelect
-                value={childId}
-                onValueChange={(val) => {
-                  if (val === 'add_new_child') {
-                    onAddNewChild?.()
-                  } else {
-                    onChildChange(val)
-                  }
-                }}
-                options={childSelectOptions}
-                placeholder={selectedContactObj ? 'Chọn con / học viên' : 'Vui lòng chọn phụ huynh trước'}
-                disabled={!selectedContactObj}
-                ariaLabel="Chọn con / học viên"
-              />
-              {selectedChild && (
-                <div className="space-y-1 pt-1.5 text-xs">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Tuổi / Ngày sinh:</span>
-                    <span className="font-medium text-foreground">
-                      {selectedChild.age ? `${selectedChild.age} tuổi` : ''}
-                      {selectedChild.dob ? ` (${selectedChild.dob})` : ''}
-                    </span>
-                  </div>
-                  <div className="flex items-start justify-between gap-2 text-xs">
-                    <span className="text-muted-foreground shrink-0">Trường:</span>
-                    <span className="font-normal text-muted-foreground text-right truncate">
-                      {selectedChild.currentSchool || 'Tiểu học Lương Định Của (Quận 3)'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="text-muted-foreground shrink-0">Học lực:</span>
-                    <span className="font-normal text-muted-foreground text-right">
-                      {selectedChild.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu'}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
+          <div className="py-2 text-center text-xs text-muted-foreground/80">
+            <p className="font-medium text-foreground/75">Chưa chọn học viên</p>
+            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+              Vui lòng chọn con ở danh sách phía trên
+            </p>
+          </div>
         )}
       </div>
 
-      {/* SECTION 2: THÔNG TIN CHỌN TEST (CHỈ RENDER KHI SHOWTESTCONFIGSECTION LÀ TRUE, VD TRONG DIALOG) */}
+      {/* KHỐI 2: THÔNG TIN PHỤ HUYNH */}
+      <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-1.5">
+        <div className="flex items-center justify-between pb-1 border-b border-border/60">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Phụ huynh
+          </div>
+          {selectedContactObj ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsChangingParent(!isChangingParent)}
+              className="h-5 px-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              {isChangingParent ? 'Đóng' : 'Đổi phụ huynh'}
+            </Button>
+          ) : (
+            onAddNewContact && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onAddNewContact}
+                className="h-5 px-1.5 text-xs font-medium text-primary hover:bg-primary/10 gap-1 cursor-pointer"
+              >
+                <span>+ Thêm phụ huynh</span>
+              </Button>
+            )
+          )}
+        </div>
+
+        {isChangingParent || !selectedContactObj ? (
+          <div className="space-y-1.5 pt-0.5">
+            <ContactSearchableSelect
+              value={contactId}
+              onValueChange={(newId) => {
+                onContactChange(newId)
+                setIsChangingParent(false)
+              }}
+              contacts={contactsList}
+              onAddNewContact={onAddNewContact}
+              placeholder="Tìm kiếm tên hoặc SĐT phụ huynh..."
+            />
+          </div>
+        ) : (
+          <div className="space-y-1.5 pt-0.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-foreground text-xs">
+                {parentDisplayName}
+                <span className="text-muted-foreground font-normal ml-1">
+                  ({parentRoleDisplay})
+                </span>
+              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground font-normal text-xs tabular-nums">
+                  {parentPhoneDisplay}
+                </span>
+                {parentPhoneDisplay && parentPhoneDisplay !== '---' && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleCopyPhone(parentPhoneDisplay)
+                    }}
+                    className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    title="Sao chép số điện thoại phụ huynh"
+                  >
+                    {copiedPhone === parentPhoneDisplay ? (
+                      <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {parentAddressDisplay && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
+                <MapPin className="h-3 w-3 text-rose-500/80 shrink-0" />
+                <span className="truncate">{parentAddressDisplay}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 3: THÔNG TIN CHỌN TEST (CHỈ RENDER KHI SHOWTESTCONFIGSECTION LÀ TRUE, VD TRONG DIALOG) */}
       {showTestConfigSection && onProgramChange && (
         <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2">
           <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b">

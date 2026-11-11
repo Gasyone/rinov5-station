@@ -55,7 +55,7 @@ export function TutorialVideoPlayerModal({
               className="h-7 px-2.5 text-xs gap-1.5 border-zinc-700 bg-zinc-800/80 text-zinc-200 hover:bg-zinc-700 hover:text-white"
             >
               <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-3 w-3 text-red-400" />
+                <ExternalLink className="h-3 w-3 text-blue-400" />
                 <span className="hidden sm:inline">Mở trên YouTube</span>
               </a>
             </Button>

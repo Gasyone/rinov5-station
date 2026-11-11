@@ -107,9 +107,9 @@ export function findEmployeeByName(name?: string) {
   return mockEmployees.find((employee) => employee.name.toLowerCase() === normalizedName) ?? null
 }
 
-export function getPersonTitle(employee: Employee | null) {
+export function getPersonTitle(employee: Employee | null): string {
   if (!employee) return ''
-  return [employee.position, employee.department].filter(Boolean).join(' · ')
+  return isTeacherLikeEmployee(employee) ? 'Giáo viên' : 'Khác'
 }
 
 export function isTeacherLikeEmployee(employee: Employee): boolean {

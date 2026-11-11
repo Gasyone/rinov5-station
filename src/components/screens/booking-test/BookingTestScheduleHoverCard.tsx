@@ -34,6 +34,7 @@ interface BookingTestScheduleHoverCardProps {
   closeDelay?: number
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
+  className?: string
 }
 
 export function BookingTestScheduleHoverCard({
@@ -43,6 +44,7 @@ export function BookingTestScheduleHoverCard({
   closeDelay = 100,
   side = 'bottom',
   align = 'start',
+  className,
 }: BookingTestScheduleHoverCardProps) {
   const isCancelled = booking.status === 'cancelled'
   const studentName = booking.childName
@@ -73,7 +75,10 @@ export function BookingTestScheduleHoverCard({
         side={side}
         align={align}
         sideOffset={8}
-        className="w-80 p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-50 animate-in fade-in-0 zoom-in-95"
+        className={cn(
+          'w-80 p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-[100] animate-in fade-in-0 zoom-in-95',
+          className
+        )}
       >
         {/* Dải đầu thẻ: Thời gian & Nhãn sự kiện */}
         <div

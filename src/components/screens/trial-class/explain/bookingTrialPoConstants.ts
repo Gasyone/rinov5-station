@@ -48,19 +48,6 @@ export function createEmptyDataSource(): DataSourceItem {
 
 export const DEFAULT_PO_SECTIONS: PoSectionSpec[] = [
   {
-    id: 'lead-banner',
-    code: 'SEC-BT-01',
-    title: 'Banner thông tin Lead & Nguồn tiếp nhận',
-    subtitle: 'Hiển thị tóm tắt thông tin học viên, phụ huynh, SĐT và cơ sở gốc',
-    targetSelector: '[data-po-section="lead-banner"]',
-    intent: 'Giúp nhân viên đối chiếu nhanh thông tin Lead từ CRM trước khi thao tác đặt lịch học thử',
-    dataSources: [],
-    acceptanceCriteriaList: [],
-    cornerCasesList: [],
-    businessRulesList: [],
-    poNotes: '',
-  },
-  {
     id: 'program-select',
     code: 'SEC-BT-02',
     title: 'Dropdown Chọn Chương trình học',

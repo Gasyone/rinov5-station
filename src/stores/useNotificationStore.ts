@@ -76,7 +76,7 @@ export const useNotificationStore = create<NotificationState>()(
       },
     }),
     {
-      name: 'rinov5-notifications-v5',
+      name: 'rinov5-notifications-v7',
       storage: createJSONStorage(() => localStorage),
     }
   )

@@ -28,3 +28,56 @@ export const STATUS_LABELS: Record<LeaveReserveRequest['status'], string> = {
   not_approved: 'Không duyệt',
   cancel: 'Hủy duyệt',
 }
+
+export interface StudentClassSession {
+  id: string
+  classCode: string
+  className: string
+  sessionIndex: number
+  sessionName: string
+  date: string
+  formattedDate: string
+  dayOfWeek: string
+  time: string
+  teacherName?: string
+  room?: string
+  topic?: string
+  lessonContent?: {
+    words?: string
+    sentences?: string
+    phonics?: string
+  }
+  alreadyRequested?: boolean
+  existingRequestCode?: string
+  existingRequestStatus?: LeaveReserveRequest['status']
+}
+
+export interface LeaveReservePackageItem {
+  id: string
+  packageName: string
+  subject: string
+  classCode: string
+  className: string
+  remainingSessions: number
+  totalSessions: number
+  schedule?: string
+}
+
+export interface StudentEnrolledClassTree {
+  classCode: string
+  className: string
+  type: string
+  scheduleText: string
+  teacherName: string
+  room?: string
+  progress?: string
+  enrolledStudents: number
+  maxStudents: number
+  isOmo: boolean
+  packageName?: string
+  subject?: string
+  remainingSessions?: number
+  totalSessions?: number
+  sessions: StudentClassSession[]
+}
+

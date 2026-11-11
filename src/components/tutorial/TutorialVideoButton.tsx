@@ -71,23 +71,23 @@ export function TutorialVideoButton() {
             aria-label="Video hướng dẫn sử dụng"
             className={cn(
               'relative inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold transition-all',
-              'border-red-500/20 bg-red-500/5 text-red-600 hover:bg-red-500/15 hover:border-red-500/40 hover:text-red-700',
-              'dark:text-red-400 dark:border-red-500/30 dark:bg-red-500/10 dark:hover:bg-red-500/20',
-              isPopoverOpen && 'bg-red-500/15 border-red-500/50'
+              'border-blue-500/25 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-700',
+              'dark:text-blue-400 dark:border-blue-500/30 dark:bg-blue-500/15 dark:hover:bg-blue-500/25',
+              isPopoverOpen && 'bg-blue-500/20 border-blue-500/50'
             )}
             title="Video hướng dẫn theo màn hình"
           >
             <div className="relative flex items-center justify-center">
-              <Video className="h-3.5 w-3.5 fill-red-500/20" />
+              <Video className="h-3.5 w-3.5 fill-blue-500/20 text-blue-600 dark:text-blue-400" />
               <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
             </div>
             <span className="hidden sm:inline text-[11px] font-medium tracking-tight">
               HDSD
             </span>
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white shadow-xs">
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white shadow-xs">
               {matchedVideos.length}
             </span>
           </Button>
@@ -140,7 +140,7 @@ export function TutorialVideoButton() {
                     className="object-cover group-hover:scale-105 transition-transform duration-200"
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 flex items-center justify-center transition-colors">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-xs group-hover:scale-110 transition-transform">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow-xs group-hover:scale-110 transition-transform">
                       <Play className="h-3 w-3 fill-current ml-0.5" />
                     </div>
                   </div>
@@ -194,7 +194,7 @@ export function TutorialVideoButton() {
                         className="object-cover group-hover:scale-105 transition-transform duration-200"
                       />
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 flex items-center justify-center transition-colors">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow-xs group-hover:scale-110 transition-transform">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow-xs group-hover:scale-110 transition-transform">
                           <Play className="h-3 w-3 fill-current ml-0.5" />
                         </div>
                       </div>

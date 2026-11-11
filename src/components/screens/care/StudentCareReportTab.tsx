@@ -544,12 +544,14 @@ export function StudentCareReportTab({
       />
 
       {/* 3. DIALOGS */}
-      <LeaveReserveDetailDialog
-        open={leaveDialogOpen}
-        onOpenChange={setLeaveDialogOpen}
-        request={leaveRequest}
-        readOnly={true}
-      />
+      {leaveDialogOpen && (
+        <LeaveReserveDetailDialog
+          open={leaveDialogOpen}
+          onOpenChange={setLeaveDialogOpen}
+          request={leaveRequest}
+          readOnly={true}
+        />
+      )}
 
       <StudentCareReportLinkDialogs
         isReportDialogOpen={isReportDialogOpen}

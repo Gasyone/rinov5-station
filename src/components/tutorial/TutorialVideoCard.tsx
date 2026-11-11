@@ -66,9 +66,9 @@ export function TutorialVideoCard({
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className={cn(
-              'flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-all duration-200',
+              'flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-all duration-200',
               isHovered
-                ? 'scale-110 bg-red-500 shadow-red-500/40 ring-4 ring-white/30'
+                ? 'scale-110 bg-blue-500 shadow-blue-500/40 ring-4 ring-white/30'
                 : 'scale-95 bg-black/60 backdrop-blur-xs text-white/90'
             )}
           >

@@ -37,7 +37,12 @@ interface StudentCareEarlyReturnDialogProps {
   onSuccess?: () => void
 }
 
-export function StudentCareEarlyReturnDialog({
+export function StudentCareEarlyReturnDialog(props: StudentCareEarlyReturnDialogProps) {
+  if (!props.open) return null
+  return <StudentCareEarlyReturnDialogInner {...props} />
+}
+
+function StudentCareEarlyReturnDialogInner({
   open,
   onOpenChange,
   studentName,

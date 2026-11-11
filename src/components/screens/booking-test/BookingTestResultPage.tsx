@@ -6,10 +6,11 @@ import { ExternalLink, FileText, Phone, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState, InfoField, PageHeader, Panel } from '@/components/shared'
+import { cn } from '@/lib/utils'
 import { getBookingTests, type BookingTest } from '@/mocks/bookingTests'
 import { formatDateTime, getStatusLabel, getSubjectLabel, maskPhone } from './bookingTestHelpers'
 import { readStoredBookingResult } from './bookingTestAssessmentStorage'
-import { SpeakingScore, LwrScore } from './BookingTestScoreDisplay'
+import { SpeakingScore, LwrScore, MathLwrScore } from './BookingTestScoreDisplay'
 
 interface BookingTestResultPageProps {
   bookingId: string
@@ -37,7 +38,8 @@ export function BookingTestResultPage({ bookingId }: BookingTestResultPageProps)
     )
   }
 
-  const latestNote = booking.notes?.at(-1)?.text ?? booking.msg ?? '-'
+  const latestNote =
+    booking.testResult?.mathComment ?? booking.notes?.at(-1)?.text ?? booking.msg ?? '-'
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -77,25 +79,42 @@ export function BookingTestResultPage({ bookingId }: BookingTestResultPageProps)
             <Panel title="Kết quả năng lực" icon={<FileText className="h-4 w-4" />}>
               <div className="grid gap-4 rounded-lg bg-muted/20 p-4 md:grid-cols-2">
                 <div className="space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className={cn("grid gap-3", booking.subject === 'math' ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
                     <InfoField label="Trình độ" value={booking.testResult?.level || 'Chưa chọn'} />
-                    <InfoField label="Nhánh" value={booking.testResult?.subLevel || '-'} />
+                    {booking.subject !== 'math' && (
+                      <InfoField label="Nhánh" value={booking.testResult?.subLevel || '-'} />
+                    )}
                   </div>
                   <InfoField
                     label="Lộ trình đề xuất"
-                    value={booking.testResult?.path || 'Chưa có lộ trình'}
+                    value={
+                      booking.testResult?.learningRoadmap ||
+                      booking.testResult?.path ||
+                      'Chưa có lộ trình'
+                    }
                   />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
-                  <SpeakingScore result={booking.testResult} />
-                  <LwrScore result={booking.testResult} />
+                  {booking.subject === 'english' ? (
+                    <>
+                      <SpeakingScore result={booking.testResult} />
+                      <LwrScore result={booking.testResult} />
+                    </>
+                  ) : (
+                    <MathLwrScore
+                      result={booking.testResult}
+                      status={booking.status}
+                      resultLink={booking.resultLink || booking.testResult?.uploadedFileUrl}
+                      expectedLevel={booking.expectedLevel}
+                    />
+                  )}
                 </div>
               </div>
             </Panel>
 
             <Panel title="Nhận xét" icon={<FileText className="h-4 w-4" />}>
               <div className="rounded-lg bg-muted/20 p-4">
-                <p className="text-sm leading-6">{latestNote}</p>
+                <p className="text-sm leading-6 whitespace-pre-wrap">{latestNote}</p>
               </div>
             </Panel>
           </section>

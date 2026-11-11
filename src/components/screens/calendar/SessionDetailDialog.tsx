@@ -79,6 +79,7 @@ export function SessionDetailDialog({
     substituteTeacherName: session.substituteTeacher,
     status: session.status === 'cancelled' ? 'cancelled' : session.status === 'completed' ? 'completed' : 'upcoming',
     type: session.type || (isProject ? 'project' : undefined),
+    hasSemesterEvaluation: session.hasSemesterEvaluation,
     projectUrl: isProject ? defaultProjectUrl : undefined,
     materials: [
       { name: isProject ? `Slide hướng dẫn dự án` : `Slide bài giảng`, url: '#' },

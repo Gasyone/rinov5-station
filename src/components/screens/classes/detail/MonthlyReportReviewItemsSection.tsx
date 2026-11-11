@@ -19,12 +19,14 @@ interface MonthlyReportReviewItemsSectionProps {
   items: WeekReviewItem[]
   onChange: (items: WeekReviewItem[]) => void
   readOnly?: boolean
+  hideTitle?: boolean
 }
 
 export function MonthlyReportReviewItemsSection({
   items,
   onChange,
   readOnly = false,
+  hideTitle = false,
 }: MonthlyReportReviewItemsSectionProps) {
   const [previewMedia, setPreviewMedia] = useState<MediaPreviewItem | null>(null)
   const [activeLinkInputIdx, setActiveLinkInputIdx] = useState<number | null>(null)
@@ -118,9 +120,11 @@ export function MonthlyReportReviewItemsSection({
   if (readOnly) {
     return (
       <div className="space-y-1.5 pt-1.5">
-        <h4 className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
-          <span>2. Nội dung ôn tập riêng</span>
-        </h4>
+        {!hideTitle && (
+          <h4 className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
+            <span>2. Nội dung ôn tập riêng</span>
+          </h4>
+        )}
 
         <div className="space-y-1.5">
           {validItems.map((item, idx) => {
@@ -129,16 +133,16 @@ export function MonthlyReportReviewItemsSection({
             return (
               <div
                 key={idx}
-                className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 flex items-center justify-between gap-2.5 min-w-0"
+                className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2 flex items-center justify-between gap-2.5"
               >
                 {/* Tiêu đề & Nội dung */}
                 <div className="text-xs leading-relaxed font-sans flex-1 min-w-0">
                   {item.title ? (
-                    <span className="font-normal text-foreground mr-1.5">
+                    <span className="font-semibold text-foreground mr-1.5">
                       {item.title}:
                     </span>
                   ) : null}
-                  <span className="text-foreground/80 font-normal">{item.content}</span>
+                  <span className="text-foreground/90 font-normal">{item.content}</span>
                 </div>
 
                 {/* Thumbnail ảnh / tài liệu đính kèm duy nhất (Click mở xem lớn) */}
@@ -157,7 +161,7 @@ export function MonthlyReportReviewItemsSection({
                           window.open(item.docLink, '_blank')
                         }
                       }}
-                      className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border border-border/70 relative group cursor-pointer bg-muted/40 shadow-3xs"
+                      className="h-8 w-8 sm:h-9 sm:w-9 rounded-md overflow-hidden border border-border/70 relative group cursor-pointer bg-muted/40 shadow-3xs"
                       title={item.thumbnailUrl ? 'Bấm để xem ảnh phóng to' : 'Bấm để mở tài liệu đính kèm'}
                     >
                       {item.thumbnailUrl ? (

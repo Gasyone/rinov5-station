@@ -537,13 +537,12 @@ export function getDutyStaffForSlot(params: {
   )
 
   const assignedIds = assignment?.assignedEmployeeIds || []
-  const branchEmployees = getDutyEmployeesByBranch(school)
 
-  // Nếu chưa có master assignment cho branch này, lấy fallback nhân sự của cơ sở
+  // Nếu chưa có phân bổ lịch trực cho cơ sở này, không có nhân sự trực
   let targetEmployees =
     assignedIds.length > 0
       ? (assignedIds.map(findDutyEmployeeById).filter(Boolean) as DutyEmployee[])
-      : branchEmployees.slice(0, 3)
+      : []
 
   // Lọc theo môn học / chương trình (tiếng Anh, toán tư duy)
   if (subject && subject !== 'all') {
@@ -553,10 +552,8 @@ export function getDutyStaffForSlot(params: {
     if (subjectMatched.length > 0) {
       targetEmployees = subjectMatched
     } else {
-      const branchSubjectTeachers = branchEmployees.filter(
-        (emp) => emp.subject === subject || emp.subject === 'all' || emp.role === 'CS'
-      )
-      targetEmployees = branchSubjectTeachers.length > 0 ? branchSubjectTeachers.slice(0, 3) : targetEmployees
+      // Nếu không có nhân sự phân bổ cho môn này trong ca, không có dải giờ trực
+      targetEmployees = []
     }
   }
 

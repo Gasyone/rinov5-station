@@ -25,8 +25,6 @@ import { FieldLabel, PersonnelHoverCard, type PersonnelItem } from '@/components
 import { InlineSelect } from '@/components/controls'
 import { cn } from '@/lib/utils'
 import type { BookingTest } from '@/mocks/bookingTests'
-import { mockStudents } from '@/mocks/students'
-import { mockLeads } from '@/mocks/crmLeads'
 import { mockEmployees } from '@/mocks/employees'
 import {
   getDailySlotSummary,
@@ -38,9 +36,11 @@ import {
   TIME_GROUPS,
   MOCK_TEACHERS,
 } from './bookingTestCreateTypes'
+import { buildBookingTestContactsList } from './bookingTestHelpers'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { BookingTestCreateStudentForm } from './BookingTestCreateStudentForm'
 import type { ContactPerson } from './ContactSearchableSelect'
+import { toast } from 'sonner'
 
 export {
   PROGRAM_CONFIG,
@@ -135,82 +135,7 @@ export function BookingTestCreateDialog({
 
   // 2. Gom nhóm danh sách Contact (Phụ huynh) và Con từ mockLeads + mockStudents
   const contactsList = useMemo<ContactPerson[]>(() => {
-    const map = new Map<string, ContactPerson>()
-
-    // Contact từ mockLeads
-    mockLeads.forEach((lead) => {
-      if (!lead.parentName) return
-      const pName = lead.parentName
-      const pPhone = lead.phone || '0900000000'
-      const key = `${pName}_${pPhone}`
-
-      if (!map.has(key)) {
-        map.set(key, {
-          id: key,
-          name: pName,
-          role: lead.parentRole || 'Mẹ',
-          phone: pPhone,
-          address: lead.address,
-          children: [],
-        })
-      }
-
-      const contact = map.get(key)!
-      if (lead.address && !contact.address) {
-        contact.address = lead.address
-      }
-
-      const childKey = `lead_child_${lead.id}`
-      if (!contact.children.some((c) => c.name === lead.studentName)) {
-        contact.children.push({
-          id: childKey,
-          name: lead.studentName,
-          dob: lead.birthYear ? `01/01/${lead.birthYear}` : undefined,
-          age: lead.studentAge,
-          currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
-          academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
-        })
-      }
-    })
-
-    // Contact từ mockStudents
-    mockStudents.forEach((student) => {
-      const pName = student.parentName || `Phụ huynh ${student.name}`
-      const pPhone = student.parentPhone || student.phone || '0900000000'
-      const key = `${pName}_${pPhone}`
-
-      if (!map.has(key)) {
-        map.set(key, {
-          id: key,
-          name: pName,
-          role: 'Mẹ',
-          phone: pPhone,
-          address: 'Phường Võ Thị Sáu, Quận 3, TP.HCM',
-          children: [],
-        })
-      }
-
-      const contact = map.get(key)!
-      if (!contact.children.some((c) => c.id === student.id)) {
-        let calcAge: number | undefined
-        if (student.dob) {
-          const birthYear = parseInt(student.dob.slice(0, 4), 10)
-          if (!isNaN(birthYear)) {
-            calcAge = 2026 - birthYear
-          }
-        }
-        contact.children.push({
-          id: student.id,
-          name: student.name,
-          dob: student.dob,
-          age: calcAge || 8,
-          currentSchool: 'Tiểu học Lương Định Của (Quận 3)',
-          academicPerformance: 'Giỏi / Tốt nghiệp loại Ưu',
-        })
-      }
-    })
-
-    return Array.from(map.values())
+    return buildBookingTestContactsList([])
   }, [])
 
   const [contactId, setContactId] = useState('')
@@ -341,6 +266,15 @@ export function BookingTestCreateDialog({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
+    if (!selectedContactObj) {
+      toast.error('Vui lòng chọn phụ huynh trước khi đặt lịch')
+      return
+    }
+    if (!childId || !currentChildName) {
+      toast.error('Vui lòng chọn con / học viên trước khi đặt lịch')
+      return
+    }
+
     const currentProgramConfig =
       PROGRAM_CONFIG[program] || PROGRAM_CONFIG['Chương trình Station']
     const subject = currentProgramConfig.subject
@@ -400,6 +334,7 @@ export function BookingTestCreateDialog({
 
   const childSelectOptions = selectedContactObj
     ? [
+        { value: '', label: 'Chọn con / học viên' },
         ...selectedContactObj.children.map((ch) => ({
           value: ch.id,
           label: `${ch.name} ${ch.age ? `(${ch.age} tuổi${ch.dob ? ` - ${ch.dob}` : ''})` : ch.dob ? `(${ch.dob})` : ''}`,

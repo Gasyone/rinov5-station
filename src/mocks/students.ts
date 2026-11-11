@@ -30,6 +30,7 @@ export interface EnrolledClass {
   startSessionDate?: string // Buổi học bắt đầu ghép vào lớp
   packageId?: string       // Mã gói đăng ký liên kết
   totalSessions?: number   // Tổng số buổi của lớp
+  remainingSessions?: number // Số buổi còn lại của gói/lớp
   usedSessions?: number    // Số buổi học viên đã học
   attendanceRate?: string  // Tỷ lệ chuyên cần (ví dụ '95.8%')
   presentSessions?: number // Số buổi có mặt
@@ -97,6 +98,65 @@ const _laterDay = String(_now.getDate() === 18 ? 22 : 18).padStart(2, '0')
 
 export const mockStudents: Student[] = [
   {
+    id: "s-thaovy",
+    name: "Nguyễn Ngọc Thảo Vy",
+    englishName: "Chloe",
+    email: "thaovy.nguyen@email.com",
+    phone: "0912999203",
+    gender: "Female",
+    dob: "2020-03-12",
+    status: "active",
+    enrolledClass: "TK_TOAN_00015 (TK_EIN9_03_WEB_BE6)",
+    branch: "CS6 Vinsmart Tonkin",
+    level: "1:10 - Việt Nam",
+    subLevel: "C14",
+    learningPath: "Toán học Archimedes 6",
+    curriculum: "Chương trình Toán học 1:10 Việt Nam",
+    parentName: "Đỗ Thị Hương Thảo",
+    parentPhone: "0912888203",
+    enrollmentDate: "2024-09-01",
+    notes: "Phụ huynh Đỗ Thị Hương Thảo - Địa chỉ: Phường Tây Mỗ, Quận Nam Từ Liêm, TP. Hà Nội. Trường CS6 Vinsmart Tonkin.",
+    packageName: "Toán 1:10 - Archimedes 6 (48 buổi)",
+    remainingSessions: 8,
+    totalSessions: 48,
+    enrolledClasses: [
+      {
+        classCode: "TK_TOAN_00015",
+        className: "TK_TOAN_00015 (TK_EIN9_03_WEB_BE6)",
+        type: "station",
+        scheduleSlots: [
+          { dayOfWeek: "Thứ 4", date: "11/11", startTime: "19:30", endTime: "21:30" },
+        ],
+        teacherName: "Hoàng Thị Ngọc Anh (ANHHTN1)",
+        status: "active",
+        progress: "5 / 48 (buổi)",
+        branch: "CS6 Vinsmart Tonkin",
+        room: "Phòng Smart 3",
+        level: "1:10 - Việt Nam",
+        programName: "Chương trình Toán học Archimedes 6",
+        startDate: "2024-09-01",
+        endDate: "2025-09-01",
+      },
+      {
+        classCode: "TK_TOAN_00013",
+        className: "TK_TOAN_00013 (TK_ARC6_03_WED_BC5)",
+        type: "station",
+        scheduleSlots: [
+          { dayOfWeek: "Thứ 4", date: "11/11", startTime: "17:40", endTime: "19:10" },
+        ],
+        teacherName: "Hoàng Thị Ngọc Anh (ANHHTN1)",
+        status: "active",
+        progress: "5 / 48 (buổi)",
+        branch: "CS6 Vinsmart Tonkin",
+        room: "Phòng Smart 2",
+        level: "1:10 - Việt Nam",
+        programName: "Chương trình OMO - Học với GV Online",
+        startDate: "2024-09-01",
+        endDate: "2025-09-01",
+      },
+    ],
+  },
+  {
     id: "s-baohan",
     name: "Lê Nguyễn Bảo Hân",
     englishName: "Hannah",
@@ -115,7 +175,7 @@ export const mockStudents: Student[] = [
     parentPhone: "0912345678",
     enrollmentDate: "2024-08-14",
     notes: "Con tiếp thu nhanh qua hình ảnh và trực quan (Visual Learner), thích các câu đố tư duy logic và hoạt động nhóm. Gia đình định hướng thi Toán quốc tế SASMO, cần kèm thêm kỹ năng đọc hiểu đề bài dài. Giáo viên phụ trách cần lưu ý theo sát tiến độ làm bài tập về nhà định kỳ hàng tuần, hướng dẫn thêm các phương pháp giải bài toán suy luận thực tế và thường xuyên động viên để con tự tin phát biểu xây dựng bài trên lớp.",
-    packageName: "[Gia sư][TH] Toán Tư Duy 1:6 (96 buổi + 8 buổi ôn tập)",
+    packageName: "[MATH_TUTOR] Toán Tư Duy Toán 1:6_96 buổi",
     remainingSessions: 12,
     totalSessions: 96,
     enrolledClasses: [
@@ -135,10 +195,35 @@ export const mockStudents: Student[] = [
         level: "Toán 1:6",
         subLevel: "A",
         programName: "Chương trình Toán tư duy 1:6 chuẩn quốc tế",
-        linkedPackageName: "[Gia sư][TH] Toán Tư Duy 1:6 (96 buổi + 8 buổi ôn tập)",
+        linkedPackageName: "[MATH_TUTOR] Toán Tư Duy Toán 1:6_96 buổi",
         pathCode: "PATH-MATH-16",
         startDate: "2024-08-14",
-        endDate: "2027-08-14"
+        endDate: "2027-08-14",
+        remainingSessions: 12,
+        totalSessions: 96
+      },
+      {
+        classCode: "LD_ANH_00018",
+        className: "Tiếng Anh SuperKids 1:6 (48 buổi)",
+        type: "tutor",
+        scheduleSlots: [
+          { dayOfWeek: "Thứ 3", date: "18/08", startTime: "19:30", endTime: "21:00" },
+          { dayOfWeek: "Thứ 6", date: "21/08", startTime: "19:30", endTime: "21:00" }
+        ],
+        teacherName: "GV Sarah Smith",
+        status: "active",
+        progress: "24 / 48 buổi",
+        branch: "RinoEdu Nguyễn Tuân",
+        room: "B204",
+        level: "SuperKids 1:6",
+        subLevel: "Starters",
+        programName: "Chương trình Tiếng Anh SuperKids 1:6",
+        linkedPackageName: "[IE_MOVERS] Tiếng Anh SuperKids 1:6_48 buổi",
+        pathCode: "PATH-ENG-16",
+        startDate: "2025-01-10",
+        endDate: "2026-12-30",
+        remainingSessions: 24,
+        totalSessions: 48
       }
     ]
   },

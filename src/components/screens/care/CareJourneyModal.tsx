@@ -21,7 +21,7 @@ export const CareJourneyModal: React.FC<CareJourneyModalProps> = ({
   onClose,
   workItem,
 }) => {
-  if (!workItem) return null
+  if (!isOpen || !workItem) return null
 
   const studentCode = workItem.studentId || workItem.studentCode || workItem.id
   const packageName = workItem.productName ? workItem.productName.split('(')[0].trim() : 'Standard 6 Tháng'

@@ -16,6 +16,7 @@ import {
   getDutyStaffForSlot,
   getBranchTeachersDailySummary,
 } from '@/mocks/shiftRoster'
+import { cn } from '@/lib/utils'
 import {
   PROGRAM_CONFIG,
   getSlotTimeRange,
@@ -23,6 +24,8 @@ import {
 import {
   buildBookingTestContactsList,
   BOOKING_TEST_CENTER_DATA,
+  getDuplicateProgramsForStudent,
+  formatTestTimeWithDay,
 } from './bookingTestHelpers'
 import { BookingTestCreateStudentForm } from './BookingTestCreateStudentForm'
 import { BookingTestCreateProgramSection } from './BookingTestCreateProgramSection'
@@ -31,6 +34,7 @@ import { BookingTestCreateStaffSection } from './BookingTestCreateStaffSection'
 import { BookingTestCreateSummary } from './BookingTestCreateSummary'
 import { BookingTestSuccessSummaryView } from './BookingTestSuccessSummaryView'
 import { BookingTestAddChildDialog, type NewChildData } from './BookingTestAddChildDialog'
+import { BookingTestDuplicateAlertModal } from './BookingTestDuplicateAlertModal'
 import type { ContactPerson } from './ContactSearchableSelect'
 import { useAuthStore } from '@/stores/useAuthStore'
 
@@ -131,19 +135,33 @@ export function BookingTestCreateScreen() {
     return buildBookingTestContactsList(customContacts)
   }, [customContacts])
 
-  const [contactId, setContactId] = useState(leadInfo ? 'lead_contact' : '')
-  const [childId, setChildId] = useState(leadInfo ? 'lead_child' : '')
+  // Map contact tương ứng từ leadInfo nếu có
+  const initialContactId = useMemo(() => {
+    if (!leadInfo) return ''
+    const found = contactsList.find(
+      (c) =>
+        (leadInfo.phone && c.phone === leadInfo.phone) ||
+        (leadInfo.parentName && c.name.toLowerCase() === leadInfo.parentName.toLowerCase())
+    )
+    return found ? found.id : `${leadInfo.parentName}_${leadInfo.phone || '0900000000'}`
+  }, [leadInfo, contactsList])
 
-  // Chương trình & Level (prefill từ leadInfo nếu có)
-  const [program, setProgram] = useState(leadInfo?.program || '')
-  const [level, setLevel] = useState(leadInfo?.age && leadInfo.age <= 6 ? 'Pre-Starters (<=6)' : '')
+  const [contactId, setContactId] = useState(initialContactId)
+  // Vì bản CRM cũ chỉ chọn contact là Phụ huynh, chưa có cơ chế chọn con nên trên màn này bắt buộc phải chọn con thủ công
+  const [childId, setChildId] = useState('')
 
-  const handleProgramChange = (newProgram: string) => {
-    setProgram(newProgram)
-    setLevel('')
+  const [prevContactLeadId, setPrevContactLeadId] = useState(initialContactId)
+  if (initialContactId !== prevContactLeadId) {
+    setPrevContactLeadId(initialContactId)
+    setContactId(initialContactId)
+    setChildId('')
   }
 
-  const [school, setSchool] = useState(leadInfo?.school || '')
+  // Mặc định ban đầu luôn là placeholder (rỗng) cho chương trình, level, cơ sở theo yêu cầu người dùng
+  const [program, setProgram] = useState('')
+  const [level, setLevel] = useState('')
+
+  const [school, setSchool] = useState('')
   const [teacher, setTeacher] = useState('')
   const [testDate, setTestDate] = useState(dateOptions.first4[0]?.dateStr || '')
   const [selectedSlot, setSelectedSlot] = useState('')
@@ -152,11 +170,13 @@ export function BookingTestCreateScreen() {
 
   const handleSchoolChange = (newSchool: string) => {
     setSchool(newSchool)
+    setSelectedSlot('')
     setTeacher('')
   }
 
   const handleTestDateChange = (newDate: string) => {
     setTestDate(newDate)
+    setSelectedSlot('')
     setTeacher('')
   }
 
@@ -205,34 +225,74 @@ export function BookingTestCreateScreen() {
     return foundTeacher?.conflictSlots || {}
   }, [dayStaffList, teacher])
 
-  const selectedContactObj = contactsList.find((c) => c.id === contactId)
+  const selectedContactObj = useMemo(() => {
+    const found = contactsList.find((c) => c.id === contactId)
+    if (found) return found
+    if (leadInfo) {
+      return {
+        id: contactId || 'lead_contact',
+        name: leadInfo.parentName,
+        role: leadInfo.parentRole || 'Mẹ',
+        phone: leadInfo.phone,
+        address: leadInfo.address,
+        children: [
+          {
+            id: `lead_child_${paramLeadId || '0'}`,
+            name: leadInfo.childName,
+            dob: leadInfo.dob,
+            age: leadInfo.age,
+            currentSchool: leadInfo.currentSchool,
+            academicPerformance: leadInfo.academicPerformance,
+          },
+        ],
+      }
+    }
+    return undefined
+  }, [contactsList, contactId, leadInfo, paramLeadId])
 
   const currentChildName = useMemo(() => {
-    if (leadInfo) return leadInfo.childName
     const foundChild = selectedContactObj?.children.find((c) => c.id === childId)
     return foundChild ? foundChild.name : ''
-  }, [leadInfo, selectedContactObj, childId])
+  }, [selectedContactObj, childId])
 
   const currentParentName = useMemo(() => {
+    if (selectedContactObj) return selectedContactObj.name
     if (leadInfo) return leadInfo.parentName
-    return selectedContactObj ? selectedContactObj.name : ''
-  }, [leadInfo, selectedContactObj])
+    return ''
+  }, [selectedContactObj, leadInfo])
 
   const currentPhone = useMemo(() => {
+    if (selectedContactObj) return selectedContactObj.phone
     if (leadInfo) return leadInfo.phone
-    return selectedContactObj ? selectedContactObj.phone : ''
-  }, [leadInfo, selectedContactObj])
+    return ''
+  }, [selectedContactObj, leadInfo])
 
-  // Khi đổi Contact: tự động chọn đứa con đầu tiên của Contact đó (hoặc để chọn con)
+  // Map các chương trình mà học viên hiện tại đã có lịch test chưa hoàn thành
+  const duplicateProgramsMap = useMemo(() => {
+    return getDuplicateProgramsForStudent(bookings, currentChildName, currentPhone)
+  }, [bookings, currentChildName, currentPhone])
+
+  const [duplicateBooking, setDuplicateBooking] = useState<BookingTest | null>(null)
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false)
+
+  const handleProgramChange = (newProgram: string) => {
+    if (newProgram && duplicateProgramsMap[newProgram]) {
+      const dup = duplicateProgramsMap[newProgram]
+      setDuplicateBooking(dup)
+      setDuplicateModalOpen(true)
+      // Chặn chọn chương trình bị trùng và reset level
+      setProgram('')
+      setLevel('')
+      return
+    }
+    setProgram(newProgram)
+    setLevel('')
+  }
+
+  // Khi đổi Contact: reset childId để người dùng chọn con thủ công
   const handleContactChange = (newContactId: string) => {
     setContactId(newContactId)
-    const contact = contactsList.find((c) => c.id === newContactId)
-    if (contact && contact.children.length === 1) {
-      // Nếu chỉ có đúng 1 con, tự động chọn con đó
-      setChildId(contact.children[0].id)
-    } else {
-      setChildId('')
-    }
+    setChildId('')
   }
 
   // Khi submit Modal Tạo mới Contact/Khách hàng từ crm_my_leads
@@ -330,8 +390,22 @@ export function BookingTestCreateScreen() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
+    if (!selectedContactObj) {
+      toast.error('Vui lòng chọn phụ huynh trước khi đặt lịch')
+      return
+    }
+    if (!childId || !currentChildName) {
+      toast.error('Vui lòng chọn con / học viên trước khi đặt lịch')
+      return
+    }
     if (!program) {
       toast.error('Vui lòng chọn chương trình test')
+      return
+    }
+    if (duplicateProgramsMap[program]) {
+      const dup = duplicateProgramsMap[program]
+      setDuplicateBooking(dup)
+      setDuplicateModalOpen(true)
       return
     }
     if (!school) {
@@ -371,8 +445,9 @@ export function BookingTestCreateScreen() {
         : (paramLeadId ? mockLeads.find((l) => l.id === paramLeadId)?.assignedTo : undefined) ||
           'Trần Thị Mai (Tư vấn tuyển sinh)'
 
+    const bookingId = `E${Math.floor(1000 + Math.random() * 9000)}`
     const newBooking: BookingTest = {
-      id: `E${Math.floor(1000 + Math.random() * 9000)}`,
+      id: bookingId,
       childName: finalChildName,
       parentName: finalParentName,
       parentRole: resolvedParentRole,
@@ -393,9 +468,10 @@ export function BookingTestCreateScreen() {
       eventType: 'test',
       program,
       school,
-      room: 'Phòng A1',
-      classroom: 'Phòng A1',
+      room: '',
+      classroom: '',
       testTime: `${testDate} ${selectedSlot}`,
+      testLink: `https://rinoedu.vn/tutoring/intro?student_name=${encodeURIComponent(finalChildName)}&parent_name=${encodeURIComponent(finalParentName)}&last_example_point=&birthday=2018&phone=${encodeURIComponent(finalPhone)}&subject_alias=${subject === 'math' ? 'toan' : 'tieng_anh'}&level=1&grade_id=2&subjectId=${subject === 'math' ? '1' : '2'}&curriculum=${subject === 'math' ? 'CT_TOANTD' : 'CT_STATION'}&core_user_id=${bookingId.replace(/\D/g, '') || '303174'}&tutorPracticeId=618469`,
       testResult: {
         level: level,
       },
@@ -458,6 +534,7 @@ export function BookingTestCreateScreen() {
 
   const childSelectOptions = selectedContactObj
     ? [
+        { value: '', label: 'Chọn con / học viên' },
         ...selectedContactObj.children.map((ch) => ({
           value: ch.id,
           label: `${ch.name} ${ch.age ? `(${ch.age} tuổi${ch.dob ? ` - ${ch.dob}` : ''})` : ch.dob ? `(${ch.dob})` : ''}`,
@@ -488,27 +565,17 @@ export function BookingTestCreateScreen() {
       },
       ...CENTER_DATA.map((c) => ({
         value: c.name,
-        textValue: `${c.name} (${c.distanceStr})`,
+        textValue: c.name,
         label: (
           <div className="flex flex-col w-full py-0.5 min-w-0">
-            <div className="flex items-center justify-between w-full gap-2">
-              <span className="font-medium text-foreground text-xs">{c.name}</span>
-              <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
-                {c.distanceStr}
-              </span>
-            </div>
+            <span className="font-medium text-foreground text-xs">{c.name}</span>
             <span className="text-xs text-muted-foreground/75 truncate font-normal leading-normal mt-0.5">
               {c.address}
             </span>
           </div>
         ),
         selectedLabel: (
-          <div className="flex items-center justify-between w-full gap-2 text-xs">
-            <span className="truncate font-medium text-foreground">{c.name}</span>
-            <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
-              {c.distanceStr}
-            </span>
-          </div>
+          <span className="truncate font-medium text-foreground text-xs">{c.name}</span>
         ),
       })),
     ],
@@ -533,14 +600,44 @@ export function BookingTestCreateScreen() {
           </span>
         ),
       },
-      ...Object.keys(PROGRAM_CONFIG).map((p) => ({
-        value: p,
-        textValue: p,
-        label: p,
-        selectedLabel: p,
-      })),
+      ...Object.entries(PROGRAM_CONFIG).map(([p, config]) => {
+        const isMath = config.subject === 'math'
+        const subjectFullName = isMath ? 'Môn Toán' : 'Môn Tiếng Anh'
+        const existingBooking = duplicateProgramsMap[p]
+        const hasExisting = Boolean(existingBooking)
+        return {
+          value: p,
+          textValue: `${p} (${subjectFullName})${hasExisting ? ' - Đang có lịch test' : ''}`,
+          label: (
+            <div className="flex flex-col w-full py-1 min-w-0 text-left">
+              <span
+                className={cn(
+                  'font-medium text-xs',
+                  hasExisting ? 'text-amber-950 dark:text-amber-200 font-semibold' : 'text-foreground'
+                )}
+              >
+                {p}
+              </span>
+              <span className="text-xs text-muted-foreground/75 truncate font-normal leading-normal mt-0.5">
+                {subjectFullName}
+              </span>
+              {hasExisting && (
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-400 mt-1 py-0.5 px-1.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50">
+                  <span className="inline-block size-1.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+                  <span className="truncate">
+                    Đang có lịch test: {existingBooking?.testTime ? formatTestTimeWithDay(existingBooking.testTime) : 'Đã đặt lịch'}
+                  </span>
+                </div>
+              )}
+            </div>
+          ),
+          selectedLabel: (
+            <span className="truncate font-medium text-foreground text-xs">{p}</span>
+          ),
+        }
+      }),
     ],
-    []
+    [duplicateProgramsMap]
   )
 
   const levelOptions = useMemo(() => {
@@ -618,6 +715,12 @@ export function BookingTestCreateScreen() {
                 levelOptions={levelOptions}
                 schoolSelectOptions={schoolSelectOptions}
                 centerData={CENTER_DATA}
+                customerAddress={selectedContactObj?.address || leadInfo?.address}
+                duplicateBookings={Object.values(duplicateProgramsMap)}
+                onOpenDuplicateModal={(b) => {
+                  setDuplicateBooking(b)
+                  setDuplicateModalOpen(true)
+                }}
               />
 
               {/* 2. SECTION LỊCH VÀ KHUNG GIỜ TEST (1 SECTION DUY NHẤT) */}
@@ -708,6 +811,17 @@ export function BookingTestCreateScreen() {
         onOpenChange={setIsAddChildModalOpen}
         parentName={selectedContactObj?.name}
         onSubmit={handleAddChildSubmit}
+      />
+
+      {/* Modal 3: Cảnh báo học viên đã có lịch trải nghiệm cùng chương trình */}
+      <BookingTestDuplicateAlertModal
+        open={duplicateModalOpen}
+        onOpenChange={setDuplicateModalOpen}
+        booking={duplicateBooking}
+        onCloseAndReset={() => {
+          setProgram('')
+          setLevel('')
+        }}
       />
     </div>
   )

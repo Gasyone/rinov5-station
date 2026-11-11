@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Eye, Star, ExternalLink } from 'lucide-react'
+import { Eye, Star, ExternalLink, ClipboardCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -219,6 +219,12 @@ export function CalendarClassScheduleListTable({
                                 session.typeLabel !== 'Buổi dự án' && (
                                 <Badge className={cn("text-xs px-1.5 py-0 font-bold shrink-0 border", getStatusBadgeClass(session.type))}>
                                   {session.typeLabel}
+                                </Badge>
+                              )}
+                              {session.hasSemesterEvaluation && (
+                                <Badge className={cn("text-xs px-1.5 py-0 font-bold shrink-0 border gap-1", getStatusBadgeClass('test_session'))}>
+                                  <ClipboardCheck className="size-3" />
+                                  ĐG cuối kỳ
                                 </Badge>
                               )}
                             </div>
