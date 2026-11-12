@@ -31,77 +31,77 @@ export function MonthlyReportMetricsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+    <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
       {/* Card 1: Chuyên cần */}
-      <div className="bg-white rounded-xl sm:rounded-2xl box-shadow-report p-3 sm:p-3.5 border border-emerald-100 flex flex-col justify-between gap-2 transition-all hover:border-emerald-300">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-lg sm:text-xl font-bold text-emerald-700 leading-none">
+      <div className="bg-white rounded-xl sm:rounded-2xl box-shadow-report p-2 sm:p-3.5 border border-emerald-100 flex flex-col justify-between gap-1 sm:gap-2 transition-all hover:border-emerald-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 shrink-0" />
+            <div className="leading-tight">
+              <span className="text-sm sm:text-xl font-bold text-emerald-700 leading-none">
                 {metrics.attendanceRatio}
               </span>
-              <span className="text-xs text-slate-500 font-medium ml-1">buổi</span>
+              <span className="text-[10px] sm:text-xs text-slate-500 font-medium ml-0.5">buổi</span>
             </div>
           </div>
-          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+          <span className="text-[9.5px] sm:text-[11px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 self-start sm:self-auto truncate max-w-full">
             Muộn: {metrics.lateCount}
           </span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-emerald-800 text-[12px]">
+        <div className="flex items-center justify-between text-xs pt-0.5 sm:pt-0">
+          <span className="font-semibold text-emerald-800 text-[11px] sm:text-[12px] truncate">
             Chuyên cần
           </span>
         </div>
       </div>
 
       {/* Card 2: BTVN */}
-      <div className="bg-white rounded-xl sm:rounded-2xl box-shadow-report p-3 sm:p-3.5 border border-sky-100 flex flex-col justify-between gap-2 transition-all hover:border-sky-300">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-sky-600 shrink-0" />
-            <div>
-              <span className="text-lg sm:text-xl font-bold text-sky-700 leading-none">
+      <div className="bg-white rounded-xl sm:rounded-2xl box-shadow-report p-2 sm:p-3.5 border border-sky-100 flex flex-col justify-between gap-1 sm:gap-2 transition-all hover:border-sky-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-sky-600 shrink-0" />
+            <div className="leading-tight">
+              <span className="text-sm sm:text-xl font-bold text-sky-700 leading-none">
                 {metrics.homeworkRatio}
               </span>
-              <span className="text-xs text-slate-500 font-medium ml-1">bài</span>
+              <span className="text-[10px] sm:text-xs text-slate-500 font-medium ml-0.5">bài</span>
             </div>
           </div>
-          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">
-            Điểm TB: {metrics.homeworkAvg}
+          <span className="text-[9.5px] sm:text-[11px] font-medium px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 self-start sm:self-auto truncate max-w-full">
+            ĐTB: {metrics.homeworkAvg}
           </span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-sky-800 text-[12px]">
+        <div className="flex items-center justify-between text-xs pt-0.5 sm:pt-0">
+          <span className="font-semibold text-sky-800 text-[11px] sm:text-[12px] truncate">
             Bài tập về nhà
           </span>
         </div>
       </div>
 
       {/* Card 3: Điểm kiểm tra */}
-      <div className="bg-white rounded-xl sm:rounded-2xl box-shadow-report p-3 sm:p-3.5 border border-purple-100 flex flex-col justify-between gap-2 transition-all hover:border-purple-300">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-purple-600 shrink-0" />
-            <div>
-              <span className="text-lg sm:text-xl font-bold text-purple-700 leading-none">
+      <div className="bg-white rounded-xl sm:rounded-2xl box-shadow-report p-2 sm:p-3.5 border border-purple-100 flex flex-col justify-between gap-1 sm:gap-2 transition-all hover:border-purple-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Award className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 shrink-0" />
+            <div className="leading-tight">
+              <span className="text-sm sm:text-xl font-bold text-purple-700 leading-none">
                 {metrics.testScore}
               </span>
-              <span className="text-xs text-slate-500 font-medium ml-1">/ 10</span>
+              <span className="text-[10px] sm:text-xs text-slate-500 font-medium ml-0.5">/10</span>
             </div>
           </div>
-          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700">
-            Kỳ trước: {metrics.priorTestScore}
+          <span className="text-[9.5px] sm:text-[11px] font-medium px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 self-start sm:self-auto truncate max-w-full">
+            Trước: {metrics.priorTestScore}
           </span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-purple-800 text-[12px]">
-            Điểm kiểm tra
+        <div className="flex items-center justify-between text-xs pt-0.5 sm:pt-0">
+          <span className="font-semibold text-purple-800 text-[11px] sm:text-[12px] truncate">
+            Điểm thi
           </span>
           <button
             type="button"
             onClick={handleScrollToEvaluation}
-            className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-sky-600 hover:text-sky-700 hover:underline cursor-pointer transition-colors"
+            className="hidden sm:inline-flex items-center gap-0.5 text-[11px] font-semibold text-sky-600 hover:text-sky-700 hover:underline cursor-pointer transition-colors"
             title="Xem chi tiết nhận xét đánh giá"
           >
             <span>Nhận xét</span>

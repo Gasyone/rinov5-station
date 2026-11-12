@@ -141,7 +141,7 @@ export function MonthlyReportFooter() {
             </span>
           </div>
 
-          <div className="flex flex-col gap-6 items-center w-full max-w-[343px] mx-auto">
+          <div className="flex flex-col gap-6 items-center w-full max-w-full mx-auto">
             <div className="w-full">
               <p className="font-sans font-medium text-base leading-[1.25] text-[#333] text-left">
                 Học Toán và Tiếng Anh theo cách của tương lai
@@ -212,7 +212,7 @@ export function MonthlyReportFooter() {
                 </div>
 
                 {/* Địa chỉ Mobile */}
-                <div className="flex flex-col gap-2 w-full max-w-[343px]">
+                <div className="flex flex-col gap-2 w-full max-w-full">
                   <h3 className="font-sans font-semibold text-base leading-[1.25] text-[#222]">
                     Địa chỉ
                   </h3>

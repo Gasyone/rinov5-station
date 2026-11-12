@@ -46,24 +46,24 @@ export function MediaPreviewModal({
   return (
     <Dialog open={!!previewMedia} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="w-full sm:max-w-3xl lg:max-w-4xl max-w-[90vw] aspect-video max-h-[80vh] p-0 bg-transparent border-none text-white rounded-xl overflow-hidden z-[9999] shadow-2xl [&>button]:hidden flex items-center justify-center"
+        className="w-full sm:max-w-3xl lg:max-w-4xl max-w-[95vw] aspect-video max-h-[85vh] p-0 bg-transparent border-none text-white rounded-xl overflow-hidden z-[9999] shadow-2xl [&>button]:hidden flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Standard 16:9 Media Preview Frame */}
         <div className="relative w-full h-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-zinc-950 flex items-center justify-center border border-white/15 group">
           {/* Header Bar Overlay with Semi-Transparent Backdrop */}
-          <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-4 pb-8 z-20 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 min-w-0 pr-2">
-              <span className="shrink-0 px-2 py-0.5 rounded-md bg-white/20 text-xs font-bold tracking-wider uppercase text-white backdrop-blur-xs border border-white/10">
+          <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-3 sm:p-4 pb-6 sm:pb-8 z-20 flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 pr-1 sm:pr-2">
+              <span className="shrink-0 px-1.5 sm:px-2 py-0.5 rounded-md bg-white/20 text-[10px] sm:text-xs font-bold tracking-wider uppercase text-white backdrop-blur-xs border border-white/10">
                 {isVideo ? 'Video' : isDoc ? 'Tài liệu' : 'Ảnh'}
               </span>
-              <DialogTitle className="font-bold text-base truncate text-white drop-shadow-xs">
+              <DialogTitle className="font-bold text-sm sm:text-base truncate text-white drop-shadow-xs">
                 {previewMedia.name}
               </DialogTitle>
             </div>
 
             {/* Actions: Share Link, Download Link, Open Tab & Explicit Close "X" Button */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {isDoc && (
                 <button
                   type="button"
@@ -76,11 +76,11 @@ export function MediaPreviewModal({
                       toast.info(`Tài liệu "${previewMedia.name}" đang được tải về...`)
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-300 hover:text-white bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 transition-all shrink-0 cursor-pointer"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold text-sky-300 hover:text-white bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 transition-all shrink-0 cursor-pointer"
                   title="Mở trong tab mới"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  <span>Mở tab mới</span>
+                  <span className="hidden sm:inline">Mở tab</span>
                 </button>
               )}
 
@@ -93,11 +93,11 @@ export function MediaPreviewModal({
                   }
                   toast.success(`Đã sao chép liên kết tệp "${previewMedia.name}"!`)
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all shrink-0 cursor-pointer"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold text-zinc-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all shrink-0 cursor-pointer"
                 title="Chia sẻ / Sao chép link"
               >
                 <Share2 className="h-3.5 w-3.5 text-sky-400" />
-                <span>Chia sẻ link</span>
+                <span className="hidden sm:inline">Chia sẻ</span>
               </button>
 
               <a
@@ -105,7 +105,7 @@ export function MediaPreviewModal({
                 target="_blank"
                 rel="noreferrer"
                 download={previewMedia.name}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-300 hover:text-white bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 transition-all shrink-0 cursor-pointer"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold text-emerald-300 hover:text-white bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 transition-all shrink-0 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation()
                   toast.success(`Đang tải về: ${previewMedia.name}`)
@@ -113,16 +113,16 @@ export function MediaPreviewModal({
                 title="Tải về tệp gốc"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>Tải về tệp</span>
+                <span className="hidden sm:inline">Tải về</span>
               </a>
 
               <button
                 type="button"
                 onClick={onClose}
-                className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white flex items-center justify-center transition-colors border border-white/20 shrink-0 cursor-pointer"
+                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white flex items-center justify-center transition-colors border border-white/20 shrink-0 cursor-pointer"
                 title="Đóng cửa sổ"
               >
-                <X className="h-4 w-4 stroke-[2.5]" />
+                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5]" />
               </button>
             </div>
           </div>

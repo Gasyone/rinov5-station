@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { RichTextEditor } from '@/components/shared'
 import { renderRichText } from '@/lib/renderRichText'
 import type { LessonReviewContent } from './monthlyReportHelpers'
 
@@ -23,74 +24,51 @@ export interface LessonPlanSection {
 /**
  * Phân tích chuỗi text thô thành danh sách các section bài học riêng biệt.
  * Dòng đầu tiên của mỗi khối là tiêu đề bài học (e.g., "Buổi 1: Chủ đề Zoo Animals - Từ vựng & Phát âm").
- * Các dòng còn lại là nội dung chi tiết dạng soạn thảo thường.
+ * Các dòng còn lại là nội dung chi tiết dạng soạn thảo thường hoặc rich text.
  */
 export function deserializeLessonSections(raw?: string): LessonPlanSection[] {
   if (!raw || !raw.trim()) return []
 
+  // Ưu tiên tách theo mẫu tiêu đề buổi học (Buổi / Bài / Lesson X: ...)
+  const regex = /(?:^|\n)((?:Buổi|Bài|Lesson)\s+\d+[^:\n]*:?[^\n]*)/gi
+  const matches = Array.from(raw.matchAll(regex))
+
+  if (matches.length > 0) {
+    const results: LessonPlanSection[] = []
+    for (let m = 0; m < matches.length; m++) {
+      const titleMatch = matches[m][1].trim().replace(/^[-•*]\s*/, '')
+      const startIdx = matches[m].index! + matches[m][0].length
+      const endIdx = m < matches.length - 1 ? matches[m + 1].index! : raw.length
+      const contentStr = raw.slice(startIdx, endIdx).trim()
+      results.push({
+        id: `sec-${m}-${Date.now()}`,
+        title: titleMatch,
+        content: contentStr,
+      })
+    }
+    return results
+  }
+
+  // Fallback: tách theo 2 dòng trống
   const blocks = raw.trim().split(/\n\s*\n/)
-  const results: LessonPlanSection[] = []
-
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i].trim()
-    if (!block) continue
-
+  return blocks.map((block, i) => {
     const lines = block
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)
-    if (lines.length === 0) continue
-
-    const firstLine = lines[0]
-    const isTitle =
-      firstLine.toLowerCase().startsWith('buổi') ||
-      firstLine.toLowerCase().startsWith('bài') ||
-      firstLine.toLowerCase().startsWith('lesson') ||
-      (!firstLine.startsWith('-') && !firstLine.startsWith('•') && !firstLine.startsWith('*'))
-
-    if (isTitle && lines.length > 1) {
-      results.push({
+    if (lines.length > 1) {
+      return {
         id: `sec-${i}-${Date.now()}`,
-        title: firstLine.replace(/^[-•*]\s*/, ''),
+        title: lines[0].replace(/^[-•*]\s*/, ''),
         content: lines.slice(1).join('\n'),
-      })
-    } else if (isTitle && lines.length === 1) {
-      results.push({
-        id: `sec-${i}-${Date.now()}`,
-        title: firstLine.replace(/^[-•*]\s*/, ''),
-        content: '',
-      })
-    } else {
-      results.push({
-        id: `sec-${i}-${Date.now()}`,
-        title: `Buổi ${i + 1}`,
-        content: lines.join('\n'),
-      })
-    }
-  }
-
-  // Fallback: nếu các buổi không cách nhau bằng 2 dòng trống nhưng có từ khóa "Buổi" / "Bài"
-  if (results.length <= 1 && (raw.includes('Buổi ') || raw.includes('Bài '))) {
-    const regex = /(?:^|\n)((?:Buổi|Bài|Lesson)\s+\d+[^:\n]*:?[^\n]*)/gi
-    const matches = Array.from(raw.matchAll(regex))
-    if (matches.length > 1) {
-      const fallbackResults: LessonPlanSection[] = []
-      for (let m = 0; m < matches.length; m++) {
-        const titleMatch = matches[m][1].trim().replace(/^[-•*]\s*/, '')
-        const startIdx = matches[m].index! + matches[m][0].length
-        const endIdx = m < matches.length - 1 ? matches[m + 1].index! : raw.length
-        const contentStr = raw.slice(startIdx, endIdx).trim()
-        fallbackResults.push({
-          id: `sec-fb-${m}-${Date.now()}`,
-          title: titleMatch,
-          content: contentStr,
-        })
       }
-      if (fallbackResults.length > 0) return fallbackResults
     }
-  }
-
-  return results
+    return {
+      id: `sec-${i}-${Date.now()}`,
+      title: `Buổi ${i + 1}`,
+      content: lines[0] || '',
+    }
+  })
 }
 
 /**
@@ -348,7 +326,7 @@ export function MonthlyReportLessonPlanSectionEditor({
               {sections.map((sec, idx) => (
                 <div
                   key={sec.id || idx}
-                  className="py-2.5 first:pt-0.5 last:pb-0 space-y-1 group"
+                  className="py-3 first:pt-1 last:pb-1 space-y-2 group"
                 >
                   {/* Dòng tiêu đề buổi học & Nút xóa */}
                   <div className="flex items-center gap-1.5 justify-between">
@@ -371,13 +349,14 @@ export function MonthlyReportLessonPlanSectionEditor({
                     </Button>
                   </div>
 
-                  {/* Nội dung dạng soạn thảo thường, borderless */}
-                  <textarea
-                    rows={3}
+                  {/* Thanh công cụ biên tập Rich Text cho nội dung bài học */}
+                  <RichTextEditor
+                    rows={2}
+                    minHeight="min-h-[50px]"
                     value={sec.content}
-                    onChange={(e) => handleUpdateSection(idx, 'content', e.target.value)}
-                    placeholder="Nhập nội dung bài học chi tiết (dạng soạn thảo thường, gạch đầu dòng)..."
-                    className="w-full text-xs p-0 bg-transparent border-0 focus:outline-none focus:ring-0 leading-relaxed font-sans resize-y min-h-[50px] text-foreground/85 placeholder:text-muted-foreground/40"
+                    onChange={(newVal) => handleUpdateSection(idx, 'content', newVal)}
+                    placeholder="Nhập nội dung bài học chi tiết (dạng soạn thảo, gạch đầu dòng, tô màu, highlight)..."
+                    toolbarMode="full"
                   />
                 </div>
               ))}

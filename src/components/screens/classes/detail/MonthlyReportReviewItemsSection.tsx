@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { MediaPreviewModal, type MediaPreviewItem } from '@/components/shared'
+import { MediaPreviewModal, RichTextEditor, type MediaPreviewItem } from '@/components/shared'
 import { renderRichText } from '@/lib/renderRichText'
 import type { WeekReviewItem } from './monthlyReportHelpers'
 
@@ -254,7 +254,7 @@ export function MonthlyReportReviewItemsSection({
               return (
                 <div
                   key={idx}
-                  className="py-2.5 first:pt-0.5 last:pb-0 space-y-1 group"
+                  className="py-3 first:pt-1 last:pb-1 space-y-2 group"
                 >
                   {/* ── HÀNG TRÊN: TIÊU ĐỀ + ĐÍNH KÈM + NÚT XÓA ── */}
                   <div className="flex items-center gap-1.5 justify-between">
@@ -385,13 +385,14 @@ export function MonthlyReportReviewItemsSection({
                     </div>
                   )}
 
-                  {/* ── HÀNG DƯỚI: TEXTAREA MÔ TẢ NỘI DUNG PHẲNG (BORDERLESS) ── */}
-                  <textarea
+                  {/* ── HÀNG DƯỚI: THANH CÔNG CỤ BIÊN TẬP RICH TEXT CHO NỘI DUNG ÔN TẬP ── */}
+                  <RichTextEditor
                     rows={2}
+                    minHeight="min-h-[46px]"
                     value={item.content}
-                    onChange={(e) => handleUpdateItem(idx, { content: e.target.value })}
+                    onChange={(newVal) => handleUpdateItem(idx, { content: newVal })}
                     placeholder="Nhập chi tiết bài tập, câu mẫu, từ vựng hoặc chỉ dẫn con luyện tập..."
-                    className="w-full text-xs p-0 bg-transparent border-0 focus:outline-none focus:ring-0 leading-relaxed font-sans resize-y min-h-[46px] text-foreground/85 placeholder:text-muted-foreground/40"
+                    toolbarMode="full"
                   />
                 </div>
               )
