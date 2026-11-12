@@ -250,20 +250,20 @@ export function MonthlyReportLandingScreen({
           <MonthlyFeaturedVideoCard video={report.featuredVideo} />
         )}
 
-        {/* 3. SECTION A: ĐÁNH GIÁ QUÁ TRÌNH HỌC TẬP */}
+        {/* 3. SECTION A: ĐÁNH GIÁ QUÁ TRÌNH HỌC TẬP (MỨC TỐI THIỂU CHUẨN MOBILE) */}
         <div id="landing-section-a" className="bg-white rounded-2xl box-shadow-report p-3 sm:p-4.5 border border-slate-100/90 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#EA2D2D] to-[#F98A3A] text-white text-xs font-bold shadow-2xs">
+            <span className="flex h-5.5 w-5.5 items-center justify-center rounded-md bg-gradient-to-br from-[#EA2D2D] to-[#F98A3A] text-white text-xs font-bold shadow-2xs">
               A
             </span>
-            <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 tracking-tight">
+            <h3 className="text-[14px] sm:text-[15px] font-bold text-slate-900 tracking-tight">
               Đánh giá quá trình học tập {activeMonthConfig.current}
             </h3>
           </div>
 
           {/* 1. Nhận xét thái độ & thói quen học tập (Điểm nổi bật & Điểm cần lưu ý) */}
           <div className="space-y-2">
-            <h4 className="text-xs sm:text-[13px] font-semibold text-slate-800 flex items-center gap-1.5">
+            <h4 className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2D2D]" />
               1. Nhận xét thái độ & thói quen học tập
             </h4>
@@ -271,22 +271,22 @@ export function MonthlyReportLandingScreen({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
               {/* Thẻ Điểm nổi bật */}
               <div className="rounded-xl p-2.5 sm:p-3 border border-emerald-200/90 bg-emerald-50/40 shadow-3xs space-y-1">
-                <div className="flex items-center gap-1.5 text-emerald-800 font-semibold text-xs">
+                <div className="flex items-center gap-1.5 text-emerald-800 font-semibold text-[12px] sm:text-[12.5px]">
                   <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>Điểm nổi bật & cần phát huy</span>
                 </div>
-                <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
                   {renderRichText(highlightItem?.body || report.sectionA1Content)}
                 </div>
               </div>
 
               {/* Thẻ Điểm cần lưu ý */}
               <div className="rounded-xl p-2.5 sm:p-3 border border-amber-200/90 bg-amber-50/40 shadow-3xs space-y-1">
-                <div className="flex items-center gap-1.5 text-amber-800 font-semibold text-xs">
+                <div className="flex items-center gap-1.5 text-amber-800 font-semibold text-[12px] sm:text-[12.5px]">
                   <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                   <span>Điểm cần lưu ý & rèn luyện thêm</span>
                 </div>
-                <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
                   {renderRichText(
                     noteItem?.body ||
                       'Con tiếp tục duy trì nỗ lực học tập để đạt kết quả tốt nhất trong kỳ học tới.'
@@ -298,7 +298,7 @@ export function MonthlyReportLandingScreen({
 
           {/* 2. Nhận xét về năng lực & kết quả học tập chi tiết */}
           <div className="space-y-2 pt-0.5">
-            <h4 className="text-xs sm:text-[13px] font-semibold text-slate-800 flex items-center gap-1.5">
+            <h4 className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2D2D]" />
               2. Nhận xét về năng lực & kết quả học tập chi tiết
             </h4>
@@ -317,7 +317,7 @@ export function MonthlyReportLandingScreen({
                         : 'border-purple-200/90 bg-purple-50/40'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 text-xs sm:text-[12.5px] font-semibold">
+                    <div className="flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-semibold">
                       <span
                         className={`h-2 w-2 rounded-full shrink-0 ${
                           isVocab ? 'bg-sky-500' : 'bg-purple-500'
@@ -327,7 +327,7 @@ export function MonthlyReportLandingScreen({
                         {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
                       </span>
                     </div>
-                    <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal break-words">
+                    <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
                       {renderRichText(item.body)}
                     </div>
                   </div>
@@ -353,9 +353,9 @@ export function MonthlyReportLandingScreen({
           />
         )}
 
-        {/* 5. LỜI DẶN DÒ PHỤ HUYNH TỪ GIÁO VIÊN PHỤ TRÁCH */}
+        {/* 5. LỜI DẶN DÒ PHỤ HUYNH TỪ GIÁO VIÊN PHỤ TRÁCH (MỨC TỐI THIỂU CHUẨN MOBILE) */}
         <div className="rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50 p-3.5 sm:p-5 text-center space-y-1.5 box-shadow-report print:hidden">
-          <p className="text-xs sm:text-[13px] font-normal text-slate-700 leading-relaxed max-w-2xl mx-auto break-words">
+          <p className="text-[13px] sm:text-[13.5px] font-normal text-slate-700 leading-relaxed max-w-2xl mx-auto break-words">
             Con sẽ phát phiếu và tranh học của phần ôn luyện riêng vào buổi tới. Con luyện tập phiếu
             bài tập, sau đó dựa trên tranh ảnh trên phiếu, con sẽ chỉ tranh trên phiếu, đọc to.{' '}
             <br className="hidden md:inline" />

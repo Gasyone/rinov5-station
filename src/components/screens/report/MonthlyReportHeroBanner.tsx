@@ -42,7 +42,7 @@ export function MonthlyReportHeroBanner({
 
       {/* ── Nội dung chính căn giữa màn hình với độ tương phản cao, rõ nét ── */}
       <div className="max-w-3xl mx-auto text-center space-y-1.5 sm:space-y-2 relative">
-        <p className="text-[11px] sm:text-sm font-bold text-white/90 uppercase tracking-wider">
+        <p className="text-[11.5px] sm:text-xs font-bold text-white/90 uppercase tracking-wider">
           Báo cáo học tập định kỳ
         </p>
 
@@ -76,7 +76,7 @@ export function MonthlyReportHeroBanner({
         </div>
 
         {/* Thông tin Kỳ báo cáo & Giáo viên - Trên Mobile ngắt dòng tự nhiên, Desktop nối bằng dấu chấm tròn */}
-        <div className="text-xs sm:text-sm text-white/95 font-medium pt-0.5 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 leading-tight">
+        <div className="text-[12px] sm:text-xs text-white/95 font-medium pt-0.5 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 leading-tight">
           <span>
             Kỳ báo cáo: <span className="font-bold text-white">{dateStr}</span>
           </span>
