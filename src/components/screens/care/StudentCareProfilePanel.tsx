@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useSyncExternalStore } from 'react'
 import {
   Calendar,
   ShieldCheck,
@@ -31,6 +31,16 @@ export interface StudentCareProfilePanelProps {
   address?: string
 }
 
+const emptySubscribe = () => () => {}
+
+function useIsClient() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
+}
+
 export function StudentCareProfilePanel({
   student,
   className,
@@ -38,6 +48,7 @@ export function StudentCareProfilePanel({
   onUpdateNote,
   address: addressProp,
 }: StudentCareProfilePanelProps) {
+  const isClient = useIsClient()
   const [showCodes, setShowCodes] = useState(false)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [isParentsExpanded, setIsParentsExpanded] = useState(false)
@@ -161,7 +172,7 @@ export function StudentCareProfilePanel({
 
   // Nhận diện sinh nhật: Hôm nay, Ngày mai, hoặc Tháng theo ngày sinh học viên
   const bdayInfo = useMemo(() => {
-    if (!student.dob) return null
+    if (!isClient || !student.dob) return null
     let bMonth = -1
     let bDate = -1
 
@@ -218,7 +229,7 @@ export function StudentCareProfilePanel({
       }
     }
     return null
-  }, [student.dob])
+  }, [isClient, student.dob])
 
   const handleCopy = async (text: string, key: string, label: string) => {
     try {
@@ -296,8 +307,9 @@ export function StudentCareProfilePanel({
                   </span>
                 )}
                 {/* Nhãn sinh nhật: hôm nay / tháng này cạnh tên tiếng anh */}
-                {bdayInfo && (
+                {isClient && bdayInfo && (
                   <span
+                    suppressHydrationWarning
                     className={cn(
                       'inline-flex items-center gap-1 text-xs 2xl:text-[13px] font-normal shrink-0 leading-tight select-none',
                       bdayInfo.textColor
@@ -305,7 +317,7 @@ export function StudentCareProfilePanel({
                     title={bdayInfo.tooltip}
                   >
                     <Cake className={cn('h-3.5 w-3.5 2xl:h-4 2xl:w-4 shrink-0', bdayInfo.iconClass)} />
-                    <span>{bdayInfo.label}</span>
+                    <span suppressHydrationWarning>{bdayInfo.label}</span>
                   </span>
                 )}
               </div>

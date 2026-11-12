@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { X, Loader2, BookOpen, Pencil, Copy, Check, ExternalLink, Lock, Clock } from 'lucide-react'
+import { X, Pencil, Copy, Check, ExternalLink, Lock, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -13,12 +13,11 @@ import {
 import type { RosterStudent } from './classesDetailTypes'
 import { toast } from 'sonner'
 import { MonthlyReportReviewItemsSection } from './MonthlyReportReviewItemsSection'
+import { MonthlyReportLessonPlanSectionEditor } from './MonthlyReportLessonPlanSectionEditor'
 import { MonthlyAwardCriteriaPopover } from './MonthlyAwardCriteriaPopover'
 import { MonthlyReportAcademicSection } from './MonthlyReportAcademicSection'
 import type { StudentGalleryPhoto } from '@/mocks/studentPhotos'
 import {
-  getAiSynthesizedNextMonthPlan,
-  getDirectLessonPlanForRange,
   getLessonsReviewBySubject,
   WeekReviewItem,
   AWARD_BADGES,
@@ -110,17 +109,9 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   const [priorTestScore, setPriorTestScore] = useState<number | string | null>(() => initialReport?.priorTestScore !== undefined && initialReport?.priorTestScore !== null ? initialReport.priorTestScore : '00')
   const [testDocUrl, setTestDocUrl] = useState<string>(() => initialReport?.testDocUrl || '')
   const [testDocName, setTestDocName] = useState<string>(() => initialReport?.testDocName || '')
-  const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
   const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
   const [isEditing, setIsEditing] = useState(() => !initialReport)
   const editStatus = useMemo(() => getMonthlyReportEditStatus(selectedMonthKey), [selectedMonthKey])
-
-  const startLessonObj = activeLessons.find(
-    (l) => l.lessonNumber === sectionB2StartLesson
-  )
-  const endLessonObj = activeLessons.find(
-    (l) => l.lessonNumber === sectionB2EndLesson
-  )
 
   const studentMetrics = useMemo(() => {
     const alert = mockCareAlerts.find(
@@ -235,34 +226,11 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   // Step 1: Start lesson change
   const handleStartLessonChange = (startNum: number) => {
     setSectionB2StartLesson(startNum)
-    if (sectionB2EndLesson) {
-      const newB1Content = getDirectLessonPlanForRange(startNum, sectionB2EndLesson, isMath)
-      setSectionB1Content(newB1Content)
-    }
   }
 
   // Step 1: End lesson change
   const handleEndLessonChange = (endNum: number) => {
     setSectionB2EndLesson(endNum)
-    if (sectionB2StartLesson) {
-      const newB1Content = getDirectLessonPlanForRange(sectionB2StartLesson, endNum, isMath)
-      setSectionB1Content(newB1Content)
-    }
-  }
-
-  // Load sample lesson plan for Section 1
-  const handleLoadNextMonthPlan = () => {
-    if (!sectionB2StartLesson || !sectionB2EndLesson) {
-      toast.info('Vui lòng chọn bài bắt đầu và kết thúc!')
-      return
-    }
-    setIsSynthesizingAi(true)
-    setTimeout(() => {
-      setIsSynthesizingAi(false)
-      const synthesizedText = getAiSynthesizedNextMonthPlan(sectionB2StartLesson, sectionB2EndLesson, isMath)
-      setSectionB1Content(synthesizedText)
-      toast.success(`Đã nạp nội dung bài học tháng tới (Buổi ${sectionB2StartLesson} đến Buổi ${sectionB2EndLesson})!`)
-    }, 300)
   }
 
   const handleSave = () => {
@@ -507,90 +475,19 @@ export function ClassesStudentMonthlyReportOverlayPanel({
               B - KẾ HOẠCH HỌC TẬP CẢI THIỆN {activeMonthConfig.next.toUpperCase()}
             </h4>
 
-            {/* Sub-section 1: Nội dung bài học tháng tới (Ô 01) */}
-            <div className="space-y-2 pt-1">
-              <div className="flex items-center justify-between gap-2 pb-1">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5 shrink-0">
-                  1. Nội dung bài học tháng tới
-                </label>
-
-                {/* Step 1 & Step 2 Controls chỉ hiện khi isEditing */}
-                {isEditing && (
-                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                    <span className="text-xs font-bold text-muted-foreground shrink-0">Chọn bài:</span>
-                    <Select
-                      value={sectionB2StartLesson ? String(sectionB2StartLesson) : undefined}
-                      onValueChange={(v) => handleStartLessonChange(Number(v))}
-                    >
-                      <SelectTrigger
-                        className="h-7.5 text-xs font-semibold w-24 sm:w-28 max-w-[120px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
-                        title={startLessonObj ? `Buổi ${startLessonObj.lessonNumber}: ${startLessonObj.title}` : undefined}
-                      >
-                        <SelectValue placeholder="Chọn bài" />
-                      </SelectTrigger>
-                      <SelectContent className="max-w-[380px] w-[320px]">
-                        {activeLessons.map((l) => (
-                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs py-1.5 cursor-pointer">
-                            <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
-                              Buổi {l.lessonNumber}: {l.title}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <span className="text-xs font-bold text-muted-foreground shrink-0">→</span>
-
-                    <Select
-                      value={sectionB2EndLesson ? String(sectionB2EndLesson) : undefined}
-                      onValueChange={(v) => handleEndLessonChange(Number(v))}
-                    >
-                      <SelectTrigger
-                        className="h-7.5 text-xs font-semibold w-24 sm:w-28 max-w-[120px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
-                        title={endLessonObj ? `Buổi ${endLessonObj.lessonNumber}: ${endLessonObj.title}` : undefined}
-                      >
-                        <SelectValue placeholder="Chọn bài" />
-                      </SelectTrigger>
-                      <SelectContent className="max-w-[380px] w-[320px]">
-                        {activeLessons.map((l) => (
-                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs py-1.5 cursor-pointer">
-                            <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
-                              Buổi {l.lessonNumber}: {l.title}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {/* Load sample lesson content button */}
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleLoadNextMonthPlan}
-                      disabled={isSynthesizingAi}
-                      className="h-7.5 text-xs font-bold px-2 sm:px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1.5 shrink-0"
-                      title="Nạp nội dung khung chương trình cho các buổi học đã chọn"
-                    >
-                      {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <BookOpen className="h-3 w-3" />}
-                      <span>Thêm bài</span>
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {isEditing ? (
-                <textarea
-                  rows={6}
-                  value={sectionB1Content}
-                  onChange={(e) => setSectionB1Content(e.target.value)}
-                  placeholder="Nhập hoặc chọn bài học rồi bấm 'Thêm bài' để biên tập nội dung..."
-                  className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
-                />
-              ) : (
-                <div className="w-full text-sm p-3.5 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
-                  {sectionB1Content || <span className="italic text-muted-foreground/60">Chưa có kế hoạch.</span>}
-                </div>
-              )}
+            {/* Sub-section 1: Nội dung bài học tháng tới (Tách riêng từng bài thành section riêng) */}
+            <div className="pt-1">
+              <MonthlyReportLessonPlanSectionEditor
+                value={sectionB1Content}
+                onChange={(newContent) => setSectionB1Content(newContent)}
+                isEditing={isEditing}
+                activeLessons={activeLessons}
+                startLesson={sectionB2StartLesson}
+                endLesson={sectionB2EndLesson}
+                onStartLessonChange={handleStartLessonChange}
+                onEndLessonChange={handleEndLessonChange}
+                isMath={isMath}
+              />
             </div>
 
             {/* Sub-section 2: Nội dung ôn tập riêng */}

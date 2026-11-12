@@ -314,13 +314,13 @@ export function MonthlyReportLandingScreen({
                         : 'border-purple-200/90 bg-purple-50/30'
                     }`}
                   >
-                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-semibold text-slate-700">
+                    <div className="flex items-center gap-1.5 text-xs sm:text-[12.5px] font-semibold">
                       <span
-                        className={`h-2 w-2 rounded-full ${
+                        className={`h-2 w-2 rounded-full shrink-0 ${
                           isVocab ? 'bg-sky-500' : 'bg-purple-500'
                         }`}
                       />
-                      <span>
+                      <span className={isVocab ? 'text-sky-800' : 'text-purple-800'}>
                         {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
                       </span>
                     </div>

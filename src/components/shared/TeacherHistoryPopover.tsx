@@ -94,13 +94,6 @@ export function TeacherHistoryPopover({
                   {entry.phone && ` • ${entry.phone}`}
                 </span>
               </div>
-
-              {/* Cột phải: Nhãn Hiện tại viền thanh mảnh */}
-              <div className="shrink-0 flex items-center gap-1">
-                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40">
-                  Hiện tại
-                </span>
-              </div>
             </div>
           ))}
 

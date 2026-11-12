@@ -6,15 +6,12 @@ import {
   Copy,
   Pencil,
   Award,
-  GraduationCap,
   ClipboardCheck,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { StudentMonthlyReportDialog } from '../classes/detail/StudentMonthlyReportDialog'
 import type { RosterStudent } from '../classes/detail/classesDetailTypes'
 import {
@@ -252,18 +249,6 @@ export function MonthlyCommentsSection({
                     <span>{mc.month}</span>
                     <ExternalLink className="h-3 w-3 opacity-60 ml-0.5" />
                   </button>
-
-                  {/* Current Month Badge */}
-                  {(mc.isCurrent !== undefined ? mc.isCurrent : idx === 0) && (
-                    <span
-                      className={cn(
-                        'text-[10.5px] 2xl:text-[11.5px] font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
-                        getStatusBadgeClass('current')
-                      )}
-                    >
-                      Hiện tại
-                    </span>
-                  )}
 
                   {/* Draft Badge if report is empty */}
                   {!mc.sectionA1Content && !mc.sectionAContent && (

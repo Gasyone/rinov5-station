@@ -29,7 +29,7 @@ export function CareModalClassFilter({
   const displayLabel = selectedClassId === 'all'
     ? `Tất cả các lớp (${classList.length})`
     : selectedClass
-      ? `${selectedClass.isCurrentClass ? '[Hiện tại] ' : '[Lớp cũ] '}${selectedClass.classCode || selectedClass.className}`
+      ? `${!selectedClass.isCurrentClass ? '[Lớp cũ] ' : ''}${selectedClass.classCode || selectedClass.className}`
       : 'Chọn lớp'
 
   return (
@@ -98,12 +98,11 @@ export function CareModalClassFilter({
               >
                 <div className="min-w-0 pr-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={cn(
-                      "text-xs px-1 py-0.2 rounded font-semibold",
-                      cls.isCurrentClass ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-muted text-muted-foreground"
-                    )}>
-                      {cls.isCurrentClass ? 'Hiện tại' : 'Lớp cũ'}
-                    </span>
+                    {!cls.isCurrentClass && (
+                      <span className="text-xs px-1 py-0.2 rounded font-semibold bg-muted text-muted-foreground">
+                        Lớp cũ
+                      </span>
+                    )}
                     <span className="font-semibold truncate">{cls.className}</span>
                   </div>
                   <div className="text-xs text-muted-foreground font-mono mt-0.5">
