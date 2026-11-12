@@ -1,31 +1,32 @@
 'use client'
 
-import { Plus } from 'lucide-react'
+import { Plus, Cake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   BranchSelect,
   ExpandableSearch,
-  FilterIconButton,
+  SegmentedControl,
 } from '@/components/controls'
-import { StatusTiles, type StatusTile } from '@/components/shared'
 import type { Contact } from '@/mocks/contacts'
 import {
-  CONTACT_STATUS_TABS,
-  type ContactStatusFilter,
+  CONTACT_ROLE_TABS,
+  type ContactBirthdayFilter,
+  type ContactRoleFilter,
 } from './contactsTypes'
-import { countContactsByStatus } from './contactsHelpers'
+import { countBirthdayThisMonth, countContactsByRole } from './contactsHelpers'
+import { cn } from '@/lib/utils'
 
 interface ContactsToolbarProps {
   contacts: Contact[]
   branches: string[]
   activeBranch: string
-  activeStatus: ContactStatusFilter
+  activeRole: ContactRoleFilter
+  activeBirthday: ContactBirthdayFilter
   searchTerm: string
-  activeFilterCount: number
   onBranchChange: (branch: string) => void
-  onStatusChange: (status: ContactStatusFilter) => void
+  onRoleChange: (role: ContactRoleFilter) => void
+  onBirthdayChange: (birthday: ContactBirthdayFilter) => void
   onSearchChange: (value: string) => void
-  onOpenFilters: () => void
   onCreate: () => void
 }
 
@@ -33,53 +34,80 @@ export function ContactsToolbar({
   contacts,
   branches,
   activeBranch,
-  activeStatus,
+  activeRole,
+  activeBirthday,
   searchTerm,
-  activeFilterCount,
   onBranchChange,
-  onStatusChange,
+  onRoleChange,
+  onBirthdayChange,
   onSearchChange,
-  onOpenFilters,
   onCreate,
 }: ContactsToolbarProps) {
-  const tiles: StatusTile<ContactStatusFilter>[] = CONTACT_STATUS_TABS.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    count: countContactsByStatus(contacts, tab.id),
-    status: tab.status,
-    semantic: tab.id === 'all' ? 'neutral' : undefined,
+  const roleOptions = CONTACT_ROLE_TABS.map((tab) => ({
+    value: tab.id,
+    label: `${tab.label} (${countContactsByRole(contacts, tab.id)})`,
   }))
 
-  return (
-    <div className="flex shrink-0 items-center justify-between gap-4 bg-background px-3 py-3 lg:px-3">
-      <div className="flex-1 overflow-x-auto min-w-0">
-        <StatusTiles
-          tiles={tiles}
-          activeId={activeStatus}
-          onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
-        />
-      </div>
+  const birthdayMonthCount = countBirthdayThisMonth(contacts)
 
-      <div className="flex shrink-0 items-center gap-2">
+  return (
+    <div className="flex shrink-0 items-center justify-between gap-3 bg-background px-3 py-2.5 border-b border-border/60">
+      {/* Trái: Chọn vai trò + Lọc Cơ sở (BranchSelect) + Lọc sinh nhật trong tháng */}
+      <div className="flex flex-wrap items-center gap-2">
+        <SegmentedControl
+          options={roleOptions}
+          value={activeRole}
+          onValueChange={(val) => onRoleChange(val as ContactRoleFilter)}
+        />
+
         <BranchSelect
           value={activeBranch}
           branches={branches}
-          allLabel="All branches"
-          ariaLabel="Branch"
+          allLabel="Tất cả cơ sở"
+          placeholder="Chọn cơ sở"
+          ariaLabel="Cơ sở"
           onValueChange={onBranchChange}
-          className="h-9 min-w-40 text-sm"
+          className="h-8 min-w-36 text-xs"
         />
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            onBirthdayChange(activeBirthday === 'this_month' ? 'all' : 'this_month')
+          }
+          className={cn(
+            'h-8 gap-1.5 px-2.5 text-xs font-normal border transition-colors cursor-pointer',
+            activeBirthday === 'this_month'
+              ? 'border-pink-400 bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-800'
+              : 'border-border/70 hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <Cake
+            className={cn(
+              'h-3.5 w-3.5',
+              activeBirthday === 'this_month'
+                ? 'text-pink-500 fill-pink-500/20'
+                : 'text-muted-foreground'
+            )}
+          />
+          <span>Sinh nhật tháng này ({birthdayMonthCount})</span>
+        </Button>
+      </div>
+
+      {/* Phải: Tìm kiếm & Thêm mới */}
+      <div className="flex items-center gap-2">
         <ExpandableSearch
           value={searchTerm}
           onValueChange={onSearchChange}
-          label="Search contacts"
-          placeholder="Search name, phone, interest..."
-          inputClassName="sm:w-72"
+          label="Tìm kiếm danh bạ"
+          placeholder="Tìm tên, SĐT, người liên kết..."
+          inputClassName="sm:w-64 text-xs h-8"
         />
-        <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
-        <Button size="sm" onClick={onCreate}>
-          <Plus className="h-4 w-4" />
-          Add contact
+        <Button size="sm" onClick={onCreate} className="h-8 gap-1 px-2.5 text-xs font-medium cursor-pointer">
+          <Plus className="h-3.5 w-3.5" />
+          <span>Thêm liên hệ</span>
         </Button>
       </div>
     </div>

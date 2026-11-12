@@ -52,4 +52,5 @@ export { StudentProfileHoverCard, type StudentProfileItem, type StudentProfileHo
 export { MediaPreviewModal, type MediaPreviewItem, type MediaPreviewModalProps, type TaggedStudentItem } from './MediaPreviewModal'
 export { HistoricalPackagesPopover, type HistoricalPackageItem, type HistoricalPackagesPopoverProps } from './HistoricalPackagesPopover'
 export { CenterProfileHoverCard, type CenterProfileHoverCardProps, type CenterProfileData, getCenterProfile } from './CenterProfileHoverCard'
+export { RichTextEditor, type RichTextEditorProps } from './RichTextEditor'
 

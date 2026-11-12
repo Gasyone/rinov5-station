@@ -148,6 +148,7 @@ export function MediaPreviewModal({
                 style={{ backgroundImage: `url(${highResUrl || previewMedia.url})` }}
                 aria-hidden="true"
               />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={highResUrl || previewMedia.url}
                 alt={previewMedia.name}
@@ -196,42 +197,39 @@ export function MediaPreviewModal({
             </div>
           )}
 
-          {/* Floating Footer Overlay for Tagged Students or Class Badge */}
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3.5 px-4 pt-8 z-20 flex items-center justify-between gap-2 pointer-events-none">
-            {/* Left: Video duration if available */}
-            {isVideo && previewMedia.duration ? (
-              <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-xs font-mono text-zinc-300 border border-white/20">
-                Thời lượng: {previewMedia.duration}
-              </span>
-            ) : <span />}
+          {/* Floating Footer Overlay for Tagged Students or Video Duration */}
+          {((taggedStudents && taggedStudents.length > 0) || (isVideo && previewMedia.duration)) && (
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3.5 px-4 pt-8 z-20 flex items-center justify-between gap-2 pointer-events-none">
+              {/* Left: Video duration if available */}
+              {isVideo && previewMedia.duration ? (
+                <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-xs font-mono text-zinc-300 border border-white/20">
+                  Thời lượng: {previewMedia.duration}
+                </span>
+              ) : <span />}
 
-            {/* Right: Tagged Students / Class-wide Badge */}
-            <div className="pointer-events-auto">
-              {taggedStudents && taggedStudents.length > 0 ? (
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
-                  {taggedStudents.map((st, i) => (
-                    <div
-                      key={st.id || i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-xs font-semibold text-white border border-white/25 shrink-0 shadow-xs"
-                    >
-                      <AppAvatar
-                        name={st.name}
-                        src={st.avatar}
-                        size="xs"
-                        className="h-4 w-4 ring-1 ring-white/50 shrink-0"
-                      />
-                      <span className="truncate max-w-[130px] text-white text-xs">{st.name}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-medium text-white border border-white/20 shadow-xs">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Dành cho cả lớp</span>
-                </div>
-              )}
+              {/* Right: Tagged Students */}
+              <div className="pointer-events-auto">
+                {taggedStudents && taggedStudents.length > 0 && (
+                  <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+                    {taggedStudents.map((st, i) => (
+                      <div
+                        key={st.id || i}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-xs font-semibold text-white border border-white/25 shrink-0 shadow-xs"
+                      >
+                        <AppAvatar
+                          name={st.name}
+                          src={st.avatar}
+                          size="xs"
+                          className="h-4 w-4 ring-1 ring-white/50 shrink-0"
+                        />
+                        <span className="truncate max-w-[130px] text-white text-xs">{st.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

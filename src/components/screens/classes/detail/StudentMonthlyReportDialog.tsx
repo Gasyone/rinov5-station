@@ -370,8 +370,8 @@ Link xem chi tiết: ${getLandingPageUrl()}`
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          'max-w-[96vw] max-h-[88vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border bg-background shadow-2xl transition-all',
-          students.length > 1 ? 'lg:max-w-[1060px]' : 'lg:max-w-[920px]'
+          'max-w-[96vw] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border bg-background shadow-2xl transition-all',
+          students.length > 1 ? 'lg:max-w-[1180px] xl:max-w-[1260px]' : 'lg:max-w-[1040px] xl:max-w-[1120px]'
         )}
       >
         {/* Top Header Bar: Gọn gàng, giảm chiều cao, phân cấp nút rõ ràng */}
@@ -492,10 +492,10 @@ Link xem chi tiết: ${getLandingPageUrl()}`
                 }}
               />
 
-              {/* SECTION A: BÁO CÁO HỌC TẬP (CÓ VIỀN RIÊNG) */}
+              {/* SECTION A: BÁO CÁO HỌC TẬP (BỎ VIỀN NGOÀI CÙNG) */}
               <div
                 id="monthly-report-evaluation-section"
-                className="rounded-xl border border-border/80 bg-card p-2.5 sm:p-3 space-y-2 shadow-3xs scroll-mt-2"
+                className="space-y-2 scroll-mt-2"
               >
                 <MonthlyReportAcademicSection
                   isEditing={isEditing}
@@ -526,8 +526,8 @@ Link xem chi tiết: ${getLandingPageUrl()}`
                 />
               </div>
 
-              {/* SECTION B: KẾ HOẠCH HỌC TẬP CẢI THIỆN (CÓ VIỀN RIÊNG) */}
-              <div className="rounded-xl border border-border/80 bg-card p-2.5 sm:p-3 space-y-2.5 shadow-3xs">
+              {/* SECTION B: KẾ HOẠCH HỌC TẬP CẢI THIỆN (BỎ VIỀN NGOÀI CÙNG) */}
+              <div className="space-y-2.5 pt-2 border-t border-border/60">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs sm:text-sm font-semibold text-foreground">
                     B. Kế hoạch học tập cải thiện {activeMonthConfig.next}

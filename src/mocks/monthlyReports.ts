@@ -91,59 +91,59 @@ export const DEFAULT_SECTION_B2_WEEKS: WeekReviewItem[] = [
   {
     weekNum: 1,
     title: 'Tuần 1',
-    content: 'Luyện phiếu bài tập với từ vựng “see” và “hear”. Sau đó con sẽ thực hiện luyện tập mẫu câu “I see with my eyes” và “I hear with my ears”.',
+    content: 'Luyện phiếu bài tập với từ vựng <span style="color:#0284C7">“see”</span> và <span style="color:#0284C7">“hear”</span>. Sau đó con thực hành luyện mẫu câu: <span style="color:#9333EA">“I see with my eyes”</span> và <span style="color:#9333EA">“I hear with my ears”</span>.',
     docLink: 'https://drive.google.com/file/d/1AOasROm35C5mZk1bgoxmJunmf4GdYAh5/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400&auto=format&fit=crop',
   },
   {
     weekNum: 2,
     title: 'Tuần 2',
-    content: 'Luyện phiếu bài tập Letter T với từ vựng tiger và tent. Luyện nói mẫu câu “I can see a tiger.” và “ I can see a tent.”',
+    content: 'Luyện phiếu bài tập Letter T với từ vựng <span style="color:#0284C7">tiger</span> và <span style="color:#0284C7">tent</span>. Luyện nói mẫu câu: <span style="color:#9333EA">“I can see a tiger.”</span> và <span style="color:#9333EA">“I can see a tent.”</span>',
     docLink: 'https://drive.google.com/file/d/14oxsjCpMEL2NCsLlamNOpvVkVi6Q_Smq/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=400&auto=format&fit=crop',
   },
   {
     weekNum: 3,
     title: 'Tuần 3',
-    content: 'Luyện tập thuyết trình với mẫu câu “I see/hear/smell/touch with my ….” với tranh đính kèm.',
+    content: 'Luyện tập thuyết trình với mẫu câu <span style="color:#9333EA">“I see/hear/smell/touch with my …”</span> theo tranh đính kèm.',
     docLink: 'https://drive.google.com/file/d/1AOasROm35C5mZk1bgoxmJunmf4GdYAh5/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=400&auto=format&fit=crop',
   },
   {
     weekNum: 4,
     title: 'Tuần 4',
-    content: 'Luyện tập thuyết trình với letter Tt tại tranh sau, sử dụng mẫu câu “I can see a … . It’s + color”.',
+    content: 'Luyện tập thuyết trình Letter Tt, sử dụng mẫu câu <span style="color:#9333EA">“I can see a … . It’s + color”</span>.',
     docLink: 'https://drive.google.com/file/d/14oxsjCpMEL2NCsLlamNOpvVkVi6Q_Smq/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&auto=format&fit=crop',
   },
 ]
 
-export const DEFAULT_SECTION_A1_TEXT = `Điểm nổi bật: Con có thái độ học tập tích cực và hợp tác tốt trong lớp. Khi đã hiểu yêu cầu, con vẫn cố gắng hoàn thành task và theo kịp hoạt động của lớp. Con có xu hướng quan sát khá kỹ trước khi tham gia, cho thấy con học theo hướng cẩn thận và muốn làm đúng trước khi trả lời. 
+export const DEFAULT_SECTION_A1_TEXT = `Điểm nổi bật: Con có <span style="color:#16A34A">thái độ học tập rất tích cực</span> và hợp tác tốt trong lớp. Khi đã hiểu yêu cầu, con luôn nỗ lực hoàn thành bài, học tập cẩn thận và có <mark style="background-color:#DCFCE7">tinh thần tự giác cao</mark>.
 
-Điểm cần lưu ý: Hiện tại tốc độ phản xạ lại câu hỏi và tham gia hoạt động của con còn chậm hơn so với nhịp chung của lớp, đặc biệt ở các hoạt động luyện tập hội thoại. Con khá sợ nói sai và ngại trả lời dù đã biết đáp án. Qua quan sát, cô nhận thấy con có tâm lý sợ bị chú ý và thiếu tự tin khi bị nhận xét góp ý, nên thường chọn im lặng để tránh sai thay vì thử trả lời. Điều này khiến khả năng phản xạ ngôn ngữ của con chưa phát huy hết khả năng thật sự.`
+Điểm cần lưu ý: Tốc độ phản xạ hội thoại còn <span style="color:#D97706">hơi chậm</span> so với lớp. Con khá ngại nói sai dù đã biết đáp án. Cô sẽ tiếp tục đồng hành để con <mark style="background-color:#FEF08A">tự tin, dạn dĩ hơn</mark>.`
 
-export const DEFAULT_SECTION_A2_TEXT = `Từ vựng & Phonics: Con nhớ khá tốt các từ vựng: touch, smell và Letter U: umbrella, up. Tuy nhiên con vẫn còn nhầm lẫn các từ see, hear và chưa nhớ chắc Letter T: tiger, tent.
+export const DEFAULT_SECTION_A2_TEXT = `Từ vựng & Phonics: Con nhớ tốt từ vựng <span style="color:#0284C7">touch, smell</span> và Letter U: umbrella, up. Tuy nhiên con vẫn còn nhầm lẫn từ <span style="color:#EF4444">see, hear</span> và Letter T: tiger, tent.
 
-Cấu trúc & Mẫu câu: Con hiện chưa phản xạ được mẫu câu I see with my … và vẫn cần cô nhắc lại nhiều lần trước khi có thể sử dụng đúng cấu trúc.`
+Cấu trúc & Mẫu câu: Con luyện tốt các mẫu câu hỏi đáp, đang rèn thêm phản xạ với câu <span style="color:#9333EA">"I see with my..."</span>.`
 
 export const DEFAULT_SECTION_B1_TEXT = `Buổi 1: Chủ đề Zoo Animals - Từ vựng & Phát âm
-- Học từ vựng về động vật: bears, elephants, giraffes, lions
-- Luyện mẫu câu tương tác: Do you like bears? - Yes, I do / No, I don't
-- Học phát âm âm Vv với các từ: violin, vase
+- Học từ vựng động vật: <span style="color:#0284C7">bears, elephants, giraffes, lions</span>
+- Mẫu câu tương tác: <span style="color:#9333EA">Do you like bears? - Yes, I do / No, I don't</span>
+- Học phát âm âm Vv với: <span style="color:#16A34A">violin, vase</span>
 
 Buổi 2: Chủ đề Fun Shapes - Hình khối & Hội thoại
-- Học từ vựng về hình khối: circle, square, star, triangle
-- Luyện mẫu câu hỏi đáp: What shape is it? - It's a star
-- Học phát âm âm Ww với các từ: watch, window
+- Học từ vựng hình khối: <span style="color:#0284C7">circle, square, star, triangle</span>
+- Mẫu câu hỏi đáp: <span style="color:#9333EA">What shape is it? - It's a star</span>
+- Học phát âm âm Ww với: <span style="color:#16A34A">watch, window</span>
 
 Buổi 3: Đọc truyện ngắn & Hoạt động vận động CLIL
-- Đọc truyện ngắn và luyện hội thoại: How old are you?, This is for you
-- Tham gia hoạt động CLIL: vận động với climb, stomp và ôn số đếm
+- Đọc truyện ngắn & luyện hội thoại: <span style="color:#9333EA">How old are you?, This is for you</span>
+- Tham gia hoạt động CLIL: <span style="color:#D97706">vận động với climb, stomp</span> và ôn số đếm
 
 Buổi 4: Mini Project & Ôn tập tổng hợp
-- Học phát âm âm Xx với các từ: box, fox
+- Học phát âm âm Xx với các từ: <span style="color:#16A34A">box, fox</span>
 - Làm mini project: làm mặt nạ động vật và làm búp bê
-- Luyện nói và thuyết trình giới thiệu sản phẩm trước lớp`
+- <mark style="background-color:#DCFCE7">Luyện nói và thuyết trình</mark> giới thiệu sản phẩm trước lớp`
 
 // Base realistic seed reports for demonstration
 function createSeedReport(

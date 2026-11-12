@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import { Trash2, BookOpen, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -12,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { renderRichText } from '@/lib/renderRichText'
 import type { LessonReviewContent } from './monthlyReportHelpers'
 
 export interface LessonPlanSection {
@@ -331,9 +331,9 @@ export function MonthlyReportLessonPlanSectionEditor({
         )}
       </div>
 
-      {/* Danh sách các Section bài học riêng biệt */}
+      {/* Danh sách các Section bài học riêng biệt dạng tài liệu phẳng (Borderless / Notion-style) */}
       {isEditing ? (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {sections.length === 0 ? (
             <div className="p-3 text-center rounded-lg border border-dashed border-border/70 bg-muted/5 space-y-1">
               <p className="text-xs text-muted-foreground">
@@ -344,39 +344,40 @@ export function MonthlyReportLessonPlanSectionEditor({
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="rounded-xl border border-border/80 bg-muted/15 p-2.5 sm:p-3 divide-y divide-border/60 shadow-3xs">
               {sections.map((sec, idx) => (
                 <div
                   key={sec.id || idx}
-                  className="rounded-lg border border-border/80 bg-background/60 p-2 sm:p-2.5 space-y-1.5 shadow-3xs"
+                  className="py-2.5 first:pt-0.5 last:pb-0 space-y-1 group"
                 >
                   {/* Dòng tiêu đề buổi học & Nút xóa */}
                   <div className="flex items-center gap-1.5 justify-between">
-                    <Input
+                    <input
+                      type="text"
                       value={sec.title}
                       onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
                       placeholder="Tiêu đề buổi học (VD: Buổi 1: Chủ đề Zoo Animals - Từ vựng & Phát âm)"
-                      className="h-7 text-xs font-semibold bg-background px-2 py-0 border-border/80 text-amber-800 dark:text-amber-500 flex-1 shadow-none"
+                      className="text-xs sm:text-[13px] font-semibold text-amber-800 dark:text-amber-500 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 flex-1 min-w-0 placeholder:text-muted-foreground/40 placeholder:font-normal"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveSection(idx)}
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
+                      className="h-6 w-6 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer transition-colors"
                       title="Xóa buổi này khỏi kế hoạch"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
 
-                  {/* Nội dung dạng soạn thảo thường */}
+                  {/* Nội dung dạng soạn thảo thường, borderless */}
                   <textarea
                     rows={3}
                     value={sec.content}
                     onChange={(e) => handleUpdateSection(idx, 'content', e.target.value)}
                     placeholder="Nhập nội dung bài học chi tiết (dạng soạn thảo thường, gạch đầu dòng)..."
-                    className="w-full text-xs p-2 rounded-md border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y min-h-[56px]"
+                    className="w-full text-xs p-0 bg-transparent border-0 focus:outline-none focus:ring-0 leading-relaxed font-sans resize-y min-h-[50px] text-foreground/85 placeholder:text-muted-foreground/40"
                   />
                 </div>
               ))}
@@ -384,24 +385,24 @@ export function MonthlyReportLessonPlanSectionEditor({
           )}
         </div>
       ) : (
-        /* Chế độ xem (readOnly) - hiển thị từng section riêng biệt đồng bộ với bản web */
-        <div className="space-y-1.5">
+        /* Chế độ xem (readOnly) - hiển thị từng section phẳng với viền ngoài cùng và đường line */
+        <div className="rounded-xl border border-border/70 bg-muted/15 p-2.5 sm:p-3 divide-y divide-border/50 shadow-3xs">
           {sections.length > 0 ? (
             sections.map((sec, idx) => (
               <div
                 key={sec.id || idx}
-                className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-2 space-y-1"
+                className="py-2 first:pt-0.5 last:pb-0 space-y-0.5"
               >
-                <h5 className="font-bold text-xs text-amber-800 dark:text-amber-500 leading-snug">
+                <h5 className="font-semibold text-xs sm:text-[13px] text-amber-800 dark:text-amber-500 leading-snug">
                   {sec.title}
                 </h5>
-                <p className="text-xs text-foreground/85 leading-relaxed font-sans whitespace-pre-line">
-                  {sec.content}
-                </p>
+                <div className="text-xs text-foreground/85 leading-relaxed font-sans">
+                  {renderRichText(sec.content)}
+                </div>
               </div>
             ))
           ) : (
-            <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-muted-foreground/60 italic font-sans">
+            <div className="text-xs text-muted-foreground/60 italic font-sans py-1">
               Chưa có nội dung bài học tháng tới.
             </div>
           )}

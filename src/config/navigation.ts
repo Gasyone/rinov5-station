@@ -7,6 +7,7 @@ import {
   Settings,
   TrendingUp,
   Package,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -72,6 +73,17 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
+    id: 'group_directory',
+    label: 'Danh bạ',
+    icon: UsersRound,
+    items: [
+      { id: 'contacts', label: 'Liên hệ', href: '/app/contacts' },
+      { id: 'organizations', label: 'Tổ chức', href: '/app/organizations' },
+      { id: 'hr_employees', label: 'Danh bạ nội bộ', href: '/app/hr_employees' },
+      { id: 'suppliers', label: 'Nhà cung cấp', href: '/app/suppliers' },
+    ],
+  },
+  {
     id: 'group_products_programs',
     label: 'Sản phẩm & Chương trình',
     icon: Package,
@@ -130,7 +142,6 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Cấu hình Hệ thống',
     icon: Settings,
     items: [
-      { id: 'system_config', label: 'Cấu hình hệ thống', href: '/app/system_config' },
       { id: 'lead_lifecycle_config', label: 'Cấu hình Phễu & Kho Lead', href: '/app/lead_lifecycle_config' },
       { id: 'care_conditions_config', label: 'Danh mục chăm sóc', href: '/app/care_conditions_config' },
       { id: 'permissions', label: 'Nhóm quyền', href: '/app/permissions' },

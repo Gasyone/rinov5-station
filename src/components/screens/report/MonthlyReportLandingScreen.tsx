@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { Sparkles, Lightbulb } from 'lucide-react'
+import { renderRichText } from '@/lib/renderRichText'
 import { MonthlyReportSectionB } from './MonthlyReportSectionB'
 import { parseEvaluationContent } from '../classes/detail/FormattedEvaluationContent'
 import { StudentPhotoGallerySection } from './StudentPhotoGallerySection'
@@ -274,9 +275,9 @@ export function MonthlyReportLandingScreen({
                   <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>Điểm nổi bật & cần phát huy</span>
                 </div>
-                <p className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal whitespace-pre-line">
-                  {highlightItem?.body || report.sectionA1Content}
-                </p>
+                <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal">
+                  {renderRichText(highlightItem?.body || report.sectionA1Content)}
+                </div>
               </div>
 
               {/* Thẻ Điểm cần lưu ý */}
@@ -285,10 +286,12 @@ export function MonthlyReportLandingScreen({
                   <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                   <span>Điểm cần lưu ý & rèn luyện thêm</span>
                 </div>
-                <p className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal whitespace-pre-line">
-                  {noteItem?.body ||
-                    'Con tiếp tục duy trì nỗ lực học tập để đạt kết quả tốt nhất trong kỳ học tới.'}
-                </p>
+                <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal">
+                  {renderRichText(
+                    noteItem?.body ||
+                      'Con tiếp tục duy trì nỗ lực học tập để đạt kết quả tốt nhất trong kỳ học tới.'
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -300,7 +303,7 @@ export function MonthlyReportLandingScreen({
               2. Nhận xét về năng lực & kết quả học tập chi tiết
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {academicItems.map((item, idx) => {
                 const isVocab =
                   item.label.toLowerCase().includes('từ vựng') ||
@@ -308,10 +311,10 @@ export function MonthlyReportLandingScreen({
                 return (
                   <div
                     key={idx}
-                    className={`rounded-xl p-3 border shadow-3xs space-y-1 ${
+                    className={`rounded-xl p-3 sm:p-3.5 border shadow-3xs space-y-1.5 ${
                       isVocab
-                        ? 'border-sky-200/90 bg-sky-50/30'
-                        : 'border-purple-200/90 bg-purple-50/30'
+                        ? 'border-sky-200/90 bg-sky-50/40'
+                        : 'border-purple-200/90 bg-purple-50/40'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 text-xs sm:text-[12.5px] font-semibold">
@@ -324,9 +327,9 @@ export function MonthlyReportLandingScreen({
                         {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
                       </span>
                     </div>
-                    <p className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal whitespace-pre-line">
-                      {item.body}
-                    </p>
+                    <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal">
+                      {renderRichText(item.body)}
+                    </div>
                   </div>
                 )
               })}

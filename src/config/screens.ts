@@ -97,9 +97,25 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Quản lý Học viên',
     description: 'Hồ sơ học viên 360°, thông tin cá nhân, học lực, điểm danh và lịch sử đào tạo',
   },
+  contacts: {
+    label: 'Liên hệ',
+    description: 'Danh bạ cá nhân chi tiết bao gồm Phụ huynh và Học viên',
+  },
+  organizations: {
+    label: 'Tổ chức',
+    description: 'Quản lý Hộ gia đình và các Tổ chức / Doanh nghiệp đối tác, liên kết đào tạo',
+  },
   mdm_households: {
-    label: 'Quản lý Khách hàng & Hộ gia đình',
-    description: 'Quản lý danh sách Hộ gia đình, thông tin Phụ huynh (Bố, Mẹ), liên kết các con và công nợ gia đình',
+    label: 'Tổ chức',
+    description: 'Quản lý Hộ gia đình và các Tổ chức / Doanh nghiệp đối tác, liên kết đào tạo',
+  },
+  hr_employees: {
+    label: 'Danh bạ nội bộ',
+    description: 'Danh bạ tra cứu liên hệ cán bộ nhân viên, giáo viên và các phòng ban trung tâm',
+  },
+  suppliers: {
+    label: 'Nhà cung cấp',
+    description: 'Danh bạ các nhà cung cấp, đối tác, cộng tác viên cá nhân và doanh nghiệp',
   },
   leave_reserve: {
     label: 'Bảo lưu & Nghỉ phép',
@@ -129,10 +145,6 @@ export const screens: Record<string, ScreenConfig> = {
   care_conditions_config: {
     label: 'Danh mục chăm sóc',
     description: 'Cấu hình Quy tắc & Điều kiện Chăm sóc Học viên (Nguồn chỉ số CSDL, Tiêu chí, SLA & Phân công vai trò phụ trách)',
-  },
-  system_config: {
-    label: 'Cấu hình hệ thống',
-    description: 'Thiết lập thông tin quyền và ma trận phân quyền Phân hệ Station',
   },
   lead_lifecycle_config: {
     label: 'Cấu hình Phễu & Kho Lead',

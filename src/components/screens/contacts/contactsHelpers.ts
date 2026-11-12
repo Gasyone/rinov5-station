@@ -1,25 +1,68 @@
 import { mockContacts, type Contact } from '@/mocks/contacts'
-import type { ContactFilterState, ContactStatusFilter } from './contactsTypes'
+import type { BirthdayInfo, ContactBirthdayFilter, ContactRoleFilter } from './contactsTypes'
 
 export function getInitialContacts(): Contact[] {
   return [...mockContacts]
 }
 
-export function getContactBranches(items: Contact[]) {
-  return Array.from(new Set(items.map((c) => c.branch))).sort()
+export function getContactBranches(items: Contact[]): string[] {
+  const branches = new Set<string>()
+  for (const c of items) {
+    if (c.branch) branches.add(c.branch)
+    if (c.branches) {
+      c.branches.forEach((b) => branches.add(b))
+    }
+  }
+  return Array.from(branches).filter(Boolean).sort()
 }
 
-export function getContactSources(items: Contact[]): Contact['source'][] {
-  return Array.from(new Set(items.map((c) => c.source))) as Contact['source'][]
+export function countContactsByRole(items: Contact[], role: ContactRoleFilter): number {
+  if (role === 'all') return items.length
+  return items.filter((c) => c.role === role).length
 }
 
-export function getContactAssignees(items: Contact[]) {
-  return Array.from(new Set(items.map((c) => c.assignedTo))).sort()
+export function getBirthdayInfo(dobString?: string): BirthdayInfo | null {
+  if (!dobString) return null
+  const parts = dobString.split('-')
+  if (parts.length < 3) return null
+  const birthYear = parseInt(parts[0], 10)
+  const birthMonth = parseInt(parts[1], 10) - 1 // 0-indexed
+  const birthDay = parseInt(parts[2], 10)
+
+  if (isNaN(birthYear) || isNaN(birthMonth) || isNaN(birthDay)) return null
+
+  const today = new Date()
+  const isToday = birthMonth === today.getMonth() && birthDay === today.getDate()
+  const isThisMonth = birthMonth === today.getMonth()
+
+  const dayStr = String(birthDay).padStart(2, '0')
+  const monthStr = String(birthMonth + 1).padStart(2, '0')
+  const fullDob = `${dayStr}/${monthStr}/${birthYear}`
+  const formattedDay = `${dayStr}/${monthStr}`
+
+  let age: number | null = today.getFullYear() - birthYear
+  const monthDiff = today.getMonth() - birthMonth
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDay)) {
+    age -= 1
+  }
+  if (age < 0) age = null
+
+  return {
+    isToday,
+    isThisMonth,
+    hasBirthday: isToday || isThisMonth,
+    birthYear,
+    fullDob,
+    formattedDay,
+    age,
+  }
 }
 
-export function countContactsByStatus(items: Contact[], status: ContactStatusFilter): number {
-  if (status === 'all') return items.length
-  return items.filter((c) => c.status === status).length
+export function countBirthdayThisMonth(items: Contact[]): number {
+  return items.filter((c) => {
+    const b = getBirthdayInfo(c.dob)
+    return b?.isThisMonth
+  }).length
 }
 
 export function filterContacts(
@@ -27,25 +70,39 @@ export function filterContacts(
   filters: {
     search: string
     branch: string
-    status: ContactStatusFilter
-    extra: ContactFilterState
+    role: ContactRoleFilter
+    birthday: ContactBirthdayFilter
   }
 ): Contact[] {
   const query = filters.search.trim().toLowerCase()
   return items.filter((c) => {
-    if (filters.branch !== 'all' && c.branch !== filters.branch) return false
-    if (filters.status !== 'all' && c.status !== filters.status) return false
-    if (filters.extra.branches.length > 0 && !filters.extra.branches.includes(c.branch))
-      return false
-    if (filters.extra.sources.length > 0 && !filters.extra.sources.includes(c.source))
-      return false
-    if (
-      filters.extra.assignees.length > 0 &&
-      !filters.extra.assignees.includes(c.assignedTo)
-    )
-      return false
+    if (filters.branch !== 'all') {
+      const inBranch = c.branch === filters.branch
+      const inBranches = c.branches && c.branches.includes(filters.branch)
+      if (!inBranch && !inBranches) return false
+    }
+
+    if (filters.role !== 'all' && c.role !== filters.role) return false
+
+    if (filters.birthday === 'this_month') {
+      const b = getBirthdayInfo(c.dob)
+      if (!b?.isThisMonth) return false
+    } else if (filters.birthday === 'today') {
+      const b = getBirthdayInfo(c.dob)
+      if (!b?.isToday) return false
+    }
+
     if (query) {
-      const haystack = [c.name, c.email ?? '', c.phone, c.interest ?? '', c.id]
+      const haystack = [
+        c.name,
+        c.englishName ?? '',
+        c.email ?? '',
+        c.phone,
+        c.address ?? '',
+        c.relatedContact?.name ?? '',
+        c.relatedContact?.phone ?? '',
+        c.notes ?? '',
+      ]
         .join(' ')
         .toLowerCase()
       if (!haystack.includes(query)) return false
@@ -54,38 +111,14 @@ export function filterContacts(
   })
 }
 
-export function nextContactId(items: Contact[]): string {
-  const max = items.reduce((acc, c) => {
-    const numeric = Number.parseInt(c.id.replace(/^\D+/g, ''), 10)
-    return Number.isNaN(numeric) ? acc : Math.max(acc, numeric)
-  }, 0)
-  return `c${max + 1}`
-}
-
-export function buildEmptyContact(): Omit<Contact, 'id'> {
+export function buildEmptyContact(): Contact {
   return {
+    id: '',
     name: '',
-    email: '',
+    role: 'parent',
     phone: '',
-    source: 'walk_in',
-    status: 'new',
-    branch: '',
-    assignedTo: '',
-    interest: '',
-    createdAt: new Date().toISOString(),
-  }
-}
-
-/** Pipeline summary — used by the metric tiles row above the table. */
-export function getPipelineSummary(items: Contact[]) {
-  return {
-    total: items.length,
-    fresh: items.filter((c) => c.status === 'new').length,
-    qualified: items.filter((c) => c.status === 'qualified').length,
-    converted: items.filter((c) => c.status === 'converted').length,
-    conversionRate:
-      items.length === 0
-        ? 0
-        : Math.round((items.filter((c) => c.status === 'converted').length / items.length) * 100),
+    email: '',
+    address: '',
+    notes: '',
   }
 }

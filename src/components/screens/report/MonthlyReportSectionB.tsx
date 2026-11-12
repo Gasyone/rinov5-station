@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Eye } from 'lucide-react'
 import { MediaPreviewModal, type MediaPreviewItem } from '@/components/shared'
+import { renderRichText } from '@/lib/renderRichText'
 import type { WeekReviewItem } from '../classes/detail/monthlyReportHelpers'
 
 interface MonthlyReportSectionBProps {
@@ -106,20 +107,20 @@ export function MonthlyReportSectionB({
                 className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3 sm:p-3.5 space-y-1.5 shadow-3xs"
               >
                 {/* Tiêu đề buổi/bài */}
-                <h5 className="font-bold text-xs sm:text-[13.5px] text-amber-800 leading-snug">
+                <h5 className="font-semibold text-xs sm:text-[13.5px] text-amber-900 leading-snug">
                   {session.title}
                 </h5>
 
-                {/* Nội dung dạng soạn thảo thường, giữ nguyên định dạng dòng và bullet */}
-                <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal whitespace-pre-line">
-                  {session.body}
+                {/* Nội dung dạng soạn thảo giàu định dạng (màu sắc, in đậm, bullet) */}
+                <div className="text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal">
+                  {renderRichText(session.body)}
                 </div>
               </div>
             ))}
           </div>
         ) : b1Content && b1Content.trim() ? (
-          <div className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3.5 sm:p-4 text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal whitespace-pre-line shadow-3xs">
-            {b1Content}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3.5 sm:p-4 text-xs sm:text-[13px] leading-relaxed text-slate-700 font-normal shadow-3xs">
+            {renderRichText(b1Content)}
           </div>
         ) : (
           <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-xs sm:text-[13px] text-slate-400 italic">
@@ -152,12 +153,12 @@ export function MonthlyReportSectionB({
                   <div className="rounded-xl border border-slate-200/90 bg-white hover:border-amber-400/90 flex flex-row items-stretch justify-between shadow-3xs overflow-hidden transition-all hover:shadow-xs min-h-[58px]">
                     {/* Phần nội dung & tiêu đề Tuần (gọn gàng, khoảng cách vừa vặn) */}
                     <div className="flex-1 min-w-0 py-2 sm:py-2.5 px-3 sm:px-3.5 space-y-0.5 sm:space-y-1">
-                      <h5 className="font-bold text-xs sm:text-[13px] text-amber-700 leading-none">
+                      <h5 className="font-semibold text-xs sm:text-[13px] text-amber-800 leading-none">
                         {item.title || `Tuần ${idx + 1}`}
                       </h5>
-                      <p className="text-xs sm:text-[12.5px] leading-relaxed text-slate-700 font-normal">
-                        {item.content}
-                      </p>
+                      <div className="text-xs sm:text-[12.5px] leading-relaxed text-slate-700 font-normal">
+                        {renderRichText(item.content)}
+                      </div>
                     </div>
 
                     {/* Ảnh to bằng viền ngoài cùng, tràn khít chiều cao card, không ép phình card */}

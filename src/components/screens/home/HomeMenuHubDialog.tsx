@@ -118,7 +118,6 @@ const ALL_MENU_GROUPS: MenuModuleGroup[] = [
       { id: 'permissions', title: 'Nhóm quyền & Phân quyền', path: '/app/permissions' },
       { id: 'lead_lifecycle_config', title: 'Cấu hình Phễu & Kho Lead', path: '/app/lead_lifecycle_config' },
       { id: 'care_conditions_config', title: 'Danh mục chăm sóc', path: '/app/care_conditions_config' },
-      { id: 'system_config', title: 'Cấu hình hệ thống', path: '/app/system_config' },
     ],
   },
 ]

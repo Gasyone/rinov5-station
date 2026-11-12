@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { RichTextEditor } from '@/components/shared'
 import { FormattedEvaluationContent } from './FormattedEvaluationContent'
 import { MonthlyReportActivityPhotosSection } from './MonthlyReportActivityPhotosSection'
 import type { StudentGalleryPhoto } from '@/mocks/studentPhotos'
@@ -8,6 +9,7 @@ import {
   composeSectionA1,
   decomposeSectionA1,
   decomposeSectionA2,
+  REPORT_CHAR_LIMITS,
 } from './monthlyReportHelpers'
 
 interface MonthlyReportAcademicSectionProps {
@@ -69,19 +71,20 @@ export function MonthlyReportAcademicSection({
                 </label>
                 <span className="text-[11px] text-muted-foreground truncate text-right">Ưu điểm, thái độ</span>
               </div>
-              <textarea
+              <RichTextEditor
                 rows={2}
+                maxLength={REPORT_CHAR_LIMITS.HIGHLIGHT}
                 value={a1Data.highlight}
-                onChange={(e) => {
-                  const newHighlight = e.target.value
+                onChange={(newHighlight) => {
                   onUpdateA1(
                     composeSectionA1(newHighlight, a1Data.note),
                     newHighlight,
                     a1Data.note
                   )
                 }}
-                placeholder="Nhập những điểm con làm tốt, thái độ tích cực trong kỳ..."
-                className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[52px] transition-colors font-normal"
+                placeholder="Nhập những điểm con làm tốt, thái độ tích cực trong kỳ (ngắn gọn, tối đa 300 ký tự)..."
+                toolbarMode="full"
+                minHeight="min-h-[58px]"
               />
             </div>
 
@@ -94,19 +97,20 @@ export function MonthlyReportAcademicSection({
                 </label>
                 <span className="text-[11px] text-muted-foreground truncate text-right">Cần rèn luyện</span>
               </div>
-              <textarea
+              <RichTextEditor
                 rows={2}
+                maxLength={REPORT_CHAR_LIMITS.NOTE}
                 value={a1Data.note}
-                onChange={(e) => {
-                  const newNote = e.target.value
+                onChange={(newNote) => {
                   onUpdateA1(
                     composeSectionA1(a1Data.highlight, newNote),
                     a1Data.highlight,
                     newNote
                   )
                 }}
-                placeholder="Nhập những điểm con cần cải thiện, điểm cần rèn luyện thêm..."
-                className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[52px] transition-colors font-normal"
+                placeholder="Nhập những điểm con cần cải thiện, điểm cần rèn luyện thêm (ngắn gọn, tối đa 300 ký tự)..."
+                toolbarMode="full"
+                minHeight="min-h-[58px]"
               />
             </div>
           </div>
@@ -120,7 +124,7 @@ export function MonthlyReportAcademicSection({
         )}
       </div>
 
-      {/* Sub-section A2: 2. Nhận xét về kết quả học tập (Gộp chung 1 ô tự điền) */}
+      {/* Sub-section A2: 2. Nhận xét về kết quả học tập (Trình biên tập đa năng chuẩn theo mẫu) */}
       <div className="space-y-1 pt-0.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <label className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
@@ -128,20 +132,21 @@ export function MonthlyReportAcademicSection({
           </label>
         </div>
         {isEditing ? (
-          <textarea
+          <RichTextEditor
             rows={3}
+            maxLength={REPORT_CHAR_LIMITS.ACADEMIC}
             value={sectionA2Content}
-            onChange={(e) => {
-              const newContent = e.target.value
+            onChange={(newContent) => {
               const parsed = decomposeSectionA2(newContent, isMath)
               onUpdateA2(newContent, parsed.knowledge, parsed.skill)
             }}
             placeholder={
               isMath
-                ? 'Nhập đánh giá về kiến thức tư duy logic và kỹ năng giải toán của con...'
-                : 'Nhập đánh giá về từ vựng, phonics và cấu trúc mẫu câu của con...'
+                ? 'Nhập đánh giá về kiến thức tư duy logic và kỹ năng giải toán của con (tối đa 400 ký tự)...'
+                : 'Nhập đánh giá về từ vựng, phonics và cấu trúc mẫu câu của con (tối đa 400 ký tự)...'
             }
-            className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[64px] transition-colors font-normal"
+            toolbarMode="full"
+            minHeight="min-h-[72px]"
           />
         ) : (
           <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-foreground/90 leading-relaxed font-sans">

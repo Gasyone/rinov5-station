@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,137 +13,206 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldLabel } from '@/components/shared'
-import { BranchSelect, ToolbarSelect } from '@/components/controls'
 import type { Contact } from '@/mocks/contacts'
-import { SOURCE_LABELS } from './contactsTypes'
-
-const STATUS_OPTIONS: Array<{ value: Contact['status']; label: string }> = [
-  { value: 'new', label: 'New' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'qualified', label: 'Qualified' },
-  { value: 'converted', label: 'Converted' },
-  { value: 'lost', label: 'Lost' },
-]
-
-const SOURCE_OPTIONS = (Object.keys(SOURCE_LABELS) as Contact['source'][]).map(
-  (value) => ({ value, label: SOURCE_LABELS[value] })
-)
 
 interface ContactsFormDialogProps {
   open: boolean
   mode: 'create' | 'edit'
-  initial: Omit<Contact, 'id'> & { id?: string }
-  branches: string[]
-  assignees: string[]
+  initial: Contact
   onOpenChange: (open: boolean) => void
-  onSubmit: (value: Omit<Contact, 'id'> & { id?: string }) => void
+  onSubmit: (value: Contact) => void
 }
 
 export function ContactsFormDialog({
   open,
   mode,
   initial,
-  branches,
-  assignees,
   onOpenChange,
   onSubmit,
 }: ContactsFormDialogProps) {
-  // `initial` is captured at mount; parent remounts via `key` to reset between records.
-  const [value, setValue] = useState(initial)
+  const [value, setValue] = useState<Contact>(initial)
 
-  const isValid = value.name.trim() && value.phone.trim() && value.branch.trim()
+  useEffect(() => {
+    setValue(initial)
+  }, [initial, open])
 
-  const update = <K extends keyof typeof value>(key: K, next: (typeof value)[K]) =>
+  const isValid = value.name.trim() && value.phone.trim()
+
+  const update = <K extends keyof Contact>(key: K, next: Contact[K]) =>
     setValue((current) => ({ ...current, [key]: next }))
+
+  const updateRelated = (field: 'name' | 'phone' | 'relationship', val: string) => {
+    setValue((current) => ({
+      ...current,
+      relatedContact: {
+        name: current.relatedContact?.name ?? '',
+        phone: current.relatedContact?.phone ?? '',
+        relationship: current.relatedContact?.relationship ?? 'Mẹ',
+        [field]: val,
+      },
+    }))
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? 'Add contact' : 'Edit contact'}</DialogTitle>
+          <DialogTitle>
+            {mode === 'create' ? 'Thêm liên hệ mới' : 'Chỉnh sửa liên hệ'}
+          </DialogTitle>
           <DialogDescription>
-            Track a CRM lead through the pipeline. Required fields are marked with *.
+            Quản lý thông tin danh bạ phụ huynh và học viên. Các trường dấu * là bắt buộc.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <FieldLabel label="Full name" required>
-            <Input value={value.name} onChange={(e) => update('name', e.target.value)} />
-          </FieldLabel>
-          <FieldLabel label="Phone" required>
-            <Input value={value.phone} onChange={(e) => update('phone', e.target.value)} />
-          </FieldLabel>
-          <FieldLabel label="Email">
+        <div className="space-y-3.5 py-1 text-xs">
+          {/* Hàng 1: Tên & Tên tiếng Anh */}
+          <div className="grid grid-cols-2 gap-3">
+            <FieldLabel label="Họ và tên" required>
+              <Input
+                placeholder="VD: Nguyễn Thu Trang"
+                value={value.name}
+                onChange={(e) => update('name', e.target.value)}
+                className="h-8 text-xs"
+              />
+            </FieldLabel>
+            <FieldLabel label="Tên tiếng Anh / Biệt danh">
+              <Input
+                placeholder="VD: Hannah"
+                value={value.englishName ?? ''}
+                onChange={(e) => update('englishName', e.target.value)}
+                className="h-8 text-xs"
+              />
+            </FieldLabel>
+          </div>
+
+          {/* Hàng 2: Vai trò & SĐT (Định danh) */}
+          <div className="grid grid-cols-2 gap-3">
+            <FieldLabel label="Vai trò" required>
+              <select
+                value={value.role}
+                onChange={(e) => update('role', e.target.value as 'parent' | 'student')}
+                className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+              >
+                <option value="parent">Phụ huynh</option>
+                <option value="student">Học viên</option>
+              </select>
+            </FieldLabel>
+            <FieldLabel label="Số điện thoại (Định danh)" required>
+              <Input
+                placeholder="VD: 0912345678"
+                value={value.phone}
+                onChange={(e) => {
+                  update('phone', e.target.value)
+                  update('id', e.target.value)
+                }}
+                className="h-8 text-xs font-mono"
+              />
+            </FieldLabel>
+          </div>
+
+          {/* Hàng 3: Email & Ngày sinh */}
+          <div className="grid grid-cols-2 gap-3">
+            <FieldLabel label="Địa chỉ Email">
+              <Input
+                type="email"
+                placeholder="VD: email@example.com"
+                value={value.email ?? ''}
+                onChange={(e) => update('email', e.target.value)}
+                className="h-8 text-xs"
+              />
+            </FieldLabel>
+            <FieldLabel label="Ngày tháng năm sinh">
+              <Input
+                type="date"
+                value={value.dob ?? ''}
+                onChange={(e) => update('dob', e.target.value)}
+                className="h-8 text-xs"
+              />
+            </FieldLabel>
+          </div>
+
+          {/* Hàng 4: Người liên kết (Phụ huynh / Con) */}
+          <div className="rounded-md border border-border p-3 space-y-2 bg-muted/20">
+            <h4 className="font-semibold text-foreground text-xs">
+              Thông tin Người liên kết ({value.role === 'student' ? 'Phụ huynh' : 'Con'})
+            </h4>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <FieldLabel label="Họ tên người liên kết">
+                  <Input
+                    placeholder="VD: Nguyễn Văn A"
+                    value={value.relatedContact?.name ?? ''}
+                    onChange={(e) => updateRelated('name', e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </FieldLabel>
+              </div>
+              <div>
+                <FieldLabel label="SĐT người liên kết">
+                  <Input
+                    placeholder="VD: 0987654321"
+                    value={value.relatedContact?.phone ?? ''}
+                    onChange={(e) => updateRelated('phone', e.target.value)}
+                    className="h-8 text-xs font-mono"
+                  />
+                </FieldLabel>
+              </div>
+              <div>
+                <FieldLabel label="Mối quan hệ">
+                  <select
+                    value={value.relatedContact?.relationship ?? (value.role === 'student' ? 'Mẹ' : 'Con')}
+                    onChange={(e) => updateRelated('relationship', e.target.value)}
+                    className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="Mẹ">Mẹ</option>
+                    <option value="Bố">Bố</option>
+                    <option value="Con">Con</option>
+                    <option value="Người giám hộ">Người giám hộ</option>
+                  </select>
+                </FieldLabel>
+              </div>
+            </div>
+          </div>
+
+          {/* Địa chỉ cư trú */}
+          <FieldLabel label="Địa chỉ cư trú / liên hệ">
             <Input
-              type="email"
-              value={value.email ?? ''}
-              onChange={(e) => update('email', e.target.value)}
+              placeholder="VD: Số 120 Hoàng Ngân, Cầu Giấy, Hà Nội..."
+              value={value.address ?? ''}
+              onChange={(e) => update('address', e.target.value)}
+              className="h-8 text-xs"
             />
           </FieldLabel>
-          <FieldLabel label="Interest">
-            <Input
-              value={value.interest ?? ''}
-              onChange={(e) => update('interest', e.target.value)}
-              placeholder="IELTS / TOEIC / Tiếng Nhật..."
-            />
-          </FieldLabel>
-          <FieldLabel label="Source">
-            <ToolbarSelect
-              value={value.source}
-              ariaLabel="Source"
-              options={SOURCE_OPTIONS}
-              onValueChange={(v) => update('source', v as Contact['source'])}
-              className="h-9 min-w-full"
-            />
-          </FieldLabel>
-          <FieldLabel label="Status">
-            <ToolbarSelect
-              value={value.status}
-              ariaLabel="Status"
-              options={STATUS_OPTIONS}
-              onValueChange={(v) => update('status', v as Contact['status'])}
-              className="h-9 min-w-full"
-            />
-          </FieldLabel>
-          <FieldLabel label="School" required>
-            <BranchSelect
-              value={value.branch}
-              branches={branches}
-              variant="inline"
-              includeAll={false}
-              placeholder="Select school"
-              ariaLabel="School"
-              onValueChange={(v) => update('branch', v)}
-              className="h-9 min-w-full"
-            />
-          </FieldLabel>
-          <FieldLabel label="Assigned to">
-            <ToolbarSelect
-              value={value.assignedTo}
-              ariaLabel="Assigned to"
-              options={[
-                { value: '', label: 'Unassigned' },
-                ...assignees.map((a) => ({ value: a, label: a })),
-              ]}
-              onValueChange={(v) => update('assignedTo', v)}
-              className="h-9 min-w-full"
-            />
-          </FieldLabel>
-          <FieldLabel label="Notes" className="md:col-span-2">
+
+          {/* Ghi chú */}
+          <FieldLabel label="Ghi chú liên lạc">
             <Textarea
-              rows={3}
+              placeholder="Ghi chú về thói quen nghe máy, giờ liên hệ phù hợp..."
               value={value.notes ?? ''}
               onChange={(e) => update('notes', e.target.value)}
+              rows={2}
+              className="text-xs"
             />
           </FieldLabel>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+        <DialogFooter className="pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+          >
+            Hủy
           </Button>
-          <Button disabled={!isValid} onClick={() => onSubmit(value)}>
-            {mode === 'create' ? 'Create' : 'Save changes'}
+          <Button
+            type="button"
+            size="sm"
+            disabled={!isValid}
+            onClick={() => onSubmit(value)}
+          >
+            {mode === 'create' ? 'Thêm liên hệ' : 'Lưu thay đổi'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -134,6 +134,26 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { ContactsScreen } = await import('@/components/screens/contacts/ContactsScreen')
     return { default: ContactsScreen }
   }),
+  contacts: safeLazy(async () => {
+    const { ContactsScreen } = await import('@/components/screens/contacts/ContactsScreen')
+    return { default: ContactsScreen }
+  }),
+  organizations: safeLazy(async () => {
+    const { OrganizationsScreen } = await import('@/components/screens/organizations/OrganizationsScreen')
+    return { default: OrganizationsScreen }
+  }),
+  mdm_households: safeLazy(async () => {
+    const { OrganizationsScreen } = await import('@/components/screens/organizations/OrganizationsScreen')
+    return { default: OrganizationsScreen }
+  }),
+  hr_employees: safeLazy(async () => {
+    const { EmployeesScreen } = await import('@/components/screens/employees/EmployeesScreen')
+    return { default: EmployeesScreen }
+  }),
+  suppliers: safeLazy(async () => {
+    const { SuppliersScreen } = await import('@/components/screens/suppliers/SuppliersScreen')
+    return { default: SuppliersScreen }
+  }),
   trial_class: safeLazy(async () => {
     const { TrialClassScreen } = await import('@/components/screens/trial-class/TrialClassScreen')
     return { default: TrialClassScreen }
@@ -188,10 +208,6 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
   qc_remediation: safeLazy(async () => {
     const { QcCheckScreen } = await import('@/components/screens/qc-check/QcCheckScreen')
     return { default: () => <QcCheckScreen defaultViewMode="remediations" /> }
-  }),
-  system_config: safeLazy(async () => {
-    const { SystemConfigScreen } = await import('@/components/screens/system-config/SystemConfigScreen')
-    return { default: SystemConfigScreen }
   }),
   job_titles: safeLazy(async () => {
     const { JobTitlesScreen } = await import('@/components/screens/job-titles/JobTitlesScreen')

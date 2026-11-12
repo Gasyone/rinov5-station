@@ -17,6 +17,13 @@ export interface WeekReviewItem {
   thumbnailUrl?: string
 }
 
+/** Giới hạn ký tự chuẩn cho 3 phần nhận xét báo cáo tháng để phụ huynh dễ đọc */
+export const REPORT_CHAR_LIMITS = {
+  HIGHLIGHT: 300,
+  NOTE: 300,
+  ACADEMIC: 400,
+} as const
+
 export const FIXED_PARENT_NOTICE = `Con sẽ phát phiếu và tranh học của phần ôn luyện riêng vào buổi tới. Con luyện tập phiếu bài tập, sau đó dựa trên tranh ảnh trên phiếu, con sẽ chỉ tranh trên phiếu, đọc to. Ba mẹ hỗ trợ con quay và gửi video qua zalo cho cô hàng tuần. Ba mẹ có thể cho con đến sớm để cô kiểm tra bài con mỗi buổi nhé.
 
 Trân trọng cảm ơn!`
@@ -25,28 +32,28 @@ export const DEFAULT_SECTION_B2_WEEKS: WeekReviewItem[] = [
   {
     weekNum: 1,
     title: 'Tuần 1',
-    content: 'Luyện phiếu bài tập với từ vựng “see” và “hear”. Sau đó con sẽ thực hiện luyện tập mẫu câu “I see with my eyes” và “I hear with my ears”.',
+    content: 'Luyện phiếu bài tập với từ vựng <span style="color:#0284C7">“see”</span> và <span style="color:#0284C7">“hear”</span>. Sau đó con thực hành luyện mẫu câu: <span style="color:#9333EA">“I see with my eyes”</span> và <span style="color:#9333EA">“I hear with my ears”</span>.',
     docLink: 'https://drive.google.com/file/d/1AOasROm35C5mZk1bgoxmJunmf4GdYAh5/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400&auto=format&fit=crop',
   },
   {
     weekNum: 2,
     title: 'Tuần 2',
-    content: 'Luyện phiếu bài tập Letter T với từ vựng tiger và tent. Luyện nói mẫu câu “I can see a tiger.” và “ I can see a tent.”',
+    content: 'Luyện phiếu bài tập Letter T với từ vựng <span style="color:#0284C7">tiger</span> và <span style="color:#0284C7">tent</span>. Luyện nói mẫu câu: <span style="color:#9333EA">“I can see a tiger.”</span> và <span style="color:#9333EA">“I can see a tent.”</span>',
     docLink: 'https://drive.google.com/file/d/14oxsjCpMEL2NCsLlamNOpvVkVi6Q_Smq/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=400&auto=format&fit=crop',
   },
   {
     weekNum: 3,
     title: 'Tuần 3',
-    content: 'Luyện tập thuyết trình với mẫu câu “I see/hear/smell/touch with my ….” với tranh đính kèm.',
+    content: 'Luyện tập thuyết trình với mẫu câu <span style="color:#9333EA">“I see/hear/smell/touch with my …”</span> theo tranh đính kèm.',
     docLink: 'https://drive.google.com/file/d/1AOasROm35C5mZk1bgoxmJunmf4GdYAh5/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=400&auto=format&fit=crop',
   },
   {
     weekNum: 4,
     title: 'Tuần 4',
-    content: 'Luyện tập thuyết trình với letter Tt tại tranh sau, sử dụng mẫu câu “I can see a … . It’s + color”.',
+    content: 'Luyện tập thuyết trình Letter Tt, sử dụng mẫu câu <span style="color:#9333EA">“I can see a … . It’s + color”</span>.',
     docLink: 'https://drive.google.com/file/d/14oxsjCpMEL2NCsLlamNOpvVkVi6Q_Smq/view?usp=drive_link',
     thumbnailUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&auto=format&fit=crop',
   },

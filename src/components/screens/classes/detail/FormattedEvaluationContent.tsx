@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { renderRichText } from '@/lib/renderRichText'
 
 export interface ParsedItem {
   label: string
@@ -207,8 +208,8 @@ export function FormattedEvaluationContent({
   const hasAnyLabel = items.some((it) => !!it.label)
   if (!hasAnyLabel) {
     return (
-      <div className={`text-xs text-foreground leading-relaxed font-sans whitespace-pre-line ${className}`}>
-        {content}
+      <div className={`text-xs text-foreground leading-relaxed font-sans ${className}`}>
+        {renderRichText(content)}
       </div>
     )
   }
@@ -222,7 +223,7 @@ export function FormattedEvaluationContent({
               {item.label}
             </span>
           )}
-          <span className="whitespace-pre-line text-foreground/80 font-normal">{item.body}</span>
+          <span className="text-foreground/85 font-normal leading-relaxed">{renderRichText(item.body)}</span>
         </p>
       ))}
     </div>
