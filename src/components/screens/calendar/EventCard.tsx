@@ -9,9 +9,9 @@ import { getStatusColors, resolveStatusSemantic } from '@/lib/statusColors'
 
 export const getAssociatedBookingTest = (session: { id: string; title: string; type?: string }) => {
   if (session.type && session.type !== 'placement_test') return null
-  if (session.id === 'EVT-CUSTOM-001') return mockBookingTests.find(b => b.id === 'E0007') || null
-  if (session.id === 'EVT-CUSTOM-002') return mockBookingTests.find(b => b.id === 'E0001') || null
-  if (session.id === 'EVT-CUSTOM-003') return mockBookingTests.find(b => b.id === 'E0006') || null
+  if (session.id === 'EVT-CUSTOM-001') return mockBookingTests.find(b => b.id === '100007') || null
+  if (session.id === 'EVT-CUSTOM-002') return mockBookingTests.find(b => b.id === '100001') || null
+  if (session.id === 'EVT-CUSTOM-003') return mockBookingTests.find(b => b.id === '100006') || null
   
   const bookingId = session.id.replace('EVT-', '')
   const directMatch = mockBookingTests.find(b => b.id === bookingId || b.id === session.id)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { mockStudents } from '@/mocks/students'
 
 // GET /api/students: Lấy danh sách học viên từ Database SQLite
 export async function GET(request: NextRequest) {
@@ -61,11 +62,34 @@ export async function GET(request: NextRequest) {
       data: students,
     })
   } catch (error) {
-    console.error('Error fetching students from DB:', error)
-    return NextResponse.json(
-      { success: false, message: 'Lỗi khi tải danh sách học viên từ database' },
-      { status: 500 }
-    )
+    console.warn('Prisma DB error in /api/students, falling back to mockStudents:', error)
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')?.toLowerCase() || ''
+    const branch = searchParams.get('branch') || 'all'
+    const status = searchParams.get('status') || 'all'
+
+    let fallbackStudents = [...mockStudents]
+    if (branch !== 'all') {
+      fallbackStudents = fallbackStudents.filter((s) => s.branch === branch)
+    }
+    if (status !== 'all') {
+      fallbackStudents = fallbackStudents.filter((s) => s.status === status)
+    }
+    if (search.trim()) {
+      fallbackStudents = fallbackStudents.filter(
+        (s) =>
+          s.name.toLowerCase().includes(search) ||
+          (s.englishName && s.englishName.toLowerCase().includes(search)) ||
+          s.phone?.includes(search) ||
+          s.id.toLowerCase().includes(search)
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      total: fallbackStudents.length,
+      data: fallbackStudents,
+    })
   }
 }
 

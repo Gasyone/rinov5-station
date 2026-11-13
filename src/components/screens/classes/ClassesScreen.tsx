@@ -33,16 +33,24 @@ export function ClassesScreen() {
   const user = useAuthStore((s) => s.user)
   const isTeacherRole = user?.role === 'teacher'
 
-  const [classes, setClasses] = useState<ClassRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // Khởi tạo ngay với mockClassRecords để màn hình không bao giờ bị rỗng / trắng
+  const [classes, setClasses] = useState<ClassRecord[]>(() =>
+    mockClassRecords.map((c) => {
+      const status = c.status === 'mo_chieu_sinh' ? ('cho_khai_giang' as const) : c.status
+      return { ...c, status }
+    })
+  )
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     let isMounted = true
-    setIsLoading(true)
     fetch('/api/classes')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`)
+        return res.json()
+      })
       .then((resData) => {
-        if (isMounted && resData.success && Array.isArray(resData.data)) {
+        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
           setClasses(resData.data)
         }
       })

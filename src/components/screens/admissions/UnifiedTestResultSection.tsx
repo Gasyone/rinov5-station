@@ -1,21 +1,27 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import {
+  BookOpen,
   Check,
-  ChevronDown,
-  ChevronUp,
   Clock,
   ExternalLink,
   FileText,
+  MapPin,
+  Pencil,
+  Upload,
+  User,
+  UserCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { InlineSelect } from '@/components/controls'
+import { StatusBadge } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { getStatusColors } from '@/lib/statusColors'
 import { MATH_LEVELS, PROGRAM_LEVELS, SUB_LEVELS } from '@/mocks/bookingTests'
 import type { BookingTest } from '@/mocks/bookingTests'
 import type { UnifiedSessionItem } from './unifiedSessionTypes'
+import { formatTestTimeWithDay } from '../booking-test/bookingTestHelpers'
 
 interface UnifiedTestResultSectionProps {
   session: UnifiedSessionItem
@@ -25,11 +31,16 @@ interface UnifiedTestResultSectionProps {
   terminalStatus: { status: string; label: string } | null
   canEditPlacement?: boolean
   creatorName: string
+  canComplete?: boolean
+  canCancel?: boolean
+  onComplete?: () => void
+  onCancel?: () => void
   onCheckIn: (e?: React.MouseEvent) => void
   onDirectAssessment: (e?: React.MouseEvent) => void
   onOpenAssessment?: (bookingId: string) => void
   onOpenTeacherPicker?: () => void
   onUpdateBookingLevel?: (level: string, subLevel?: string) => void
+  onOpenManualUpload?: (bookingId: string) => void
 }
 
 export function UnifiedTestResultSection({
@@ -40,11 +51,16 @@ export function UnifiedTestResultSection({
   terminalStatus,
   canEditPlacement = false,
   creatorName,
+  canComplete = false,
+  canCancel = false,
+  onComplete,
+  onCancel,
   onCheckIn,
   onDirectAssessment,
   onOpenAssessment,
   onOpenTeacherPicker,
   onUpdateBookingLevel,
+  onOpenManualUpload,
 }: UnifiedTestResultSectionProps) {
   const hasTeacher = Boolean(
     session.teacherName &&
@@ -70,33 +86,48 @@ export function UnifiedTestResultSection({
     : (booking?.status === 'ipad_test_started' ? 'Đang làm bài...' : 'Chưa có')
 
   const isMath = session.subject === 'math' || booking?.subject === 'math'
-  const isManualMath = isMath && (booking?.testSource === 'manual' || Boolean(booking?.testResult?.uploadedFileName))
-  const mathGrade =
+  const isManualMath =
+    isMath &&
+    (booking?.testSource === 'manual' ||
+      Boolean(booking?.testResult?.uploadedFileName) ||
+      Boolean(booking?.testResult?.uploadedFileUrl) ||
+      !booking?.testLink?.includes('lms'))
+  const rawMathGrade =
     booking?.testResult?.lwrLevel &&
     booking.testResult.lwrLevel !== '-' &&
-    booking.testResult.lwrLevel !== 'LWR'
-      ? booking.testResult.lwrLevel
-      : ''
+    booking.testResult.lwrLevel !== 'LWR' &&
+    booking.testResult.lwrLevel.trim() !== ''
+      ? booking.testResult.lwrLevel.trim()
+      : (booking?.expectedLevel?.trim() || 'Lớp 1')
+  const mathGrade = rawMathGrade.startsWith('Lớp')
+    ? rawMathGrade
+    : /^\d+$/.test(rawMathGrade)
+      ? `Lớp ${rawMathGrade}`
+      : rawMathGrade
+
   const mathLwrDisplay = hasLwrScore
-    ? `${mathGrade ? `${mathGrade} - ` : '- '}${booking?.testResult?.lwr || '-'}`
+    ? `${mathGrade} - ${booking?.testResult?.lwr || '-'}`
     : booking?.status === 'ipad_test_started'
       ? 'Đang làm bài...'
-      : 'Chưa có'
+      : `${mathGrade} - -`
   const mathResultUrl =
-    booking?.resultLink && booking.resultLink.startsWith('http')
+    booking?.testResult?.uploadedFileUrl ||
+    (booking?.resultLink && booking.resultLink.startsWith('http')
       ? booking.resultLink
-      : 'https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600'
+      : 'https://rinoedu.ai/ket-qua-danh-gia-nang-luc-va-toan-tu-duy-618600')
 
-  const [isBookingDetailsExpanded, setIsBookingDetailsExpanded] = useState(!hasTestScore)
+  const programDisplay = booking?.program || (isMath ? 'Chương trình Toán tư duy' : 'Station Program')
+  const expectedLevelVal = booking?.expectedLevel || session.testScoreSummary?.level
+  const displayTime = booking?.testTime ? formatTestTimeWithDay(booking.testTime) : session.dateLabel
 
   return (
     <>
       {/* 2. BODY BÊN TRONG: KẾT QUẢ ĐÁNH GIÁ TRÌNH ĐỘ */}
       <div className="p-3.5 space-y-3">
         <div className="space-y-2">
-          {/* TRƯỜNG HỢP 1: CHƯA ĐIỂM DANH (CHƯA CHECK-IN) & CHƯA CÓ ĐIỂM */}
+          {/* TRƯỜNG HỢP 1: CHƯA ĐIỂM DANH (CHƯA CHECK-IN) & CHƯA CÓ ĐIỂM (PHẲNG - KHÔNG VIỀN, KHÔNG NỀN) */}
           {!hasTestScore && !isCheckedIn && terminalStatus?.status !== 'cancelled' && (
-            <div className="flex flex-col items-center justify-center py-4 px-3 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center gap-2.5">
+            <div className="flex flex-col items-center justify-center py-2.5 text-center gap-2">
               <div className="space-y-0.5">
                 <p className="text-xs font-normal text-muted-foreground">
                   Học viên chưa điểm danh ca kiểm tra này
@@ -131,13 +162,40 @@ export function UnifiedTestResultSection({
                     <span>Nhận xét</span>
                   </Button>
                 )}
+
+                {isMath && isManualMath && booking && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onOpenManualUpload?.(booking.id)}
+                    className="h-7 px-3 text-xs font-normal text-foreground hover:bg-muted cursor-pointer shadow-2xs gap-1.5"
+                    title="Mở hộp thoại upload kết quả bài chấm tay"
+                  >
+                    <Upload className="h-3.5 w-3.5 text-primary" />
+                    <span>Upload kết quả</span>
+                  </Button>
+                )}
+
+                {canCancel && onCancel && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={onCancel}
+                    className="h-7 px-2 text-xs font-normal text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                    title="Hủy ca kiểm tra này"
+                  >
+                    Hủy lịch
+                  </Button>
+                )}
               </div>
             </div>
           )}
 
-          {/* TRƯỜNG HỢP 2: ĐÃ ĐIỂM DANH (CHECK-IN) NHƯNG CHƯA CÓ ĐIỂM */}
+          {/* TRƯỜNG HỢP 2: ĐÃ ĐIỂM DANH (CHECK-IN) NHƯNG CHƯA CÓ ĐIỂM (PHẲNG - KHÔNG VIỀN, KHÔNG NỀN) */}
           {!hasTestScore && isCheckedIn && terminalStatus?.status !== 'cancelled' && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg border border-border/70 bg-muted/30">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-1">
               <div className="flex items-center gap-2.5 min-w-0">
                 <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 shrink-0">
                   <Check className="h-3 w-3 stroke-[2.5]" />
@@ -154,76 +212,69 @@ export function UnifiedTestResultSection({
                 </div>
               </div>
 
-              {!isMath && (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => booking && onOpenAssessment?.(booking.id)}
-                  className="h-7 px-3 text-xs font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs gap-1.5 shrink-0"
-                  title="Mở form đánh giá và ghi nhận xét"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  <span>Nhận xét</span>
-                </Button>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {!isMath && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => booking && onOpenAssessment?.(booking.id)}
+                    className="h-7 px-3 text-xs font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs gap-1.5 shrink-0"
+                    title="Mở form đánh giá và ghi nhận xét"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>Nhận xét</span>
+                  </Button>
+                )}
+
+                {isMath && isManualMath && booking && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onOpenManualUpload?.(booking.id)}
+                    className="h-7 px-3 text-xs font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs gap-1.5 shrink-0"
+                    title="Mở form upload kết quả bài chấm tay"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    <span>Upload kết quả</span>
+                  </Button>
+                )}
+
+                {canCancel && onCancel && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={onCancel}
+                    className="h-7 px-2 text-xs font-normal text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                    title="Hủy ca kiểm tra này"
+                  >
+                    Hủy lịch
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
-          {/* TRƯỜNG HỢP CA BỊ HỦY CHƯA CÓ ĐIỂM */}
+          {/* TRƯỜNG HỢP CA BỊ HỦY CHƯA CÓ ĐIỂM (PHẲNG - KHÔNG VIỀN, KHÔNG NỀN) */}
           {!hasTestScore && terminalStatus?.status === 'cancelled' && (
-            <div className="py-3 px-3 rounded-lg border border-border/60 bg-muted/20 text-center text-xs text-muted-foreground font-normal">
+            <div className="py-2 text-xs text-muted-foreground font-normal">
               Ca kiểm tra này đã bị hủy.
             </div>
           )}
 
-          {/* TRƯỜNG HỢP 3: CÓ ĐIỂM */}
+          {/* TRƯỜNG HỢP 3: CÓ ĐIỂM (CỘT TRÁI: ĐIỂM SỐ & LINK, CỘT PHẢI: KẾT QUẢ ĐÁNH GIÁ & BUTTON ACTION BÊN DƯỚI) */}
           {hasTestScore && (
-            <div className="space-y-2">
-              {/* Trình độ đầu vào & Nhánh */}
-              <div className={cn("grid gap-2.5", isMath ? "grid-cols-1" : "grid-cols-2")}>
-                <div className="space-y-1">
-                  <span className="text-muted-foreground text-[11px] font-normal">Trình độ đầu vào:</span>
-                  <InlineSelect
-                    value={booking?.testResult?.level ?? (booking?.expectedLevel || '')}
-                    disabled={!canEditPlacement || terminalStatus?.status === 'cancelled'}
-                    ariaLabel="Trình độ đầu vào"
-                    options={[
-                      { value: '', label: 'Chưa đặt' },
-                      ...(isMath ? MATH_LEVELS : PROGRAM_LEVELS).map((level) => ({ value: level, label: level })),
-                    ]}
-                    onValueChange={(val) => onUpdateBookingLevel?.(val, booking?.testResult?.subLevel)}
-                    className="h-7 text-xs border-solid shadow-2xs font-medium text-sky-700 dark:text-sky-300"
-                  />
-                </div>
-
-                {!isMath && (
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground text-[11px] font-normal">Nhánh trình độ:</span>
-                    <InlineSelect
-                      value={booking?.testResult?.subLevel ?? ''}
-                      disabled={!canEditPlacement || terminalStatus?.status === 'cancelled'}
-                      ariaLabel="Nhánh trình độ"
-                      options={[
-                        { value: '', label: '-' },
-                        ...SUB_LEVELS.map((sub) => ({ value: sub, label: sub })),
-                      ]}
-                      onValueChange={(sub) => onUpdateBookingLevel?.(booking?.testResult?.level || '', sub)}
-                      className="h-7 text-xs border-solid shadow-2xs font-normal"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Điểm số Speaking & LWR */}
-              <div className={cn("grid gap-2.5 pt-0.5", isMath ? "grid-cols-1" : "grid-cols-2")}>
-                {/* CỘT ĐIỂM SPEAKING (Chỉ hiển thị cho Tiếng Anh) */}
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+              {/* CỘT TRÁI: ĐIỂM SPEAKING VÀ ĐIỂM LWR (KÈM NHẬN XÉT VÀ KẾT QUẢ SÁT ĐIỂM, CÓ PHÂN CÁCH) */}
+              <div className="flex-1 min-w-0 space-y-2">
+                {/* Điểm speaking (Chỉ hiển thị cho Tiếng Anh) */}
                 {!isMath && (
                   <div className="min-w-0 space-y-0.5">
                     <span className="text-[11px] font-normal text-muted-foreground block">
                       Điểm speaking
                     </span>
-                    <div className="flex items-center justify-between gap-1.5 mt-0.5">
-                      <div className="flex flex-wrap items-baseline gap-1.5 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-baseline gap-1.5 min-w-0">
                         <span className={cn('text-xs font-normal', warningText)}>
                           GV: {booking?.testResult?.speaking || 'chưa có'}
                         </span>
@@ -236,26 +287,29 @@ export function UnifiedTestResultSection({
                       </div>
 
                       {booking && (
-                        <button
-                          type="button"
-                          onClick={() => onOpenAssessment?.(booking.id)}
-                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal cursor-pointer shrink-0"
-                          title="Mở modal nhận xét & đánh giá"
-                        >
-                          <FileText className="h-3 w-3" />
-                          <span>Nhận xét</span>
-                        </button>
+                        <>
+                          <span className="text-muted-foreground/30 text-xs select-none">•</span>
+                          <button
+                            type="button"
+                            onClick={() => onOpenAssessment?.(booking.id)}
+                            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal cursor-pointer shrink-0"
+                            title="Mở modal nhận xét & đánh giá"
+                          >
+                            <FileText className="h-3 w-3" />
+                            <span>Nhận xét</span>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* CỘT ĐIỂM LWR */}
-                <div className="min-w-0 space-y-0.5">
+                {/* Điểm LWR */}
+                <div className="min-w-0 space-y-1">
                   <span className="text-[11px] font-normal text-muted-foreground block">
-                    {isMath ? 'Điểm LWR (Toán)' : 'Điểm LWR'}
+                    {isMath ? 'Điểm bài làm' : 'Điểm LWR'}
                   </span>
-                  <div className="flex items-center justify-between gap-1.5 mt-0.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <p
                       className="text-xs sm:text-[13px] font-normal text-foreground truncate min-w-0"
                       title={isMath ? mathLwrDisplay : lwrDisplay}
@@ -264,125 +318,260 @@ export function UnifiedTestResultSection({
                     </p>
 
                     {(booking?.testLink || booking?.resultLink || isMath) && (
-                      <a
-                        href={isMath ? mathResultUrl : (booking?.testLink || booking?.resultLink)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal shrink-0"
-                        title={isMath ? "Xem kết quả bài test môn Toán" : "Xem kết quả bài làm từ iPad"}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        <span>Kết quả</span>
-                      </a>
+                      <>
+                        <span className="text-muted-foreground/30 text-xs select-none">•</span>
+                        <a
+                          href={isMath ? mathResultUrl : (booking?.testLink || booking?.resultLink)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal shrink-0"
+                          title={isMath ? "Xem kết quả bài test môn Toán" : "Xem kết quả bài làm từ iPad"}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Kết quả</span>
+                        </a>
+                      </>
+                    )}
+
+                    {/* NÚT EDIT (SỬA) BÊN CẠNH ĐIỂM CHO TRƯỜNG HỢP CHẤM TAY */}
+                    {isMath && isManualMath && booking && (
+                      <>
+                        <span className="text-muted-foreground/30 text-xs select-none">•</span>
+                        <button
+                          type="button"
+                          onClick={() => onOpenManualUpload?.(booking.id)}
+                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-normal cursor-pointer shrink-0"
+                          title="Cập nhật kết quả bài chấm tay"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          <span>Sửa</span>
+                        </button>
+                      </>
                     )}
                   </div>
+
+                  {/* BUTTON UPLOAD Ở PHÍA DƯỚI ĐIỂM CHO TRƯỜNG HỢP CHẤM TAY */}
+                  {isMath && isManualMath && booking && (
+                    <div className="pt-0.5 flex items-center gap-2 flex-wrap">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onOpenManualUpload?.(booking.id)}
+                        className="h-6 px-2 text-xs font-normal text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shadow-2xs gap-1"
+                        title={booking.testResult?.uploadedFileName ? "Upload lại hoặc thay đổi file bài chấm tay" : "Upload phiếu chấm bài thi"}
+                      >
+                        <Upload className="h-3 w-3" />
+                        <span>{booking.testResult?.uploadedFileName ? 'Upload lại' : 'Upload kết quả'}</span>
+                      </Button>
+
+                      {booking.testResult?.uploadedFileName && (
+                        <div
+                          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/40 font-mono truncate max-w-[170px]"
+                          title={booking.testResult.uploadedFileName}
+                        >
+                          <FileText className="h-3 w-3 text-primary shrink-0" />
+                          <span className="truncate">{booking.testResult.uploadedFileName}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+              </div>
+
+              {/* CỘT PHẢI: KẾT QUẢ SAU ĐÁNH GIÁ & CÁC NÚT ACTION NGAY BÊN DƯỚI */}
+              <div className="flex flex-col gap-2 shrink-0 sm:min-w-[240px] md:min-w-[260px] w-full sm:w-auto">
+                {/* Hàng chọn kết quả sau đánh giá & nhánh */}
+                <div className={cn("grid gap-2", isMath ? "grid-cols-1" : "grid-cols-2")}>
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground text-[11px] font-normal block truncate">
+                      Kết quả sau đánh giá:
+                    </span>
+                    <InlineSelect
+                      value={booking?.testResult?.level ?? (booking?.expectedLevel || '')}
+                      disabled={!canEditPlacement || terminalStatus?.status === 'cancelled'}
+                      ariaLabel="Kết quả sau đánh giá"
+                      options={[
+                        { value: '', label: 'Chưa đặt' },
+                        ...(isMath ? MATH_LEVELS : PROGRAM_LEVELS).map((level) => ({ value: level, label: level })),
+                      ]}
+                      onValueChange={(val) => onUpdateBookingLevel?.(val, booking?.testResult?.subLevel)}
+                      className="h-7 text-xs border-solid shadow-2xs font-medium text-sky-700 dark:text-sky-300"
+                    />
+                  </div>
+
+                  {!isMath && (
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground text-[11px] font-normal block truncate">
+                        Nhánh trình độ:
+                      </span>
+                      <InlineSelect
+                        value={booking?.testResult?.subLevel ?? ''}
+                        disabled={!canEditPlacement || terminalStatus?.status === 'cancelled'}
+                        ariaLabel="Nhánh trình độ"
+                        options={[
+                          { value: '', label: '-' },
+                          ...SUB_LEVELS.map((sub) => ({ value: sub, label: sub })),
+                        ]}
+                        onValueChange={(sub) => onUpdateBookingLevel?.(booking?.testResult?.level || '', sub)}
+                        className="h-7 text-xs border-solid shadow-2xs font-normal"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Hàng button actions hoặc trạng thái ở ngay dưới trình độ */}
+                {(canComplete || canCancel || terminalStatus) && (
+                  <div className="flex items-center justify-end gap-2 pt-0.5">
+                    {terminalStatus && (
+                      <StatusBadge
+                        status={terminalStatus.status}
+                        label={terminalStatus.label}
+                        className="text-[10px] py-0 px-2 h-6 font-normal"
+                      />
+                    )}
+
+                    {canComplete && onComplete && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={onComplete}
+                        className="h-7 px-3 text-xs font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs gap-1"
+                        title="Xác nhận hoàn tất ca kiểm tra"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        <span>Hoàn tất</span>
+                      </Button>
+                    )}
+
+                    {canCancel && onCancel && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={onCancel}
+                        className="h-7 px-2 text-xs font-normal text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                        title="Hủy ca kiểm tra này"
+                      >
+                        Hủy lịch
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* 3. KHỐI THÔNG TIN CA ĐẶT LỊCH TEST */}
-      <div className="border-t border-border/50 bg-muted/30 dark:bg-muted/20 px-3.5 py-2 text-xs">
-        <div
-          className="flex items-center justify-between gap-2 cursor-pointer select-none group"
-          onClick={() => setIsBookingDetailsExpanded((prev) => !prev)}
-          title={isBookingDetailsExpanded ? 'Thu gọn chi tiết ca' : 'Mở rộng chi tiết ca'}
-        >
-          {/* ĐẦU DÒNG: NGƯỜI PHỤ TRÁCH */}
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-muted-foreground">Phụ trách:</span>
-            {hasTeacher ? (
-              <div className="flex items-center gap-1">
-                <span className="font-medium text-foreground">{session.teacherName}</span>
-                {onOpenTeacherPicker && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onOpenTeacherPicker()
-                    }}
-                    className="text-primary hover:underline text-[11px] font-normal ml-0.5 cursor-pointer"
-                    title="Đổi giáo viên phụ trách"
-                  >
-                    [Đổi]
-                  </button>
-                )}
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onOpenTeacherPicker?.()
-                }}
-                className="h-5 px-1.5 text-[10.5px] font-normal text-primary border-primary/40 hover:bg-primary/10 cursor-pointer shadow-none bg-background"
+      {/* 3. KHỐI THÔNG TIN CA ĐẶT LỊCH TEST (LƯỚI 2 CỘT GỌN GÀNG, CHẶT CHẼ) */}
+      <div className="border-t border-border/60 bg-muted/40 dark:bg-muted/25 px-3.5 py-2.5 text-xs space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+          {/* CỘT 1: LỊCH HẸN & ĐỊA ĐIỂM */}
+          <div className="space-y-1.5 min-w-0">
+            {/* Dòng 1: Thời gian */}
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground shrink-0">Thời gian:</span>
+              <span className="font-medium text-foreground truncate" title={displayTime}>
+                {displayTime}
+              </span>
+            </div>
+
+            {/* Dòng 2: Địa điểm (không hiển thị phòng) */}
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground shrink-0">Địa điểm:</span>
+              <span className="font-normal text-foreground truncate" title={session.school}>
+                {session.school}
+              </span>
+            </div>
+
+            {/* Dòng 3: Chương trình & Level dự kiến trong ngoặc (bỏ chữ dự kiến) */}
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground shrink-0">Chương trình:</span>
+              <span
+                className="font-normal text-foreground truncate"
+                title={expectedLevelVal ? `${programDisplay} (${expectedLevelVal})` : programDisplay}
               >
-                + Gán phụ trách
-              </Button>
-            )}
+                {programDisplay}
+                {expectedLevelVal && (
+                  <span className="text-muted-foreground ml-1">
+                    ({expectedLevelVal})
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
 
-          {/* CUỐI DÒNG: LỊCH BOOKING • CƠ SỞ */}
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0 group-hover:text-foreground">
-            <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-            <span className="font-mono text-muted-foreground">
-              {session.dateLabel}
-            </span>
-            <span>&bull;</span>
-            <span className="font-normal text-foreground/80 group-hover:text-foreground">
-              {session.school}
-            </span>
-            {isBookingDetailsExpanded ? (
-              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
-            ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
-            )}
+          {/* CỘT 2: ĐIỀU PHỐI & NHÂN SỰ */}
+          <div className="space-y-1.5 min-w-0">
+            {/* Dòng 1: Khảo thí */}
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <UserCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground shrink-0">Khảo thí:</span>
+              {hasTeacher ? (
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="font-medium text-foreground truncate">{session.teacherName}</span>
+                  {onOpenTeacherPicker && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onOpenTeacherPicker()
+                      }}
+                      className="text-primary hover:underline text-[11px] font-normal cursor-pointer shrink-0"
+                      title="Đổi giáo viên phụ trách"
+                    >
+                      [Đổi]
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onOpenTeacherPicker?.()
+                  }}
+                  className="h-5 px-1.5 text-[10.5px] font-normal text-primary border-primary/40 hover:bg-primary/10 cursor-pointer shadow-none bg-background"
+                >
+                  + Gán phụ trách
+                </Button>
+              )}
+            </div>
+
+            {/* Dòng 2: Người tạo / Tư vấn */}
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground shrink-0">Tư vấn / Tạo bởi:</span>
+              <span className="font-normal text-foreground truncate" title={creatorName}>
+                {creatorName}
+              </span>
+            </div>
+
+            {/* Dòng 3: Mã phiếu & Ngày tạo */}
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground shrink-0">Mã phiếu:</span>
+              <span className="font-mono text-foreground font-medium">#{session.id}</span>
+              <span className="text-muted-foreground text-[11px]">
+                ({booking?.testTime?.split(' ')[0] || session.rawDate?.split(' ')[0] || '2026-11-13'})
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* PHẦN MỞ RỘNG BÊN DƯỚI */}
-        {isBookingDetailsExpanded && (
-          <div className="pt-2 text-xs space-y-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-muted-foreground">
-              <div className="flex items-center justify-between gap-2">
-                <span>Chương trình / Lớp:</span>
-                <span className="font-normal text-foreground truncate max-w-[160px]">
-                  {booking?.program || 'Station Program'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-2">
-                <span>Trình độ dự kiến:</span>
-                <span className="font-medium text-foreground">
-                  {booking?.expectedLevel || session.testScoreSummary?.level || 'Kindie 3'}
-                </span>
-              </div>
-            </div>
-
-            {booking?.msg && (
-              <div className="rounded bg-background/80 dark:bg-background/60 p-2 text-xs border border-border/40 text-foreground">
-                <span className="font-medium text-muted-foreground mr-1.5">Ghi chú ca:</span>
-                <span className="italic">{booking.msg}</span>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between text-[11px] pt-1 text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <span>Người tạo:</span>
-                <span className="font-normal text-foreground">{creatorName}</span>
-              </div>
-              <div className="flex items-center gap-1.5 font-mono text-muted-foreground">
-                <span className="font-normal text-foreground/80">#{session.id}</span>
-                <span>&bull;</span>
-                <span>
-                  {booking?.testTime?.split(' ')[0] || session.rawDate?.split(' ')[0] || '2026-08-05'}
-                </span>
-              </div>
-            </div>
+        {/* DÒNG GHI CHÚ CA TEST: NẰM DƯỚI, PHẲNG, LIỀN MẠCH */}
+        {booking?.msg && (
+          <div className="pt-1.5 border-t border-border/40 flex items-start gap-1.5 text-xs">
+            <span className="text-muted-foreground shrink-0 font-medium">Ghi chú ca:</span>
+            <span className="text-foreground/90 italic truncate" title={booking.msg}>
+              {booking.msg}
+            </span>
           </div>
         )}
       </div>

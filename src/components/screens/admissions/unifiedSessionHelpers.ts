@@ -176,7 +176,7 @@ export function resolveStudentUnifiedSessions(params: {
     if (levelVal) {
       placementLevels.math = {
         level: levelVal,
-        subLevel: mathTest.testResult?.subLevel,
+        subLevel: undefined, // Môn Toán không có trình độ phụ
         testDate: mathTest.testTime,
         isExpected: !mathTest.testResult?.level && Boolean(mathTest.expectedLevel),
       }

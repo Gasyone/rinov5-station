@@ -163,32 +163,34 @@ export function ClassesTableRow({
     scheduleType: 'class',
   }
 
-  const isEven = propIsEven ?? (index % 2 === 1)
+  const isEvenRow = propIsEven ?? (index % 2 === 1)
 
-  // Opaque solid background specifically for sticky fixed cells to prevent bleed-through when scrolling
+  // Solid background specifically for sticky fixed cells to prevent bleed-through when scrolling
   const stickyBgClass = isSelected
-    ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--background))] dark:bg-[color-mix(in_srgb,var(--primary)_18%,var(--background))]'
-    : isEven
-      ? 'bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] dark:bg-[color-mix(in_srgb,var(--muted)_25%,var(--background))] group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
-      : 'bg-background group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
+    ? '!bg-sky-50 dark:!bg-sky-950'
+    : isEvenRow
+      ? '!bg-slate-50 dark:!bg-zinc-900 group-hover:!bg-slate-100 dark:group-hover:!bg-zinc-800'
+      : '!bg-white dark:!bg-zinc-950 group-hover:!bg-slate-100 dark:group-hover:!bg-zinc-800'
+
+  const rowBgClass = isSelected
+    ? '!bg-sky-50 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 hover:bg-slate-100 dark:hover:bg-zinc-800'
 
   return (
     <TooltipProvider delayDuration={300}>
       <tr
         className={cn(
-          "group cursor-pointer border-b-0 border-none transition-colors align-middle [&>td]:py-1 [&>td]:px-2.5",
-          isSelected
-            ? '!bg-primary/10 dark:!bg-primary/20'
-            : isEven
-              ? 'bg-zinc-100/45 dark:bg-zinc-800/30 hover:bg-muted/70 dark:hover:bg-muted/50'
-              : 'bg-background hover:bg-muted/60 dark:hover:bg-muted/40'
+          "group cursor-pointer border-b-0 border-none transition-colors align-middle [&>td]:py-1 [&>td]:px-2 xl:[&>td]:px-2.5 2xl:[&>td]:py-2",
+          rowBgClass
         )}
         onClick={() => onRowClick(cls.id)}
       >
         {/* Checkbox: sticky left-0 */}
         <td
           className={cn(
-            "sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center py-1 px-1 border-none transition-colors",
+            "sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center px-1 transition-colors",
             stickyBgClass
           )}
           onClick={(e) => e.stopPropagation()}
@@ -204,22 +206,22 @@ export function ClassesTableRow({
         {/* Lớp học (PRIMARY FOCUS - STICKY left-8) */}
         <td
           className={cn(
-            "sticky left-8 z-30 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden py-1 px-2.5 border-none transition-colors",
+            "sticky left-8 z-30 w-[230px] min-w-[210px] xl:w-[245px] 2xl:w-[270px] px-2 xl:px-2.5 transition-colors cursor-pointer",
             stickyBgClass
           )}
           onClick={() => onView(cls.id)}
         >
-          <div className="relative z-10 max-w-full overflow-hidden pr-14">
-            <div className="min-w-0 space-y-0.5">
+          <div className="relative z-10 max-w-full overflow-hidden pr-12">
+            <div className="min-w-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <p className="truncate font-semibold text-xs text-foreground group-hover:text-primary transition-colors cursor-pointer">
+                  <p className="font-medium text-foreground text-xs 2xl:text-sm truncate hover:underline hover:text-primary leading-tight cursor-pointer">
                     {cls.name}
                   </p>
                 </TooltipTrigger>
                 <TooltipContent>{cls.name}</TooltipContent>
               </Tooltip>
-              <p className="text-xs text-muted-foreground truncate leading-tight">
+              <p className="text-xs text-muted-foreground font-normal leading-none mt-0.5 2xl:mt-1 truncate">
                 <span className="font-mono">{cls.code}</span>
                 {cls.room && (
                   <span className="ml-1.5 text-foreground/80 font-normal">
@@ -229,7 +231,7 @@ export function ClassesTableRow({
               </p>
             </div>
             <div
-              className="absolute right-0 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex bg-muted/90 rounded px-0.5"
+              className="absolute right-0 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex bg-muted/90 rounded px-0.5 shadow-2xs"
               onClick={(e) => e.stopPropagation()}
             >
               <Button
@@ -264,11 +266,11 @@ export function ClassesTableRow({
         </td>
 
         {/* Môn học - Trình độ */}
-        <td className="min-w-[130px] max-w-[145px] py-1 px-2.5 text-xs">
+        <td className="w-[140px] min-w-[130px] xl:w-[150px] px-2 xl:px-2.5 text-xs">
           <SyllabusProfileHoverCard cls={cls}>
             <div className="cursor-pointer group/syllabus space-y-0.5 max-w-full leading-tight">
               <div className="font-normal text-foreground truncate max-w-[130px]">{subjectDisplay}</div>
-              <div className="text-xs text-muted-foreground truncate max-w-[130px] group-hover/syllabus:text-primary group-hover/syllabus:underline">
+              <div className="text-xs text-muted-foreground font-normal leading-none mt-0.5 2xl:mt-1 truncate max-w-[130px] group-hover/syllabus:text-primary group-hover/syllabus:underline">
                 {cls.syllabus && cls.syllabus !== '—' ? cls.syllabus : <span className="text-muted-foreground italic">Chưa gán</span>}
               </div>
             </div>
@@ -276,7 +278,7 @@ export function ClassesTableRow({
         </td>
 
         {/* Giáo viên */}
-        <td className="min-w-[135px] max-w-[150px] py-1 px-2.5 text-xs">
+        <td className="w-[145px] min-w-[135px] xl:w-[160px] px-2 xl:px-2.5 text-xs">
           {primaryTeachers.length === 0 || !cls.teacher || cls.teacher === 'Chưa gán' ? (
             <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 text-xs font-normal w-fit">
               <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
@@ -342,16 +344,16 @@ export function ClassesTableRow({
         </td>
 
         {/* Sĩ số */}
-        <td className="min-w-[90px] max-w-[105px] py-1 px-2.5 text-xs">
+        <td className="w-[100px] min-w-[90px] xl:w-[110px] px-2 xl:px-2.5 text-xs">
           <div className="space-y-0.5 leading-tight">
             <div className="flex items-center gap-1">
               <span className="font-normal text-foreground">{cls.enrolledStudents}/{cls.maxStudents}</span>
-              <span className={cn('text-xs', capacityPct >= 80 ? 'text-emerald-600' : capacityPct < 50 ? 'text-amber-600' : 'text-muted-foreground')}>
+              <span className={cn('text-xs font-normal', capacityPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : capacityPct < 50 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
                 ({capacityPct}%)
               </span>
             </div>
             {(Boolean(cls.trialStudents) || getClassNewStudents(cls) > 0) && (
-              <div className="flex items-center gap-1 flex-wrap">
+              <div className="flex items-center gap-1 flex-wrap mt-0.5">
                 {typeof cls.trialStudents === 'number' && cls.trialStudents > 0 && (
                   <span className="inline-flex items-center px-1 py-0 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 font-normal text-xs leading-tight">
                     {cls.trialStudents} thử
@@ -368,10 +370,10 @@ export function ClassesTableRow({
         </td>
 
         {/* Lịch học */}
-        <td className="min-w-[130px] max-w-[145px] py-1 px-2.5 text-xs">
+        <td className="w-[145px] min-w-[135px] xl:w-[160px] px-2 xl:px-2.5 text-xs">
           <div className="space-y-0.5 leading-tight">
             <ScheduleSummary scheduleSlots={cls.scheduleSlots} className={cls.name} hideTime />
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate mt-0.5">
               {cls.status === 'dang_hoc' ? (
                 <span>
                   Buổi tới:{' '}
@@ -452,16 +454,16 @@ export function ClassesTableRow({
         </td>
 
         {/* Trạng thái */}
-        <td className="w-28 min-w-28 max-w-32 py-1 px-2.5 text-xs whitespace-nowrap">
+        <td className="w-[115px] min-w-[105px] xl:w-[125px] px-2 xl:px-2.5 text-xs whitespace-nowrap">
           <StatusBadge
             status={cls.status}
             label={CLASS_STATUS_LABELS[cls.status]}
-            className="text-xs font-medium px-1.5 py-0 h-5 leading-none rounded"
+            className="text-xs font-normal px-1.5 py-0 h-5 leading-none rounded"
           />
         </td>
 
         {/* CC & BTVN */}
-        <td className="min-w-[85px] max-w-[100px] py-1 px-2.5 text-xs">
+        <td className="w-[100px] min-w-[90px] xl:w-[110px] px-2 xl:px-2.5 text-xs">
           <div className="space-y-0.5 leading-tight">
             <div className="flex items-center justify-between gap-1">
               <span className="text-xs text-muted-foreground font-normal">CC:</span>
@@ -487,9 +489,9 @@ export function ClassesTableRow({
         </td>
 
         {/* Kiểm tra */}
-        <td className="w-16 min-w-16 py-1 px-2 text-center text-xs">
+        <td className="w-[70px] min-w-[65px] px-2 text-center text-xs">
           {isInactive ? (
-            <span className="text-muted-foreground">—</span>
+            <span className="text-muted-foreground font-normal">—</span>
           ) : (
             <span className="font-normal text-foreground">
               {avgTestScore}<span className="text-xs text-muted-foreground font-normal">/10</span>
@@ -498,9 +500,9 @@ export function ClassesTableRow({
         </td>
 
         {/* CSĐB */}
-        <td className="w-16 min-w-16 py-1 px-2 text-center text-xs">
+        <td className="w-[70px] min-w-[65px] px-2 text-center text-xs">
           {isInactive || specialCareCount === 0 ? (
-            <span className="text-muted-foreground">0</span>
+            <span className="text-muted-foreground font-normal">0</span>
           ) : (
             <span className="inline-flex items-center justify-center px-1.5 py-0 h-4.5 rounded font-normal text-xs bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200/60 leading-none">
               {specialCareCount} HV

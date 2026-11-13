@@ -445,7 +445,7 @@ export function BookingTestCreateScreen() {
         : (paramLeadId ? mockLeads.find((l) => l.id === paramLeadId)?.assignedTo : undefined) ||
           'Trần Thị Mai (Tư vấn tuyển sinh)'
 
-    const bookingId = `E${Math.floor(1000 + Math.random() * 9000)}`
+    const bookingId = String(Math.floor(100000 + Math.random() * 900000))
     const newBooking: BookingTest = {
       id: bookingId,
       childName: finalChildName,

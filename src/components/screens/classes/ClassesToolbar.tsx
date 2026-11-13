@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, ChevronDown, ListFilter } from 'lucide-react'
+import { Plus, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -150,16 +150,19 @@ export function ClassesToolbar({
           <ExpandableSearch
             value={searchTerm}
             onValueChange={onSearchChange}
-            label="Tìm lớp học"
-            placeholder="Tìm tên lớp, mã lớp, giáo viên..."
-            inputClassName="sm:w-60 text-xs h-8"
+            placeholder="Tìm kiếm..."
+            inputClassName="w-32 sm:w-36 lg:w-44 xl:w-52 2xl:w-60 text-xs h-8"
           />
           <FilterIconButton count={activeFilterCount > 0 ? activeFilterCount : undefined} onClick={onOpenFilters} />
 
           {showCreateButton ? (
-            <Button size="sm" onClick={onCreateClass} className="h-8 px-2.5 font-medium text-xs flex items-center gap-1.5 shadow-2xs">
+            <Button
+              size="sm"
+              onClick={onCreateClass}
+              className="h-8 px-2 sm:px-2.5 font-medium text-xs flex items-center gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+            >
               <Plus className="h-3.5 w-3.5 mr-0.5" />
-              Tạo lớp
+              <span>Tạo lớp</span>
             </Button>
           ) : null}
         </div>
@@ -168,7 +171,7 @@ export function ClassesToolbar({
       {/* Grade Selector Row: visible only when math subject is active */}
       {activeSubject === 'math' && (
         <div className="flex items-center gap-2 border-t border-dashed border-border/80 pt-1 flex-wrap">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Khối lớp:</span>
+          <span className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Khối lớp:</span>
           <SegmentedControl
             value={activeGrade}
             options={[
@@ -204,27 +207,23 @@ export function ClassesToolbar({
         {/* Quick Problem Filters (Right Aligned - Compact Chips) */}
         {onProblemFilterChange && (
           <div className="flex items-center gap-1.5 select-none shrink-0 min-w-0">
-            <span
-              title="Lọc nhanh"
-              aria-label="Lọc nhanh"
-              className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
-            >
-              <ListFilter className="h-3.5 w-3.5" />
+            <span className="text-xs font-normal text-muted-foreground shrink-0 mr-0.5">
+              Lọc:
             </span>
 
-            <div className="flex items-center gap-1 min-w-0">
+            <div className="flex items-center gap-1 min-w-0 overflow-x-auto custom-scrollbar">
               {/* Dropdown chevron to toggle quick filter chip visibility */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/70 border-dashed"
                     title="Chọn bộ lọc nhanh hiển thị"
                   >
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-48 p-2 space-y-1">
+                <PopoverContent align="end" className="w-48 p-2 space-y-1">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1 pb-1">Hiển thị bộ lọc</p>
                   {QUICK_FILTER_DEFS.map((def) => (
                     <label

@@ -285,7 +285,7 @@ export function BookingTestCreateDialog({
         : 'Trần Thị Mai (Tư vấn tuyển sinh)'
 
     const newBooking: BookingTest = {
-      id: `E${Math.floor(1000 + Math.random() * 9000)}`,
+      id: String(Math.floor(100000 + Math.random() * 900000)),
       childName: currentChildName,
       familyName: `Gia đình ${currentParentName}`,
       phone: currentPhone,

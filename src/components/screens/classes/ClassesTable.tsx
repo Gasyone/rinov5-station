@@ -52,18 +52,87 @@ export function ClassesTable({
     return (
       <EmptyState
         icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
-        title="Không có lớp học phù hợp."
-        description="Điều chỉnh tìm kiếm, trường, trạng thái hoặc bộ lọc."
+        title="Không tìm thấy dữ liệu"
+        description="Điều chỉnh tìm kiếm hoặc bộ lọc để hiển thị kết quả."
         className="py-10 border border-border rounded-lg bg-card"
       />
     )
   }
 
   return (
-    <DataTableFrame
-      className={cn("flex flex-col min-h-0", className)}
-      footer={
-        pagination ? (
+    <div className={cn('flex flex-col h-full min-h-0', className)}>
+      <DataTableFrame className="flex-1 min-h-0">
+        <table className="w-full min-w-max text-xs text-left border-separate border-spacing-0">
+          <thead className="sticky top-0 z-40 bg-muted">
+            <tr className="bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground [&>th]:border-b [&>th]:border-border/80 [&>th]:whitespace-nowrap">
+              {/* Checkbox: sticky top-0 left-0 z-50 */}
+              <th className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 text-center px-1 bg-muted">
+                <Checkbox
+                  checked={isPageSelected}
+                  onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
+                  aria-label="Chọn tất cả lớp học"
+                />
+              </th>
+              {/* Lớp học: sticky top-0 left-8 z-50 */}
+              <th className="sticky top-0 left-8 z-50 w-[230px] min-w-[210px] xl:w-[245px] 2xl:w-[270px] px-2.5 bg-muted text-left border-none">
+                Lớp học
+              </th>
+              {/* Môn học */}
+              <th className="sticky top-0 z-40 bg-muted w-[140px] min-w-[130px] xl:w-[150px] px-2.5 text-left">
+                Môn học
+              </th>
+              {/* Giáo viên */}
+              <th className="sticky top-0 z-40 bg-muted w-[145px] min-w-[135px] xl:w-[160px] px-2.5 text-left">
+                Giáo viên
+              </th>
+              {/* Sĩ số */}
+              <th className="sticky top-0 z-40 bg-muted w-[100px] min-w-[90px] xl:w-[110px] px-2.5 text-left">
+                Sĩ số
+              </th>
+              {/* Lịch học */}
+              <th className="sticky top-0 z-40 bg-muted w-[145px] min-w-[135px] xl:w-[160px] px-2.5 text-left">
+                Lịch học
+              </th>
+              {/* Trạng thái */}
+              <th className="sticky top-0 z-40 bg-muted w-[115px] min-w-[105px] xl:w-[125px] px-2.5 text-left">
+                Trạng thái
+              </th>
+              {/* CC & BTVN */}
+              <th className="sticky top-0 z-40 bg-muted w-[100px] min-w-[90px] xl:w-[110px] px-2.5 text-left">
+                CC & BTVN
+              </th>
+              {/* Kiểm tra */}
+              <th className="sticky top-0 z-40 bg-muted w-[70px] min-w-[65px] text-center px-2">
+                Kiểm tra
+              </th>
+              {/* CSĐB */}
+              <th className="sticky top-0 z-40 bg-muted w-[70px] min-w-[65px] text-center px-2">
+                CSĐB
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {classes.map((cls, index) => (
+              <ClassesTableRow
+                key={cls.id}
+                cls={cls}
+                index={index}
+                isSelected={selectedIds.has(cls.id)}
+                onToggle={onToggleOne}
+                onRowClick={onRowClick}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onManageRoadmap={onManageRoadmap}
+                onAddStudent={onAddStudent}
+              />
+            ))}
+          </tbody>
+        </table>
+      </DataTableFrame>
+
+      {pagination ? (
+        <div className="shrink-0 pt-1 pb-0">
           <DataTablePagination
             page={pagination.page}
             total={pagination.total}
@@ -72,78 +141,11 @@ export function ClassesTable({
             onPageSizeChange={pagination.onPageSizeChange}
             selectedCount={pagination.selectedCount}
             onClearSelection={pagination.onClearSelection}
+            size="sm"
+            className="!bg-transparent border-0 border-none shadow-none px-0 py-0"
           />
-        ) : null
-      }
-    >
-      <table className="w-full min-w-[1100px] text-xs text-left border-separate border-spacing-0">
-        <thead className="sticky top-0 z-40 bg-muted">
-          <tr className="bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground [&>th]:border-b [&>th]:border-border/80">
-            {/* Checkbox: sticky top-0 left-0 z-50 */}
-            <th className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 text-center px-1 bg-muted">
-              <Checkbox
-                checked={isPageSelected}
-                onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
-                className="h-3.5 w-3.5 translate-y-[1px]"
-                aria-label="Chọn tất cả lớp học"
-              />
-            </th>
-            {/* Lớp học: sticky top-0 left-8 z-50 */}
-            <th className="sticky top-0 left-8 z-50 w-[240px] min-w-[240px] max-w-[240px] px-2.5 bg-muted text-left border-none">
-              Lớp học
-            </th>
-            {/* Môn học */}
-            <th className="sticky top-0 z-40 bg-muted min-w-[130px] max-w-[145px] px-2.5 text-left">
-              Môn học
-            </th>
-            {/* Giáo viên */}
-            <th className="sticky top-0 z-40 bg-muted min-w-[135px] max-w-[150px] px-2.5 text-left">
-              Giáo viên
-            </th>
-            {/* Sĩ số */}
-            <th className="sticky top-0 z-40 bg-muted min-w-[90px] max-w-[105px] px-2.5 text-left">
-              Sĩ số
-            </th>
-            {/* Lịch học */}
-            <th className="sticky top-0 z-40 bg-muted min-w-[130px] max-w-[145px] px-2.5 text-left">
-              Lịch học
-            </th>
-            {/* Trạng thái */}
-            <th className="sticky top-0 z-40 bg-muted w-28 min-w-28 max-w-32 px-2.5 text-left">
-              Trạng thái
-            </th>
-            {/* CC & BTVN */}
-            <th className="sticky top-0 z-40 bg-muted min-w-[85px] max-w-[100px] px-2.5 text-left">
-              CC & BTVN
-            </th>
-            {/* Kiểm tra */}
-            <th className="sticky top-0 z-40 bg-muted w-16 min-w-16 text-center px-2">
-              Kiểm tra
-            </th>
-            {/* CSĐB */}
-            <th className="sticky top-0 z-40 bg-muted w-16 min-w-16 text-center px-2">
-              CSĐB
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {classes.map((cls, index) => (
-            <ClassesTableRow
-              key={cls.id}
-              cls={cls}
-              index={index}
-              isSelected={selectedIds.has(cls.id)}
-              onToggle={onToggleOne}
-              onRowClick={onRowClick}
-              onView={onView}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onManageRoadmap={onManageRoadmap}
-              onAddStudent={onAddStudent}
-            />
-          ))}
-        </tbody>
-      </table>
-    </DataTableFrame>
+        </div>
+      ) : null}
+    </div>
   )
 }

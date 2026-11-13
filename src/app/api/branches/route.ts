@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import type { Branch, BranchRoom, BranchStaffMember, BranchHistoryItem } from '@/mocks/branches'
+import { mockBranches, type Branch, type BranchRoom, type BranchStaffMember, type BranchHistoryItem } from '@/mocks/branches'
 
 // GET /api/branches: Lấy danh sách cơ sở từ Supabase PostgreSQL
 export async function GET(request: NextRequest) {
@@ -96,11 +96,38 @@ export async function GET(request: NextRequest) {
       data: branches,
     })
   } catch (error) {
-    console.error('Error fetching branches from DB:', error)
-    return NextResponse.json(
-      { success: false, message: 'Lỗi khi tải danh sách cơ sở từ cơ sở dữ liệu' },
-      { status: 500 }
-    )
+    console.warn('Prisma DB error in /api/branches, falling back to mockBranches:', error)
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')?.toLowerCase() || ''
+    const status = searchParams.get('status') || 'all'
+    const region = searchParams.get('region') || 'all'
+    const type = searchParams.get('type') || 'all'
+
+    let fallbackBranches = [...mockBranches]
+    if (status !== 'all') {
+      fallbackBranches = fallbackBranches.filter((b) => b.status === status)
+    }
+    if (region !== 'all') {
+      fallbackBranches = fallbackBranches.filter((b) => b.region === region)
+    }
+    if (type !== 'all') {
+      fallbackBranches = fallbackBranches.filter((b) => b.type === type)
+    }
+    if (search.trim()) {
+      fallbackBranches = fallbackBranches.filter(
+        (b) =>
+          b.name.toLowerCase().includes(search) ||
+          b.code.toLowerCase().includes(search) ||
+          b.address.toLowerCase().includes(search) ||
+          (b.managerName && b.managerName.toLowerCase().includes(search))
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      total: fallbackBranches.length,
+      data: fallbackBranches,
+    })
   }
 }
 

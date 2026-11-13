@@ -2,25 +2,21 @@
 
 import { useMemo, useState } from 'react'
 import { Clock } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  StatusBadge,
-} from '@/components/shared'
 import type { BookingTest } from '@/mocks/bookingTests'
 import type { Employee } from '@/mocks/employees'
 import {
   applyBookingCheckIn,
   formatStudentAgeDob,
   getParentDisplayName,
-  getStatusLabel,
 } from './bookingTestHelpers'
 import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDialog'
+import { BookingTestManualUploadDialog } from './BookingTestManualUploadDialog'
 import { StudentDetailLevelDialog } from '../students/detail/StudentDetailLevelDialog'
 import {
   findEmployeeByName,
@@ -69,6 +65,7 @@ export function BookingTestDetailDialog({
   onSelectBooking,
 }: BookingTestDetailDialogProps) {
   const [overrideBooking, setOverrideBooking] = useState<BookingTest | null>(null)
+  const [manualUploadId, setManualUploadId] = useState<string | null>(null)
   const [prevPropId, setPrevPropId] = useState(initialBooking?.id)
 
   const defaultSubj: UnifiedSubject = initialBooking?.subject === 'math' ? 'math' : 'english'
@@ -89,6 +86,19 @@ export function BookingTestDetailDialog({
 
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false)
   const [levelModalOpen, setLevelModalOpen] = useState(false)
+
+  const handleOpenManualUpload = (targetBookingId: string) => {
+    setManualUploadId(targetBookingId)
+  }
+
+  const manualUploadTargetBooking = useMemo(() => {
+    if (!manualUploadId) return null
+    return (
+      bookings.find((b) => b.id === manualUploadId) ||
+      (overrideBooking?.id === manualUploadId ? overrideBooking : null) ||
+      initialBooking
+    )
+  }, [manualUploadId, bookings, overrideBooking, initialBooking])
 
   const branchName = booking ? resolveBookingBranch(booking.school) : ''
   const branchEmployees = useMemo(
@@ -228,6 +238,7 @@ export function BookingTestDetailDialog({
                               handleSwitchBooking(currentSubjectSessions[0].sourceBooking)
                             }
                           }}
+                          onOpenManualUpload={handleOpenManualUpload}
                         />
                       )}
 
@@ -294,6 +305,7 @@ export function BookingTestDetailDialog({
                                 handleSwitchBooking(item.sourceBooking)
                               }
                             }}
+                            onOpenManualUpload={handleOpenManualUpload}
                           />
                         )
                       })}
@@ -418,6 +430,24 @@ export function BookingTestDetailDialog({
               ],
             }))
             toast.success(`Đã phân công ${emp.name} phụ trách bài test #${booking.id}`)
+          }}
+        />
+      )}
+
+      {/* Modal Upload và Cập nhật kết quả bài chấm tay (môn Toán) */}
+      {manualUploadTargetBooking && (
+        <BookingTestManualUploadDialog
+          open={Boolean(manualUploadId)}
+          booking={manualUploadTargetBooking}
+          authorName={manualUploadTargetBooking.createdBy || 'Admin Demo'}
+          onOpenChange={(open) => {
+            if (!open) setManualUploadId(null)
+          }}
+          onUpdateBooking={(id, updater) => {
+            onUpdateBooking(id, updater)
+            if (overrideBooking?.id === id) {
+              setOverrideBooking((curr) => (curr ? updater(curr) : curr))
+            }
           }}
         />
       )}

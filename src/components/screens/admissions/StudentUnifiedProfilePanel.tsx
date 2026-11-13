@@ -12,6 +12,7 @@ import {
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   Popover,
   PopoverContent,
@@ -99,7 +100,7 @@ export function StudentUnifiedProfilePanel({
   return (
     <div className="flex flex-col gap-3 min-w-0">
       {/* ========================================================================= */}
-      {/* SECTION 1: THÔNG TIN HỌC VIÊN & TRÌNH ĐỘ                                */}
+      {/* SECTION 1: THÔNG TIN HỌC VIÊN                                           */}
       {/* ========================================================================= */}
       <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
         {/* Header Section Học viên */}
@@ -110,7 +111,7 @@ export function StudentUnifiedProfilePanel({
           </Badge>
         </div>
 
-        <div className="p-3.5 space-y-2.5 text-xs">
+        <div className="p-3.5 space-y-2 text-xs">
           {/* Dòng 1: Họ tên học viên & Tuổi / DOB */}
           <div className="flex items-center justify-between gap-2 min-w-0">
             <span className="font-semibold text-foreground text-xs sm:text-sm truncate">
@@ -121,68 +122,77 @@ export function StudentUnifiedProfilePanel({
             </span>
           </div>
 
-          {/* Dòng 2: TRÌNH ĐỘ SAU TEST & TRÌNH ĐỘ PHỤ (CÓ THỂ SỬA ĐƯỢC) */}
-          <div className="relative group/placement rounded-md bg-muted/40 border border-border/60 p-2.5 text-xs">
-            <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-border/40">
-              <span className="text-[11px] font-normal text-muted-foreground">
-                Trình độ {activeSubject === 'math' ? 'Toán tư duy' : 'Tiếng Anh'}
-              </span>
-              {onEditLevel && (
-                <button
-                  type="button"
-                  onClick={onEditLevel}
-                  className="inline-flex items-center gap-1 text-[11px] font-normal text-primary hover:underline cursor-pointer"
-                  title="Cập nhật thông tin trình độ học viên"
-                >
-                  <Pencil className="h-3 w-3" />
-                  <span>Sửa</span>
-                </button>
-              )}
+          {/* Dòng 2: Trường học */}
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="text-muted-foreground shrink-0">Trường:</span>
+            <span className="font-normal text-muted-foreground truncate text-right" title={studentSchool}>
+              {studentSchool}
+            </span>
+          </div>
+
+          {/* Dòng 3: Học lực */}
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="text-muted-foreground shrink-0">Học lực:</span>
+            <span className="font-normal text-muted-foreground truncate text-right" title={studentAbility}>
+              {studentAbility}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* SECTION 2: TRÌNH ĐỘ HIỆN TẠI (TÁCH THÀNH KHỐI RIÊNG DƯỚI THÔNG TIN HỌC VIÊN) */}
+      {/* ========================================================================= */}
+      <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
+        {/* Header Section Trình độ */}
+        <div className="flex items-center justify-between px-3.5 py-2 bg-muted/40 border-b border-border/60">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-foreground">Trình độ hiện tại</span>
+            <Badge variant="outline" className="text-[11px] font-normal h-4.5 px-1.5 text-muted-foreground bg-background">
+              {activeSubject === 'math' ? 'Toán tư duy' : 'Tiếng Anh'}
+            </Badge>
+          </div>
+          {onEditLevel && (
+            <button
+              type="button"
+              onClick={onEditLevel}
+              className="inline-flex items-center gap-1 text-[11px] font-normal text-primary hover:underline cursor-pointer"
+              title="Cập nhật thông tin trình độ học viên"
+            >
+              <Pencil className="h-3 w-3" />
+              <span>Sửa</span>
+            </button>
+          )}
+        </div>
+
+        <div className="p-3.5 text-xs">
+          <div className={cn("grid gap-2 text-xs", activeSubject === 'math' ? "grid-cols-1" : "grid-cols-2")}>
+            <div className="space-y-0.5">
+              <span className="text-muted-foreground text-[11px] block">Trình độ:</span>
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-sky-700 dark:text-sky-300 text-xs">
+                  {currentPlacement?.level || 'Chưa kiểm tra'}
+                </span>
+                {currentPlacement?.isExpected && (
+                  <span className="text-[10px] text-muted-foreground italic">(Dự kiến)</span>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="space-y-0.5">
-                <span className="text-muted-foreground text-[11px] block">Trình độ:</span>
-                <div className="flex items-center gap-1">
-                  <span className="font-semibold text-sky-700 dark:text-sky-300 text-xs">
-                    {currentPlacement?.level || 'Chưa kiểm tra'}
-                  </span>
-                  {currentPlacement?.isExpected && (
-                    <span className="text-[10px] text-muted-foreground italic">(Dự kiến)</span>
-                  )}
-                </div>
-              </div>
-
+            {activeSubject !== 'math' && (
               <div className="space-y-0.5">
                 <span className="text-muted-foreground text-[11px] block">Trình độ phụ:</span>
                 <span className="font-normal text-foreground text-xs">
                   {currentPlacement?.subLevel || '-'}
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Dòng 3 (ĐƯA XUỐNG DƯỚI): TRƯỜNG HỌC & HỌC LỰC */}
-          <div className="space-y-1.5 pt-0.5 text-xs">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="text-muted-foreground shrink-0">Trường:</span>
-              <span className="font-normal text-muted-foreground truncate text-right" title={studentSchool}>
-                {studentSchool}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="text-muted-foreground shrink-0">Học lực:</span>
-              <span className="font-normal text-muted-foreground truncate text-right" title={studentAbility}>
-                {studentAbility}
-              </span>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* SECTION 2: THÔNG TIN PHỤ HUYNH (TÁCH RIÊNG SECTION)                      */}
+      {/* SECTION 3: THÔNG TIN PHỤ HUYNH (TÁCH RIÊNG SECTION)                      */}
       {/* ========================================================================= */}
       <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
         {/* Header Section Phụ huynh: Tiêu đề + Nút Lịch sử audit log */}

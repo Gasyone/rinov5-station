@@ -5,10 +5,10 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Clock,
   Plus,
   X,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog, StatusBadge } from '@/components/shared'
 import { cn } from '@/lib/utils'
@@ -36,6 +36,7 @@ interface UnifiedAttemptResultCardProps {
   onRejectTrial?: (trialId: string) => void
   onCancelTrial?: (trialId: string) => void
   onCheckInTrial?: (trialId: string) => void
+  onOpenManualUpload?: (bookingId: string) => void
 }
 
 export function UnifiedAttemptResultCard({
@@ -56,6 +57,7 @@ export function UnifiedAttemptResultCard({
   onRejectTrial,
   onCancelTrial,
   onCheckInTrial,
+  onOpenManualUpload,
 }: UnifiedAttemptResultCardProps) {
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
   const [confirmTrialAction, setConfirmTrialAction] = useState<{
@@ -202,105 +204,77 @@ export function UnifiedAttemptResultCard({
     onCompleteBooking?.(booking.id)
   }
 
+  // Với ca kiểm tra chính (isTest && !collapsible): Bỏ hoàn toàn thanh header section xám, đưa kết quả lên trên cùng
+  const showHeader = collapsible || !isTest
+
   return (
     <div className="rounded-lg border border-border/70 bg-card overflow-hidden text-xs shadow-2xs">
-      {/* 1. HEADER CỦA LẦN: Thanh ngang phẳng, gọn gàng */}
-      <div
-        className={cn(
-          "flex items-center justify-between px-3.5 py-1.5 bg-muted/40 text-xs select-none",
-          isCardExpanded ? "border-b border-border/50" : "",
-          collapsible && "cursor-pointer hover:bg-muted/60 transition-colors"
-        )}
-        onClick={() => {
-          if (collapsible) {
-            setIsCardExpanded((prev) => !prev)
-          }
-        }}
-      >
-        <div className="flex items-center gap-1.5">
-          <Badge variant="outline" className="font-normal text-muted-foreground text-[11px] px-1.5 py-0.2 bg-background font-mono">
-            Lần {attemptNumber}
-          </Badge>
-          <span className="font-normal text-muted-foreground text-xs">
-            {isTest ? 'Kiểm tra' : 'Học thử'}
-          </span>
-
-          {/* ICON ĐIỂM DANH: ĐƯA CHECK TÍCH VÀO NGAY SAU TÊN KIỂM TRA (ĐÃ BỎ CHỮ ĐẦU VÀO) */}
-          {!isNoShow && isCheckedIn && (
-            <span
-              className="inline-flex items-center justify-center h-4.5 w-4.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0 shadow-3xs"
-              title="Đã check-in"
-            >
-              <Check className="h-2.5 w-2.5 stroke-[2.5]" />
+      {/* 1. HEADER CỦA SECTION: CHỈ HIỂN THỊ KHI CẦN (LỊCH SỬ HOẶC HỌC THỬ) - BỎ HOÀN TOÀN LẦN X */}
+      {showHeader && (
+        <div
+          className={cn(
+            "flex items-center justify-between px-3.5 py-1.5 bg-muted/40 text-xs select-none",
+            isCardExpanded ? "border-b border-border/50" : "",
+            collapsible && "cursor-pointer hover:bg-muted/60 transition-colors"
+          )}
+          onClick={() => {
+            if (collapsible) {
+              setIsCardExpanded((prev) => !prev)
+            }
+          }}
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            {collapsible && <Clock className="h-3 w-3 text-muted-foreground shrink-0" />}
+            <span className="font-normal text-muted-foreground text-xs shrink-0">
+              {collapsible ? session.dateLabel : (isTest ? 'Kiểm tra' : 'Học thử')}
             </span>
-          )}
 
-          {isNoShow && (
-            <span
-              className="inline-flex items-center justify-center h-4.5 w-4.5 rounded-full bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 shrink-0 shadow-3xs"
-              title="Không đến"
-            >
-              <X className="h-2.5 w-2.5 stroke-[2.5]" />
-            </span>
-          )}
+            {/* TÓM TẮT TRÌNH ĐỘ KHI THU GỌN HOẶC TRONG LỊCH SỬ */}
+            {collapsible && (
+              <span className="text-[11px] text-foreground/80 truncate">
+                &bull; {booking?.testResult?.level || session.testScoreSummary?.level || (isTest ? 'Chưa đặt' : 'Đã học thử')}
+                {isPositiveScore ? ` (${scoreValue}đ)` : ''}
+              </span>
+            )}
 
-          {isFocused && (
-            <span className="text-[10px] bg-primary/10 text-primary font-normal px-1.5 py-0.2 rounded ml-0.5">
-              Đang xem
-            </span>
-          )}
+            {/* ICON ĐIỂM DANH */}
+            {!isNoShow && isCheckedIn && (
+              <span
+                className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0"
+                title="Đã check-in"
+              >
+                <Check className="h-2.5 w-2.5 stroke-[2.5]" />
+              </span>
+            )}
 
-          {/* TÓM TẮT TRÌNH ĐỘ KHI THU GỌN */}
-          {collapsible && !isCardExpanded && (
-            <span className="text-[11px] text-muted-foreground ml-1 truncate max-w-[200px]">
-              &bull; {booking?.testResult?.level || session.testScoreSummary?.level || (isTest ? 'Chưa đặt' : 'Đã học thử')}
-              {isPositiveScore ? ` (${scoreValue}đ)` : ''}
-            </span>
-          )}
-        </div>
+            {isNoShow && (
+              <span
+                className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 shrink-0"
+                title="Không đến"
+              >
+                <X className="h-2.5 w-2.5 stroke-[2.5]" />
+              </span>
+            )}
 
-        {/* NÚT THAO TÁC HOẶC TRẠNG THÁI CUỐI BÊN PHẢI */}
-        <div className="flex items-center gap-1.5">
-          {terminalStatus && (
-            <StatusBadge
-              status={terminalStatus.status}
-              label={terminalStatus.label}
-              className="text-[10px] py-0 px-1.5 h-4.5 font-normal"
-            />
-          )}
+            {isFocused && !collapsible && (
+              <span className="text-[10px] bg-primary/10 text-primary font-normal px-1.5 py-0.2 rounded ml-0.5">
+                Đang xem
+              </span>
+            )}
+          </div>
 
-          {/* ACTION BUTTONS DÀNH CHO CA KIỂM TRA (TEST) */}
-          {isTest && !terminalStatus && canComplete && (
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleComplete}
-              className="h-5 px-2 text-[10.5px] font-normal bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-none gap-1"
-              title="Xác nhận hoàn tất ca kiểm tra"
-            >
-              <Check className="h-3 w-3" />
-              <span>Hoàn tất</span>
-            </Button>
-          )}
+          {/* NÚT THAO TÁC HOẶC TRẠNG THÁI CUỐI BÊN PHẢI */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {terminalStatus && (
+              <StatusBadge
+                status={terminalStatus.status}
+                label={terminalStatus.label}
+                className="text-[10px] py-0 px-1.5 h-4.5 font-normal"
+              />
+            )}
 
-          {isTest && !terminalStatus && booking && canCancel && isCardExpanded && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                setConfirmCancelOpen(true)
-              }}
-              className="h-5 px-1.5 text-[10.5px] font-normal text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shadow-none"
-              title="Hủy ca kiểm tra này"
-            >
-              Hủy lịch
-            </Button>
-          )}
-
-          {/* ACTION BUTTONS DÀNH CHO SECTION HỌC THỬ (THEO TRẠNG THÁI CỦA HỌC THỬ) */}
-          {!isTest && trial && isCardExpanded && (
+            {/* ACTION BUTTONS DÀNH CHO SECTION HỌC THỬ (THEO TRẠNG THÁI CỦA HỌC THỬ) */}
+            {!isTest && trial && isCardExpanded && (
             <>
               {/* 1. Trạng thái Chờ duyệt (pending_approval) */}
               {trial.status === 'pending_approval' && (
@@ -439,6 +413,7 @@ export function UnifiedAttemptResultCard({
           )}
         </div>
       </div>
+    )}
 
       {isCardExpanded && (
         <>
@@ -451,11 +426,16 @@ export function UnifiedAttemptResultCard({
               terminalStatus={terminalStatus}
               canEditPlacement={canEditPlacement}
               creatorName={creatorName}
+              canComplete={canComplete}
+              canCancel={canCancel}
+              onComplete={handleComplete}
+              onCancel={() => setConfirmCancelOpen(true)}
               onCheckIn={handleCheckIn}
               onDirectAssessment={handleDirectAssessment}
               onOpenAssessment={onOpenAssessment}
               onOpenTeacherPicker={onOpenTeacherPicker}
               onUpdateBookingLevel={onUpdateBookingLevel}
+              onOpenManualUpload={onOpenManualUpload}
             />
           ) : (
             /* 2 & 3. SECTION HỌC THỬ (BAO GỒM 3 GIAI ĐOẠN KẾT QUẢ VÀ LỚP GHÉP / BUỔI HỌC) */
