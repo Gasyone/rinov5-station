@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  ExternalLink,
   Plus,
   X,
 } from 'lucide-react'
@@ -41,7 +42,6 @@ interface UnifiedAttemptResultCardProps {
 
 export function UnifiedAttemptResultCard({
   session,
-  attemptNumber,
   isFocused = false,
   canEditPlacement = false,
   collapsible = false,
@@ -228,6 +228,20 @@ export function UnifiedAttemptResultCard({
             <span className="font-normal text-muted-foreground text-xs shrink-0">
               {collapsible ? session.dateLabel : (isTest ? 'Kiểm tra' : 'Học thử')}
             </span>
+
+            {isTest && session.id && (
+              <a
+                href={`/booking-test?bookingId=${session.id}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="font-mono text-[11px] text-primary hover:underline font-medium inline-flex items-center gap-0.5 ml-0.5 shrink-0"
+                title={`Mở trang đặt lịch & mẫu Zalo gửi phụ huynh (phiếu #${session.id})`}
+              >
+                <span>#{session.id}</span>
+                <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+              </a>
+            )}
 
             {/* TÓM TẮT TRÌNH ĐỘ KHI THU GỌN HOẶC TRONG LỊCH SỬ */}
             {collapsible && (

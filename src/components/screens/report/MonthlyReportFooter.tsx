@@ -2,6 +2,44 @@
 
 import React from 'react'
 import Image from 'next/image'
+import { cn } from '@/lib/utils'
+
+/** Tagline thương hiệu: "Trạm Học Tập / Toán và Tiếng Anh / Thế Hệ Mới ✦" */
+function FooterTagline({ className, compact }: { className?: string; compact?: boolean }) {
+  return (
+    <p
+      className={cn(
+        'font-sans font-bold tracking-tight text-[#1F3A8A] text-left',
+        compact ? 'text-lg leading-[1.25]' : 'text-[22px] leading-[1.2]',
+        className
+      )}
+    >
+      {compact ? (
+        <>Trạm Học Tập Toán và Tiếng Anh</>
+      ) : (
+        <>
+          Trạm Học Tập
+          <br />
+          Toán và Tiếng Anh
+        </>
+      )}
+      <br />
+      <span className="relative inline-block pr-3 text-[#EA2F2F]">
+        Thế Hệ Mới
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className={cn(
+            'absolute right-0 -top-1 fill-current',
+            compact ? 'h-2.5 w-2.5' : 'h-3 w-3'
+          )}
+        >
+          <path d="M12 0C12.9 7.2 16.8 11.1 24 12C16.8 12.9 12.9 16.8 12 24C11.1 16.8 7.2 12.9 0 12C7.2 11.1 11.1 7.2 12 0Z" />
+        </svg>
+      </span>
+    </p>
+  )
+}
 
 export function MonthlyReportFooter() {
   return (
@@ -24,11 +62,7 @@ export function MonthlyReportFooter() {
               </span>
             </div>
             <div className="tagline">
-              <p className="font-sans font-medium text-base leading-[1.25] text-[#333] text-justify">
-                Học Toán và Tiếng Anh
-                <br />
-                theo cách của tương lai
-              </p>
+              <FooterTagline />
             </div>
           </div>
 
@@ -143,9 +177,7 @@ export function MonthlyReportFooter() {
 
           <div className="flex flex-col gap-6 items-center w-full max-w-full mx-auto">
             <div className="w-full">
-              <p className="font-sans font-medium text-base leading-[1.25] text-[#333] text-left">
-                Học Toán và Tiếng Anh theo cách của tương lai
-              </p>
+              <FooterTagline compact />
             </div>
 
             <div className="flex flex-col gap-4 w-full">

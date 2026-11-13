@@ -163,6 +163,16 @@ export function BookingTestTableRow({
                 >
                   {booking.childName}
                 </p>
+                <a
+                  href={`/booking-test?bookingId=${booking.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-mono text-[10.5px] text-muted-foreground/80 hover:text-primary hover:underline shrink-0"
+                  title="Mở trang kết quả đặt lịch & mẫu Zalo gửi phụ huynh"
+                >
+                  #{booking.id}
+                </a>
                 {isCheckedIn ? (
                   <span title="Đã check-in" className="inline-flex shrink-0">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 fill-emerald-100 dark:fill-emerald-950" />

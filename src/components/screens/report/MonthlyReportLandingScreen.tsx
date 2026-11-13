@@ -10,6 +10,7 @@ import { MonthlyFeaturedVideoCard } from './MonthlyFeaturedVideoCard'
 import { MonthlyReportFooter } from './MonthlyReportFooter'
 import { MonthlyReportHeroBanner } from './MonthlyReportHeroBanner'
 import { MonthlyReportCongratulationsCard } from './MonthlyReportCongratulationsCard'
+import { MonthlyReportParentMessageCard } from './MonthlyReportParentMessageCard'
 import { MonthlyReportMetricsGrid, StudentMetricsData } from './MonthlyReportMetricsGrid'
 import { mockCareAlerts } from '@/mocks/careAlerts'
 import {
@@ -354,16 +355,9 @@ export function MonthlyReportLandingScreen({
         )}
 
         {/* 5. LỜI DẶN DÒ PHỤ HUYNH TỪ GIÁO VIÊN PHỤ TRÁCH (MỨC TỐI THIỂU CHUẨN MOBILE) */}
-        <div className="rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50 p-3.5 sm:p-5 text-center space-y-1.5 box-shadow-report print:hidden">
-          <p className="text-[13px] sm:text-[13.5px] font-normal text-slate-700 leading-relaxed max-w-2xl mx-auto break-words">
-            Con sẽ phát phiếu và tranh học của phần ôn luyện riêng vào buổi tới. Con luyện tập phiếu
-            bài tập, sau đó dựa trên tranh ảnh trên phiếu, con sẽ chỉ tranh trên phiếu, đọc to.{' '}
-            <br className="hidden md:inline" />
-            Ba mẹ hỗ trợ con quay và gửi video qua Zalo cho giáo viên hàng tuần. Ba mẹ có thể cho con
-            đến sớm để giáo viên kiểm tra bài con mỗi buổi nhé.
-          </p>
-          <p className="text-xs sm:text-sm font-bold text-amber-900 pt-0.5">Trân trọng cảm ơn!</p>
-        </div>
+        <MonthlyReportParentMessageCard
+          message="Con sẽ phát phiếu và tranh học của phần ôn luyện riêng vào buổi tới. Con luyện tập phiếu bài tập, sau đó dựa trên tranh ảnh trên phiếu, con sẽ chỉ tranh trên phiếu, đọc to. Ba mẹ hỗ trợ con quay và gửi video qua Zalo cho giáo viên hàng tuần. Ba mẹ có thể cho con đến sớm để giáo viên kiểm tra bài con mỗi buổi nhé."
+        />
       </main>
 
       {/* ── OFFICIAL RINOEDU FOOTER (CHUẨN THIẾT KẾ RINOEDU.AI) ── */}

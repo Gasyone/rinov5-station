@@ -41,6 +41,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 export function BookingTestCreateScreen() {
   const user = useAuthStore((s) => s.user)
   const searchParams = useSearchParams()
+  const paramBookingId = searchParams.get('bookingId')
   const paramLeadId = searchParams.get('leadId')
   const paramStudentName = searchParams.get('studentName')
   const paramParentName = searchParams.get('parentName')
@@ -166,7 +167,32 @@ export function BookingTestCreateScreen() {
   const [testDate, setTestDate] = useState(dateOptions.first4[0]?.dateStr || '')
   const [selectedSlot, setSelectedSlot] = useState('')
   const [notes, setNotes] = useState(leadInfo?.notes || '')
-  const [createdBooking, setCreatedBooking] = useState<BookingTest | null>(null)
+
+  const existingBooking = useMemo(() => {
+    if (paramBookingId) {
+      return bookings.find((b) => b.id === paramBookingId) || null
+    }
+    if (paramLeadId) {
+      const lead = mockLeads.find((l) => l.id === paramLeadId)
+      if (lead) {
+        return (
+          bookings.find(
+            (b) =>
+              (lead.studentName && b.childName.toLowerCase() === lead.studentName.toLowerCase()) ||
+              (lead.phone && b.phone === lead.phone)
+          ) || null
+        )
+      }
+    }
+    return null
+  }, [paramBookingId, paramLeadId, bookings])
+
+  const [createdBooking, setCreatedBooking] = useState<BookingTest | null>(() => existingBooking)
+  const [prevExistingId, setPrevExistingId] = useState(existingBooking?.id)
+  if (existingBooking?.id !== prevExistingId) {
+    setPrevExistingId(existingBooking?.id)
+    setCreatedBooking(existingBooking)
+  }
 
   const handleSchoolChange = (newSchool: string) => {
     setSchool(newSchool)
@@ -679,8 +705,8 @@ export function BookingTestCreateScreen() {
             booking={createdBooking}
             leadId={paramLeadId}
             schoolAddress={CENTER_DATA.find((c) => c.name === createdBooking.school)?.address}
-            dateLabel={activeDateLabel}
-            timeRange={getSlotTimeRange(selectedSlot, 30)}
+            dateLabel={activeDateLabel || (createdBooking.testTime ? formatTestTimeWithDay(createdBooking.testTime) : '')}
+            timeRange={selectedSlot ? getSlotTimeRange(selectedSlot, 30) : (createdBooking.testTime?.split(' ')[1] || '')}
             onCreateAnother={() => {
               setCreatedBooking(null)
               setSelectedSlot('')

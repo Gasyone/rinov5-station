@@ -94,9 +94,22 @@ export function BookingTestScheduleHoverCard({
             <span>{formatDateTime(booking.testTime)}</span>
           </div>
 
-          <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
-            {booking.eventType === 'test' ? 'Đánh giá năng lực' : 'Trải nghiệm'}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <a
+              href={`/booking-test?bookingId=${booking.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="font-mono text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:underline inline-flex items-center gap-0.5"
+              title={`Mở trang kết quả đặt lịch & gửi Zalo phụ huynh (#${booking.id})`}
+            >
+              <span>#{booking.id}</span>
+              <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+            <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+              {booking.eventType === 'test' ? 'Đánh giá năng lực' : 'Trải nghiệm'}
+            </span>
+          </div>
         </div>
 
         {/* Nội dung hồ sơ lịch test */}

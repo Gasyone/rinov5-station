@@ -557,7 +557,16 @@ export function UnifiedTestResultSection({
             <div className="flex items-center gap-1.5 text-xs min-w-0">
               <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground shrink-0">Mã phiếu:</span>
-              <span className="font-mono text-foreground font-medium">#{session.id}</span>
+              <a
+                href={`/booking-test?bookingId=${session.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-primary hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer"
+                title={`Mở trang thông tin đặt lịch & mẫu Zalo gửi phụ huynh (phiếu #${session.id})`}
+              >
+                <span>#{session.id}</span>
+                <ExternalLink className="h-3 w-3 shrink-0" />
+              </a>
               <span className="text-muted-foreground text-[11px]">
                 ({booking?.testTime?.split(' ')[0] || session.rawDate?.split(' ')[0] || '2026-11-13'})
               </span>

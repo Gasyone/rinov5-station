@@ -132,7 +132,7 @@ export function BookingTestDetailDialog({
     return []
   }, [booking])
 
-  // Trích xuất Dòng sự kiện đa chiều (Test + Học thử) của học viên này
+  // Trích xuất Dòng ca kiểm tra đầu vào của học viên này (chỉ focus vào Kiểm tra, bỏ hoàn toàn Học thử)
   const { allSessions, placementLevels } = useMemo(() => {
     if (!booking) return { allSessions: [], placementLevels: {} }
     return resolveStudentUnifiedSessions({
@@ -140,6 +140,7 @@ export function BookingTestDetailDialog({
       phone: booking.phone,
       currentBookingId: booking.id,
       allBookings: bookings,
+      testOnly: true,
     })
   }, [booking, bookings])
 
@@ -191,7 +192,7 @@ export function BookingTestDetailDialog({
                         Chưa có lịch {activeSubject === 'math' ? 'Toán tư duy' : 'Tiếng Anh'}
                       </p>
                       <p className="mt-1 text-[11px] text-muted-foreground">
-                        Học viên chưa phát sinh buổi kiểm tra đầu vào hoặc lớp học thử nào cho môn này.
+                        Học viên chưa phát sinh ca kiểm tra đầu vào nào cho môn này.
                       </p>
                     </div>
                   ) : (

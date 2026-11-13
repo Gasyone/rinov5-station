@@ -57,6 +57,7 @@ export function resolveStudentUnifiedSessions(params: {
   currentTrialId?: string
   allBookings?: BookingTest[]
   allTrials?: TrialClass[]
+  testOnly?: boolean
 }): {
   allSessions: UnifiedSessionItem[]
   placementLevels: StudentPlacementLevels
@@ -68,9 +69,11 @@ export function resolveStudentUnifiedSessions(params: {
     isSameStudent(b.childName, b.phone, params.studentName, params.phone)
   )
 
-  const matchedTrials = trialsSource.filter((t) =>
-    isSameStudent(t.studentName, t.familyPhone, params.studentName, params.phone)
-  )
+  const matchedTrials = params.testOnly
+    ? []
+    : trialsSource.filter((t) =>
+        isSameStudent(t.studentName, t.familyPhone, params.studentName, params.phone)
+      )
 
   const items: UnifiedSessionItem[] = []
 
