@@ -127,23 +127,23 @@ export function MonthlyReportReviewItemsSection({
           </h4>
         )}
 
-        <div className="rounded-xl border border-border/70 bg-muted/15 p-2.5 sm:p-3 divide-y divide-border/50 shadow-3xs">
+        <div className="rounded-xl border border-slate-200/90 dark:border-border/70 bg-white dark:bg-card p-3 sm:p-3.5 divide-y divide-slate-100 dark:divide-border/50 shadow-2xs">
           {validItems.map((item, idx) => {
             const hasAttachment = Boolean(item.thumbnailUrl || item.docLink)
 
             return (
               <div
                 key={idx}
-                className="py-2 first:pt-0.5 last:pb-0 flex items-start justify-between gap-2.5"
+                className="py-2.5 first:pt-0.5 last:pb-0 flex items-start justify-between gap-2.5"
               >
                 {/* Tiêu đề & Nội dung */}
-                <div className="text-xs leading-relaxed font-sans flex-1 min-w-0">
+                <div className="text-[13px] sm:text-sm leading-relaxed font-sans flex-1 min-w-0">
                   {item.title ? (
-                    <span className="font-semibold text-foreground mr-1.5">
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 mr-1.5">
                       {item.title}:
                     </span>
                   ) : null}
-                  <span className="text-foreground/85 font-normal">{renderRichText(item.content)}</span>
+                  <span className="text-slate-700 dark:text-slate-300 font-normal">{renderRichText(item.content)}</span>
                 </div>
 
                 {/* Thumbnail ảnh / tài liệu đính kèm duy nhất (Click mở xem lớn) */}
@@ -247,7 +247,7 @@ export function MonthlyReportReviewItemsSection({
             )}
           </div>
         ) : (
-          <div className="rounded-xl border border-border/80 bg-muted/15 p-2.5 sm:p-3 divide-y divide-border/60 shadow-3xs">
+          <div className="rounded-xl border border-slate-200/90 dark:border-border/80 bg-white dark:bg-card p-2.5 sm:p-3 divide-y divide-slate-100 dark:divide-border/60 shadow-2xs">
             {displayItems.map((item, idx) => {
               const hasAttachment = Boolean(item.thumbnailUrl || item.docLink)
 
@@ -263,7 +263,7 @@ export function MonthlyReportReviewItemsSection({
                       value={item.title}
                       onChange={(e) => handleUpdateItem(idx, { title: e.target.value })}
                       placeholder="Tiêu đề (VD: Ôn tập Unit 1, Phonics Letter T...)"
-                      className="text-xs sm:text-[13px] font-semibold text-foreground bg-transparent border-0 focus:outline-none focus:ring-0 p-0 flex-1 min-w-0 placeholder:text-muted-foreground/40 placeholder:font-normal"
+                      className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 flex-1 min-w-0 placeholder:text-muted-foreground/40 placeholder:font-normal"
                     />
 
                     {/* Attachment Chip hoặc Trigger Buttons (nhỏ gọn, không viền hộp thô) */}

@@ -251,7 +251,7 @@ export function MonthlyReportLandingScreen({
           <MonthlyFeaturedVideoCard video={report.featuredVideo} />
         )}
 
-        {/* 3. SECTION A: ĐÁNH GIÁ QUÁ TRÌNH HỌC TẬP (MỨC TỐI THIỂU CHUẨN MOBILE) */}
+        {/* 3. SECTION A: ĐÁNH GIÁ QUÁ TRÌNH HỌC TẬP (PHONG CÁCH TINH GIẢN CHUẨN MỰC, KHÔNG MÀU MÈ) */}
         <div id="landing-section-a" className="bg-white rounded-2xl box-shadow-report p-3 sm:p-4.5 border border-slate-100/90 space-y-3">
           <div className="flex items-center gap-2">
             <span className="flex h-5.5 w-5.5 items-center justify-center rounded-md bg-gradient-to-br from-[#EA2D2D] to-[#F98A3A] text-white text-xs font-bold shadow-2xs">
@@ -270,24 +270,24 @@ export function MonthlyReportLandingScreen({
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-              {/* Thẻ Điểm nổi bật */}
-              <div className="rounded-xl p-2.5 sm:p-3 border border-emerald-200/90 bg-emerald-50/40 shadow-3xs space-y-1">
-                <div className="flex items-center gap-1.5 text-emerald-800 font-semibold text-[12px] sm:text-[12.5px]">
+              {/* Thẻ Điểm nổi bật (Nền trắng viền thanh lịch, chữ đen sắc nét) */}
+              <div className="rounded-xl p-3 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-1.5">
+                <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-xs sm:text-[13px]">
                   <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>Điểm nổi bật & cần phát huy</span>
                 </div>
-                <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
                   {renderRichText(highlightItem?.body || report.sectionA1Content)}
                 </div>
               </div>
 
-              {/* Thẻ Điểm cần lưu ý */}
-              <div className="rounded-xl p-2.5 sm:p-3 border border-amber-200/90 bg-amber-50/40 shadow-3xs space-y-1">
-                <div className="flex items-center gap-1.5 text-amber-800 font-semibold text-[12px] sm:text-[12.5px]">
+              {/* Thẻ Điểm cần lưu ý (Nền trắng viền thanh lịch, chữ đen sắc nét) */}
+              <div className="rounded-xl p-3 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-1.5">
+                <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-xs sm:text-[13px]">
                   <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                   <span>Điểm cần lưu ý & rèn luyện thêm</span>
                 </div>
-                <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
                   {renderRichText(
                     noteItem?.body ||
                       'Con tiếp tục duy trì nỗ lực học tập để đạt kết quả tốt nhất trong kỳ học tới.'
@@ -305,35 +305,22 @@ export function MonthlyReportLandingScreen({
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-              {academicItems.map((item, idx) => {
-                const isVocab =
-                  item.label.toLowerCase().includes('từ vựng') ||
-                  item.label.toLowerCase().includes('phonics')
-                return (
-                  <div
-                    key={idx}
-                    className={`rounded-xl p-2.5 sm:p-3.5 border shadow-3xs space-y-1.5 ${
-                      isVocab
-                        ? 'border-sky-200/90 bg-sky-50/40'
-                        : 'border-purple-200/90 bg-purple-50/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-semibold">
-                      <span
-                        className={`h-2 w-2 rounded-full shrink-0 ${
-                          isVocab ? 'bg-sky-500' : 'bg-purple-500'
-                        }`}
-                      />
-                      <span className={isVocab ? 'text-sky-800' : 'text-purple-800'}>
-                        {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
-                      </span>
-                    </div>
-                    <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
-                      {renderRichText(item.body)}
-                    </div>
+              {academicItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl p-3 sm:p-3.5 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-1.5"
+                >
+                  <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-slate-900">
+                    <span className="h-2 w-2 rounded-full shrink-0 bg-slate-400" />
+                    <span>
+                      {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
+                    </span>
                   </div>
-                )
-              })}
+                  <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
+                    {renderRichText(item.body)}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

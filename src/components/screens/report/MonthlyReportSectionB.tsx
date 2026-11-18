@@ -104,26 +104,26 @@ export function MonthlyReportSectionB({
             {sessions.map((session, idx) => (
               <div
                 key={idx}
-                className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3 sm:p-3.5 space-y-1.5 shadow-3xs"
+                className="rounded-xl border border-slate-200/90 bg-white p-3 sm:p-3.5 space-y-1.5 shadow-2xs hover:border-slate-300 transition-all"
               >
                 {/* Tiêu đề buổi/bài */}
-                <h5 className="font-semibold text-[13px] sm:text-[13.5px] text-amber-900 leading-snug">
+                <h5 className="font-semibold text-[13.5px] sm:text-sm text-slate-900 leading-snug">
                   {session.title}
                 </h5>
 
                 {/* Nội dung dạng soạn thảo giàu định dạng (màu sắc, in đậm, bullet) */}
-                <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
                   {renderRichText(session.body)}
                 </div>
               </div>
             ))}
           </div>
         ) : b1Content && b1Content.trim() ? (
-          <div className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-3 sm:p-4 text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal shadow-3xs break-words">
+          <div className="rounded-xl border border-slate-200/90 bg-white p-3 sm:p-4 text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal shadow-2xs break-words">
             {renderRichText(b1Content)}
           </div>
         ) : (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-[12px] sm:text-xs text-slate-400 italic">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs sm:text-sm text-slate-400 italic">
             Chưa có nội dung bài học tháng tới.
           </div>
         )}
@@ -153,10 +153,10 @@ export function MonthlyReportSectionB({
                   <div className="rounded-xl border border-slate-200/90 bg-white hover:border-amber-400/90 flex flex-col sm:flex-row items-stretch justify-between shadow-3xs overflow-hidden transition-all hover:shadow-xs min-h-[58px]">
                     {/* Phần nội dung & tiêu đề Tuần (gọn gàng, không bị ép hẹp) */}
                     <div className="flex-1 min-w-0 py-2.5 px-3 sm:px-3.5 space-y-1">
-                      <h5 className="font-semibold text-[12.5px] sm:text-[13px] text-amber-800 leading-snug">
+                      <h5 className="font-semibold text-[13px] sm:text-sm text-slate-900 leading-snug">
                         {item.title || `Tuần ${idx + 1}`}
                       </h5>
-                      <div className="text-[13px] sm:text-[13.5px] leading-relaxed text-slate-700 font-normal break-words">
+                      <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
                         {renderRichText(item.content)}
                       </div>
                     </div>

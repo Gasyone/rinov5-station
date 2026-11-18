@@ -26,63 +26,11 @@ export function parseEvaluationContent(
 
   const trimmed = content.trim()
 
-  const defaultColor1 =
-    type === 'general'
-      ? 'text-emerald-700 dark:text-emerald-400 font-normal'
-      : 'text-sky-700 dark:text-sky-400 font-normal'
+  const defaultColor = 'text-slate-900 dark:text-slate-100 font-semibold'
 
-  const defaultColor2 =
-    type === 'general'
-      ? 'text-amber-700 dark:text-amber-400 font-normal'
-      : 'text-purple-700 dark:text-purple-400 font-normal'
-
-  const getColorForLabel = (rawLabel: string, index: number): string => {
-    const lower = rawLabel.toLowerCase()
-    if (type === 'general') {
-      if (
-        lower.includes('nổi bật') ||
-        lower.includes('mạnh') ||
-        lower.includes('ưu điểm') ||
-        lower.includes('tốt') ||
-        lower.includes('tích cực')
-      ) {
-        return 'text-emerald-700 dark:text-emerald-400 font-normal'
-      }
-      if (
-        lower.includes('lưu ý') ||
-        lower.includes('cải thiện') ||
-        lower.includes('hạn chế') ||
-        lower.includes('yếu') ||
-        lower.includes('nhược điểm') ||
-        lower.includes('khó khăn')
-      ) {
-        return 'text-amber-700 dark:text-amber-400 font-normal'
-      }
-      return index === 0 ? defaultColor1 : defaultColor2
-    }
-
-    // Academic
-    if (
-      lower.includes('từ vựng') ||
-      lower.includes('phonics') ||
-      lower.includes('kiến thức') ||
-      lower.includes('tư duy') ||
-      lower.includes('lý thuyết') ||
-      lower.includes('khái niệm')
-    ) {
-      return 'text-sky-700 dark:text-sky-400 font-normal'
-    }
-    if (
-      lower.includes('cấu trúc') ||
-      lower.includes('mẫu câu') ||
-      lower.includes('ngữ pháp') ||
-      lower.includes('kỹ năng') ||
-      lower.includes('phương pháp') ||
-      lower.includes('bài tập')
-    ) {
-      return 'text-purple-700 dark:text-purple-400 font-normal'
-    }
-    return index === 0 ? defaultColor1 : defaultColor2
+  const getColorForLabel = (): string => {
+    // Phong cách tối giản sư phạm (Minimalist Editorial): Nhãn tiêu đề đồng nhất màu đen/xám đậm sang trọng
+    return defaultColor
   }
 
   // Tách các khối theo dòng bắt đầu bằng "Nhãn:"
@@ -114,7 +62,7 @@ export function parseEvaluationContent(
         items.push({
           label: rawLabel,
           body: firstBody,
-          colorClass: getColorForLabel(rawLabel, items.length),
+          colorClass: getColorForLabel(),
         })
 
         if (matchSecond) {
@@ -123,14 +71,14 @@ export function parseEvaluationContent(
           items.push({
             label: secondLabel,
             body: secondBody,
-            colorClass: getColorForLabel(secondLabel, items.length),
+            colorClass: getColorForLabel(),
           })
         }
       } else {
         items.push({
           label: rawLabel,
           body: rawBody,
-          colorClass: getColorForLabel(rawLabel, items.length),
+          colorClass: getColorForLabel(),
         })
       }
     } else {
@@ -208,23 +156,23 @@ export function FormattedEvaluationContent({
   const hasAnyLabel = items.some((it) => !!it.label)
   if (!hasAnyLabel) {
     return (
-      <div className={`text-xs text-foreground leading-relaxed font-sans ${className}`}>
+      <div className={`text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal font-sans ${className}`}>
         {renderRichText(content)}
       </div>
     )
   }
 
   return (
-    <div className={`space-y-1.5 font-sans ${className}`}>
+    <div className={`space-y-2 font-sans ${className}`}>
       {items.map((item, idx) => (
-        <p key={idx} className="text-xs text-foreground/85 leading-relaxed font-normal">
+        <div key={idx} className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
           {item.label && (
-            <span className={`${item.colorClass || 'text-foreground font-normal'} select-none mr-1.5 font-normal`}>
+            <span className="text-slate-900 dark:text-slate-100 font-semibold select-none mr-1.5 inline-block">
               {item.label}
             </span>
           )}
-          <span className="text-foreground/85 font-normal leading-relaxed">{renderRichText(item.body)}</span>
-        </p>
+          <span className="text-slate-700 dark:text-slate-300 font-normal leading-relaxed">{renderRichText(item.body)}</span>
+        </div>
       ))}
     </div>
   )

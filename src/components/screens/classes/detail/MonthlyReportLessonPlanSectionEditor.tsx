@@ -322,7 +322,7 @@ export function MonthlyReportLessonPlanSectionEditor({
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-border/80 bg-muted/15 p-2.5 sm:p-3 divide-y divide-border/60 shadow-3xs">
+            <div className="rounded-xl border border-slate-200/90 dark:border-border/80 bg-white dark:bg-card p-2.5 sm:p-3 divide-y divide-slate-100 dark:divide-border/60 shadow-2xs">
               {sections.map((sec, idx) => (
                 <div
                   key={sec.id || idx}
@@ -335,7 +335,7 @@ export function MonthlyReportLessonPlanSectionEditor({
                       value={sec.title}
                       onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
                       placeholder="Tiêu đề buổi học (VD: Buổi 1: Chủ đề Zoo Animals - Từ vựng & Phát âm)"
-                      className="text-xs sm:text-[13px] font-semibold text-amber-800 dark:text-amber-500 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 flex-1 min-w-0 placeholder:text-muted-foreground/40 placeholder:font-normal"
+                      className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 flex-1 min-w-0 placeholder:text-muted-foreground/40 placeholder:font-normal"
                     />
                     <Button
                       type="button"
@@ -365,17 +365,17 @@ export function MonthlyReportLessonPlanSectionEditor({
         </div>
       ) : (
         /* Chế độ xem (readOnly) - hiển thị từng section phẳng với viền ngoài cùng và đường line */
-        <div className="rounded-xl border border-border/70 bg-muted/15 p-2.5 sm:p-3 divide-y divide-border/50 shadow-3xs">
+        <div className="rounded-xl border border-slate-200/90 dark:border-border/70 bg-white dark:bg-card p-3 sm:p-3.5 divide-y divide-slate-100 dark:divide-border/50 shadow-2xs">
           {sections.length > 0 ? (
             sections.map((sec, idx) => (
               <div
                 key={sec.id || idx}
-                className="py-2 first:pt-0.5 last:pb-0 space-y-0.5"
+                className="py-2.5 first:pt-0.5 last:pb-0 space-y-1"
               >
-                <h5 className="font-semibold text-xs sm:text-[13px] text-amber-800 dark:text-amber-500 leading-snug">
+                <h5 className="font-semibold text-xs sm:text-[13px] text-slate-900 dark:text-slate-100 leading-snug">
                   {sec.title}
                 </h5>
-                <div className="text-xs text-foreground/85 leading-relaxed font-sans">
+                <div className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
                   {renderRichText(sec.content)}
                 </div>
               </div>

@@ -65,7 +65,7 @@ export function MonthlyReportAcademicSection({
             {/* Dòng 1: Điểm nổi bật */}
             <div className="space-y-1">
               <div className="h-5 flex items-center justify-between gap-1">
-                <label className="text-xs font-normal text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 shrink-0">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0" />
                   Điểm nổi bật
                 </label>
@@ -91,7 +91,7 @@ export function MonthlyReportAcademicSection({
             {/* Dòng 2: Điểm cần lưu ý */}
             <div className="space-y-1">
               <div className="h-5 flex items-center justify-between gap-1">
-                <label className="text-xs font-normal text-amber-700 dark:text-amber-400 flex items-center gap-1.5 shrink-0">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0" />
                   Điểm cần lưu ý
                 </label>
@@ -115,7 +115,7 @@ export function MonthlyReportAcademicSection({
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-foreground/90 leading-relaxed font-sans">
+          <div className="rounded-xl border border-slate-200/90 dark:border-border/60 bg-white dark:bg-card p-3 shadow-2xs">
             <FormattedEvaluationContent
               content={sectionA1Content}
               type="general"
@@ -149,7 +149,7 @@ export function MonthlyReportAcademicSection({
             minHeight="min-h-[72px]"
           />
         ) : (
-          <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-foreground/90 leading-relaxed font-sans">
+          <div className="rounded-xl border border-slate-200/90 dark:border-border/60 bg-white dark:bg-card p-3 shadow-2xs">
             <FormattedEvaluationContent
               content={sectionA2Content}
               type="academic"
