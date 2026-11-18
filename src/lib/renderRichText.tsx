@@ -13,11 +13,31 @@ function parseInline(text: string, keyPrefix: string = 'inline'): React.ReactNod
   // 4. **...**
   // 5. *...*
   // 6. ~~...~~
-  const tokenRegex = /(<span style=["']color:\s*[^"']+["']>[\s\S]*?<\/span>|<mark style=["']background-color:\s*[^"']+["']>[\s\S]*?<\/mark>|<u>[\s\S]*?<\/u>|\*\*[\s\S]*?\*\*|\*[^*\n]+?\*|~~[\s\S]*?~~)/gi
+  // 7. [text](url)
+  const tokenRegex = /(<span style=["']color:\s*[^"']+["']>[\s\S]*?<\/span>|<mark style=["']background-color:\s*[^"']+["']>[\s\S]*?<\/mark>|<u>[\s\S]*?<\/u>|\[[^\]]+\]\([^)]+\)|\*\*[\s\S]*?\*\*|\*[^*\n]+?\*|~~[\s\S]*?~~)/gi
 
   const parts = text.split(tokenRegex)
   return parts.map((part, index) => {
     const key = `${keyPrefix}-${index}`
+
+    // Link [text](url)
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+    if (linkMatch) {
+      const linkText = linkMatch[1]
+      const linkUrl = linkMatch[2]
+      return (
+        <a
+          key={key}
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline font-medium inline-flex items-center gap-0.5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {linkText}
+        </a>
+      )
+    }
 
     // Span color
     const spanMatch = part.match(/^<span style=["']color:\s*([^"']+)["']>([\s\S]*?)<\/span>$/i)

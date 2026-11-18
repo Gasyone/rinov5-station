@@ -14,7 +14,7 @@ export function MonthlyReportCongratulationsCard({
 }: MonthlyReportCongratulationsCardProps) {
   return (
     <div className="rounded-xl sm:rounded-2xl border border-amber-300 bg-white p-3.5 sm:p-5 box-shadow-report">
-      <p className="text-[13px] sm:text-[14.5px] leading-relaxed text-slate-900 font-normal">
+      <p className="text-[17px] sm:text-[18px] leading-[1.7] text-slate-900 font-normal">
         <span>RinoEdu chúc mừng con </span>
         <strong className="font-bold text-slate-900">{studentName}</strong>
         <span> đã hoàn thành tốt kỳ học vừa qua tại môn </span>

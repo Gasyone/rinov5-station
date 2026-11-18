@@ -252,42 +252,42 @@ export function MonthlyReportLandingScreen({
         )}
 
         {/* 3. SECTION A: ĐÁNH GIÁ QUÁ TRÌNH HỌC TẬP (PHONG CÁCH TINH GIẢN CHUẨN MỰC, KHÔNG MÀU MÈ) */}
-        <div id="landing-section-a" className="bg-white rounded-2xl box-shadow-report p-3 sm:p-4.5 border border-slate-100/90 space-y-3">
+        <div id="landing-section-a" className="bg-white rounded-2xl box-shadow-report p-3 sm:p-5 border border-slate-100/90 space-y-3.5 sm:space-y-4">
           <div className="flex items-center gap-2">
-            <span className="flex h-5.5 w-5.5 items-center justify-center rounded-md bg-gradient-to-br from-[#EA2D2D] to-[#F98A3A] text-white text-xs font-bold shadow-2xs">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#EA2D2D] to-[#F98A3A] text-white text-xs font-bold shadow-2xs">
               A
             </span>
-            <h3 className="text-[14px] sm:text-[15px] font-bold text-slate-900 tracking-tight">
+            <h3 className="text-[18px] sm:text-[20px] font-bold text-slate-900 tracking-tight">
               Đánh giá quá trình học tập {activeMonthConfig.current}
             </h3>
           </div>
 
           {/* 1. Nhận xét thái độ & thói quen học tập (Điểm nổi bật & Điểm cần lưu ý) */}
-          <div className="space-y-2">
-            <h4 className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 flex items-center gap-1.5">
+          <div className="space-y-2.5">
+            <h4 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2D2D]" />
               1. Nhận xét thái độ & thói quen học tập
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {/* Thẻ Điểm nổi bật (Nền trắng viền thanh lịch, chữ đen sắc nét) */}
-              <div className="rounded-xl p-3 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-1.5">
-                <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-xs sm:text-[13px]">
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              <div className="rounded-xl p-3 sm:p-4 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-2">
+                <div className="flex items-center gap-1.5 text-slate-900 font-bold text-[15.5px] sm:text-[16px]">
+                  <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
                   <span>Điểm nổi bật & cần phát huy</span>
                 </div>
-                <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
                   {renderRichText(highlightItem?.body || report.sectionA1Content)}
                 </div>
               </div>
 
               {/* Thẻ Điểm cần lưu ý (Nền trắng viền thanh lịch, chữ đen sắc nét) */}
-              <div className="rounded-xl p-3 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-1.5">
-                <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-xs sm:text-[13px]">
-                  <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+              <div className="rounded-xl p-3 sm:p-4 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-2">
+                <div className="flex items-center gap-1.5 text-slate-900 font-bold text-[15.5px] sm:text-[16px]">
+                  <Lightbulb className="h-4 w-4 text-amber-600 shrink-0" />
                   <span>Điểm cần lưu ý & rèn luyện thêm</span>
                 </div>
-                <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
+                <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
                   {renderRichText(
                     noteItem?.body ||
                       'Con tiếp tục duy trì nỗ lực học tập để đạt kết quả tốt nhất trong kỳ học tới.'
@@ -298,25 +298,25 @@ export function MonthlyReportLandingScreen({
           </div>
 
           {/* 2. Nhận xét về năng lực & kết quả học tập chi tiết */}
-          <div className="space-y-2 pt-0.5">
-            <h4 className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 flex items-center gap-1.5">
+          <div className="space-y-2.5 pt-0.5">
+            <h4 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2D2D]" />
               2. Nhận xét về năng lực & kết quả học tập chi tiết
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {academicItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl p-3 sm:p-3.5 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-1.5"
+                  className="rounded-xl p-3 sm:p-4 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-2"
                 >
-                  <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-slate-900">
+                  <div className="flex items-center gap-1.5 text-[15.5px] sm:text-[16px] font-bold text-slate-900">
                     <span className="h-2 w-2 rounded-full shrink-0 bg-slate-400" />
                     <span>
                       {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
                     </span>
                   </div>
-                  <div className="text-[13.5px] sm:text-sm leading-relaxed text-slate-700 font-normal break-words">
+                  <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
                     {renderRichText(item.body)}
                   </div>
                 </div>

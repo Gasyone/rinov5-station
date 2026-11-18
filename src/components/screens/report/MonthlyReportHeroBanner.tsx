@@ -41,8 +41,8 @@ export function MonthlyReportHeroBanner({
       </div>
 
       {/* ── Nội dung chính căn giữa màn hình với độ tương phản cao, rõ nét ── */}
-      <div className="max-w-3xl mx-auto text-center space-y-1.5 sm:space-y-2 relative">
-        <p className="text-[11.5px] sm:text-xs font-bold text-white/90 uppercase tracking-wider">
+      <div className="max-w-3xl mx-auto text-center space-y-2 sm:space-y-2.5 relative">
+        <p className="text-[13px] sm:text-sm font-bold text-white/95 uppercase tracking-wider">
           Báo cáo học tập định kỳ
         </p>
 
@@ -52,7 +52,7 @@ export function MonthlyReportHeroBanner({
 
         {/* Trình độ Pill & Award Badge */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-0.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 bg-white rounded-full text-slate-900 text-xs sm:text-sm font-bold shadow-xs max-w-full">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-1.5 bg-white rounded-full text-slate-900 text-[13.5px] sm:text-sm font-bold shadow-xs max-w-full">
             <Image
               src="/target-demo.svg"
               alt="Trình độ"
@@ -60,7 +60,7 @@ export function MonthlyReportHeroBanner({
               height={16}
               className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0"
             />
-            <span className="truncate max-w-[260px] sm:max-w-none">
+            <span>
               Trình độ:{' '}
               <strong className="text-slate-900 font-extrabold">{currentCourse.subject}</strong> •{' '}
               {currentCourse.roadmap} ({currentCourse.level})
@@ -68,7 +68,7 @@ export function MonthlyReportHeroBanner({
           </div>
 
           {awardBadge && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-amber-400 text-amber-950 font-bold text-xs sm:text-sm rounded-full shadow-xs border border-amber-300 shrink-0">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-400 text-amber-950 font-bold text-[13.5px] sm:text-sm rounded-full shadow-xs border border-amber-300 shrink-0">
               <Trophy className="w-3.5 h-3.5 text-amber-900 shrink-0" />
               <span>{normalizeAwardBadge(awardBadge)}</span>
             </div>
@@ -76,7 +76,7 @@ export function MonthlyReportHeroBanner({
         </div>
 
         {/* Thông tin Kỳ báo cáo & Giáo viên - Trên Mobile ngắt dòng tự nhiên, Desktop nối bằng dấu chấm tròn */}
-        <div className="text-[12px] sm:text-xs text-white/95 font-medium pt-0.5 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 leading-tight">
+        <div className="text-[13.5px] sm:text-sm text-white/95 font-medium pt-0.5 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 leading-normal">
           <span>
             Kỳ báo cáo: <span className="font-bold text-white">{dateStr}</span>
           </span>

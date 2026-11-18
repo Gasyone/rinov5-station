@@ -18,13 +18,10 @@ import {
   Outdent,
   Indent,
   Link2,
-  Image as ImageIcon,
-  Video,
   RemoveFormatting,
   ChevronDown,
   Check,
   RotateCcw,
-  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -46,12 +43,47 @@ export interface RichTextEditorProps {
   id?: string
 }
 
-/** Dải màu chuẩn mực sư phạm (Chuẩn hóa thương hiệu, chống màu mè, loạn phong cách) */
+/** Dải ma trận màu chữ phong phú (Text Colors Grid) */
 export const TEXT_COLOR_PALETTE = [
-  { name: 'Chữ mặc định (Xám đen)', hex: '#0F172A' },
-  { name: 'Ưu điểm & Nổi bật (Xanh trầm)', hex: '#059669' },
-  { name: 'Cần lưu ý & Rèn luyện (Hổ phách trầm)', hex: '#D97706' },
-  { name: 'Năng lực cốt lõi (Xanh chàm)', hex: '#2563EB' },
+  // Hàng 1: Đen, Xám, Đỏ, Cam, Hổ phách, Vàng
+  { name: 'Đen', hex: '#111827' },
+  { name: 'Xám đậm', hex: '#4B5563' },
+  { name: 'Xám', hex: '#9CA3AF' },
+  { name: 'Đỏ tươi', hex: '#EF4444' },
+  { name: 'Đỏ đậm', hex: '#DC2626' },
+  { name: 'Cam đất', hex: '#EA580C' },
+  { name: 'Cam tươi', hex: '#F97316' },
+  { name: 'Hổ phách', hex: '#D97706' },
+  // Hàng 2: Vàng, Lục, Xanh lá, Ngọc, Biển, Dương, Tím
+  { name: 'Vàng chanh', hex: '#CA8A04' },
+  { name: 'Xanh lục đậm', hex: '#15803D' },
+  { name: 'Xanh lá', hex: '#16A34A' },
+  { name: 'Xanh ngọc', hex: '#0D9488' },
+  { name: 'Xanh biển', hex: '#0284C7' },
+  { name: 'Xanh dương', hex: '#2563EB' },
+  { name: 'Xanh chàm', hex: '#4F46E5' },
+  { name: 'Tím', hex: '#9333EA' },
+  // Hàng 3: Hồng, Đào, Nâu, Rêu, Navy, Mận, Đỏ đô, Trắng/Bạc
+  { name: 'Hồng sen', hex: '#DB2777' },
+  { name: 'Hồng đào', hex: '#F43F5E' },
+  { name: 'Nâu đậm', hex: '#78350F' },
+  { name: 'Xanh rêu', hex: '#365314' },
+  { name: 'Xanh navy', hex: '#1E3A8A' },
+  { name: 'Tím mận', hex: '#581C87' },
+  { name: 'Đỏ đô', hex: '#881337' },
+  { name: 'Trắng/Xám nhạt', hex: '#E5E7EB' },
+]
+
+/** Dải ma trận màu nền highlight (Highlight Colors Grid) */
+export const HIGHLIGHT_COLOR_PALETTE = [
+  { name: 'Vàng dạ quang', hex: '#FEF08A' },
+  { name: 'Cam nhạt', hex: '#FED7AA' },
+  { name: 'Xanh lá nhạt', hex: '#BBF7D0' },
+  { name: 'Xanh ngọc nhạt', hex: '#99F6E4' },
+  { name: 'Xanh dương nhạt', hex: '#BAE6FD' },
+  { name: 'Tím pastel', hex: '#E9D5FF' },
+  { name: 'Hồng pastel', hex: '#FBCFE8' },
+  { name: 'Xám khói', hex: '#E5E7EB' },
 ]
 
 export function RichTextEditor({
@@ -193,22 +225,16 @@ export function RichTextEditor({
     setTimeout(() => textarea.focus(), 0)
   }
 
-  /** Helper: Chuẩn hóa AI - Dọn sạch toàn bộ mã màu HTML rườm rà, giữ văn bản tinh gọn với in đậm chuẩn */
-  const applyAiCleanFormat = () => {
-    const clean = value
-      .replace(/<span\s+style=["'][^"']*["']>([\s\S]*?)<\/span>/gi, '$1')
-      .replace(/<mark\s+style=["'][^"']*["']>([\s\S]*?)<\/mark>/gi, '$1')
-      .replace(/<\/?(span|mark|font|div|p)[^>]*>/gi, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-    onChange(clean)
-    setTimeout(() => textareaRef.current?.focus(), 0)
-  }
-
   /** Helper: Apply Text Color from Palette */
   const applyTextColor = (hex: string) => {
     setActiveColor(hex)
     applyWrap(`<span style="color:${hex}">`, '</span>')
+    setColorMenuOpen(false)
+  }
+
+  /** Helper: Apply Highlight Color from Palette */
+  const applyHighlightColor = (hex: string) => {
+    applyWrap(`<mark style="background-color:${hex}">`, '</mark>')
     setColorMenuOpen(false)
   }
 
@@ -445,19 +471,19 @@ export function RichTextEditor({
               <Outdent className="h-3.5 w-3.5" />
             </button>
 
-            {/* Bộ màu văn bản sư phạm chuẩn mực RinoEdu */}
+            {/* Bảng dải ma trận màu chữ & Highlight A ⌵ (Dạng lưới ô màu chuẩn) */}
             <DropdownMenu open={colorMenuOpen} onOpenChange={setColorMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
                   className="h-6 px-1.5 rounded flex items-center gap-0.5 hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
-                  title="Màu chữ chuẩn mực sư phạm"
+                  title="Bảng ma trận màu văn bản & Đánh dấu highlight"
                 >
                   <span className="font-bold text-xs relative inline-block">
                     A
                     <span
                       className="absolute -bottom-0.5 left-0 right-0 h-0.5 rounded-full transition-colors"
-                      style={{ backgroundColor: activeColor || '#0F172A' }}
+                      style={{ backgroundColor: activeColor || '#F97316' }}
                     />
                   </span>
                   <ChevronDown className="h-2.5 w-2.5 opacity-60" />
@@ -465,61 +491,89 @@ export function RichTextEditor({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
-                className="w-56 p-1.5 text-xs bg-popover rounded-xl shadow-lg border border-border/80 space-y-1 select-none"
+                className="w-64 p-2.5 text-xs bg-popover rounded-xl shadow-lg border border-border/80 space-y-2.5 select-none"
               >
                 {/* Nút reset màu về mặc định */}
                 <button
                   type="button"
                   onClick={applyResetColor}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/70 rounded-md cursor-pointer transition-colors"
-                  title="Gỡ màu chữ về mặc định"
+                  className="w-full flex items-center justify-center gap-1.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/70 rounded-md border border-border/60 cursor-pointer transition-colors"
+                  title="Gỡ màu chữ hoặc highlight của vùng chọn"
                 >
-                  <RotateCcw className="h-3 w-3 shrink-0" />
-                  <span>Mặc định (Chữ đen chuẩn)</span>
+                  <RotateCcw className="h-3 w-3" />
+                  <span>Mặc định (Bỏ màu)</span>
                 </button>
 
-                <div className="h-px bg-border/50 my-1" />
+                {/* Dải bảng ma trận màu chữ (Text Color Grid - 8 cột x 3 hàng) */}
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-0.5">
+                    Màu chữ ({TEXT_COLOR_PALETTE.length} màu)
+                  </div>
+                  <div className="grid grid-cols-8 gap-1.5">
+                    {TEXT_COLOR_PALETTE.map((c) => {
+                      const isDark =
+                        c.hex === '#111827' ||
+                        c.hex === '#4B5563' ||
+                        c.hex === '#DC2626' ||
+                        c.hex === '#78350F' ||
+                        c.hex === '#365314' ||
+                        c.hex === '#1E3A8A' ||
+                        c.hex === '#581C87' ||
+                        c.hex === '#881337'
+                      const isSelected = activeColor === c.hex
 
-                {TEXT_COLOR_PALETTE.map((c) => {
-                  const isSelected = activeColor === c.hex
-                  return (
-                    <button
-                      key={c.hex}
-                      type="button"
-                      onClick={() => applyTextColor(c.hex)}
-                      className={cn(
-                        'w-full flex items-center justify-between px-2 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer hover:bg-muted/70',
-                        isSelected && 'bg-muted/90'
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="h-3 w-3 rounded-full border border-black/10 shrink-0"
+                      return (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          onClick={() => applyTextColor(c.hex)}
+                          className={cn(
+                            'h-5.5 w-5.5 rounded-md border transition-all cursor-pointer relative flex items-center justify-center hover:scale-115 shadow-3xs',
+                            isSelected
+                              ? 'ring-2 ring-primary ring-offset-1 border-white z-10'
+                              : 'border-black/15 hover:border-black/40'
+                          )}
                           style={{ backgroundColor: c.hex }}
-                        />
-                        <span style={{ color: c.hex }}>{c.name}</span>
-                      </div>
-                      {isSelected && <Check className="h-3 w-3 text-foreground" />}
-                    </button>
-                  )
-                })}
+                          title={c.name}
+                        >
+                          {isSelected && (
+                            <Check
+                              className={cn(
+                                'h-3 w-3 stroke-[3]',
+                                isDark ? 'text-white' : 'text-slate-900'
+                              )}
+                            />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Dải bảng ma trận màu nền Highlight (Highlight Color Grid - 8 cột) */}
+                <div className="space-y-1.5 pt-1.5 border-t border-border/50">
+                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-0.5">
+                    Màu nền highlight
+                  </div>
+                  <div className="grid grid-cols-8 gap-1.5">
+                    {HIGHLIGHT_COLOR_PALETTE.map((c) => (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        onClick={() => applyHighlightColor(c.hex)}
+                        className="h-5.5 w-5.5 rounded-md border border-black/15 transition-all cursor-pointer relative flex items-center justify-center hover:scale-115 shadow-3xs hover:border-black/40"
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Nút Chuẩn hóa định dạng AI: Gỡ bỏ mã màu thừa, đưa về chuẩn mực sư phạm RinoEdu */}
-            <button
-              type="button"
-              onClick={applyAiCleanFormat}
-              className="h-6 px-1.5 rounded flex items-center gap-1 text-slate-600 hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors text-[11px] font-medium"
-              title="Chuẩn hóa định dạng AI: Dọn sạch mọi mã màu rườm rà, giữ in đậm và bố cục chuẩn mực"
-            >
-              <Sparkles className="h-3 w-3 text-amber-500" />
-              <span className="hidden sm:inline">Chuẩn hóa AI</span>
-            </button>
-
             <div className="h-3.5 w-px bg-border/70 shrink-0 my-auto mx-0.5" />
 
-            {/* Nhóm 6: Link, Ảnh, Video */}
+            {/* Nhóm 6: Link (Chỉ giữ liên kết, bỏ nút chèn ảnh và video) */}
             <button
               type="button"
               onClick={() => applyWrap('[', '](https://)')}
@@ -527,22 +581,6 @@ export function RichTextEditor({
               title="Chèn liên kết (Link)"
             >
               <Link2 className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyWrap('![Mô tả ảnh](', ')')}
-              className="h-6 w-6 flex items-center justify-center rounded hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
-              title="Chèn hình ảnh"
-            >
-              <ImageIcon className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyWrap('[Video: ', '](https://)')}
-              className="h-6 w-6 flex items-center justify-center rounded hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
-              title="Chèn video"
-            >
-              <Video className="h-3.5 w-3.5" />
             </button>
 
             <div className="h-3.5 w-px bg-border/70 shrink-0 my-auto mx-0.5" />

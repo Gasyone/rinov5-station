@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Trash2, BookOpen, Loader2 } from 'lucide-react'
+import { BookOpen, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -157,47 +157,7 @@ export function MonthlyReportLessonPlanSectionEditor({
   onEndLessonChange,
   isMath = false,
 }: MonthlyReportLessonPlanSectionEditorProps) {
-  // Sync state with prop during render without useEffect (React 19 standard)
-  const [prevValue, setPrevValue] = useState(value)
-  const [sections, setSections] = useState<LessonPlanSection[]>(() =>
-    deserializeLessonSections(value)
-  )
-
-  if (value !== prevValue) {
-    setPrevValue(value)
-    setSections(deserializeLessonSections(value))
-  }
-
   const [isSynthesizing, setIsSynthesizing] = useState(false)
-
-  const notifyChange = (newSections: LessonPlanSection[]) => {
-    setSections(newSections)
-    const serialized = serializeLessonSections(newSections)
-    setPrevValue(serialized)
-    onChange(serialized)
-  }
-
-  // Cập nhật từng section
-  const handleUpdateSection = (
-    idx: number,
-    field: 'title' | 'content',
-    val: string
-  ) => {
-    const updated = sections.map((s, i) => {
-      if (i === idx) {
-        return { ...s, [field]: val }
-      }
-      return s
-    })
-    notifyChange(updated)
-  }
-
-  // Xóa một section
-  const handleRemoveSection = (idxToRemove: number) => {
-    const updated = sections.filter((_, i) => i !== idxToRemove)
-    notifyChange(updated)
-    toast.success('Đã xóa buổi học khỏi kế hoạch.')
-  }
 
   // Nạp bài theo khoảng bài đã chọn (Start Lesson -> End Lesson)
   const handleLoadRangeLessons = () => {
@@ -215,15 +175,23 @@ export function MonthlyReportLessonPlanSectionEditor({
         return
       }
 
-      notifyChange(generated)
+      // Gộp các buổi học thành 1 chuỗi văn bản duy nhất, các buổi cách nhau bởi 2 dấu xuống dòng (\n\n)
+      const formattedText = generated
+        .map((s) => `${s.title}\n${s.content}`)
+        .join('\n\n')
+
+      onChange(formattedText)
       toast.success(
-        `Đã nạp ${generated.length} bài học (Buổi ${startLesson} đến Buổi ${endLesson}) thành các mục riêng biệt!`
+        `Đã nạp ${generated.length} bài học (Buổi ${startLesson} đến Buổi ${endLesson}) vào kế hoạch!`
       )
     }, 200)
   }
 
   const startLessonObj = activeLessons.find((l) => l.lessonNumber === startLesson)
   const endLessonObj = activeLessons.find((l) => l.lessonNumber === endLesson)
+
+  // Tách các section để hiển thị ở chế độ xem (readOnly)
+  const sections = deserializeLessonSections(value)
 
   return (
     <div className="space-y-2">
@@ -296,7 +264,7 @@ export function MonthlyReportLessonPlanSectionEditor({
               onClick={handleLoadRangeLessons}
               disabled={isSynthesizing}
               className="h-6.5 text-[11px] font-normal bg-primary hover:bg-primary/90 text-primary-foreground rounded-md px-2 shadow-2xs cursor-pointer gap-1 shrink-0"
-              title="Nạp nội dung khung chương trình cho các buổi học đã chọn thành các section riêng"
+              title="Nạp nội dung khung chương trình cho các buổi học đã chọn vào khung soạn thảo"
             >
               {isSynthesizing ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -309,77 +277,35 @@ export function MonthlyReportLessonPlanSectionEditor({
         )}
       </div>
 
-      {/* Danh sách các Section bài học riêng biệt dạng tài liệu phẳng (Borderless / Notion-style) */}
+      {/* ── NỘI DUNG BIÊN TẬP: GỘP CHUNG VÀO 1 COMPONENT SOẠN THẢO DUY NHẤT ── */}
       {isEditing ? (
-        <div className="space-y-1">
-          {sections.length === 0 ? (
-            <div className="p-3 text-center rounded-lg border border-dashed border-border/70 bg-muted/5 space-y-1">
-              <p className="text-xs text-muted-foreground">
-                Chưa có bài học nào trong kế hoạch tháng tới.
-              </p>
-              <p className="text-[11px] text-muted-foreground/70">
-                Chọn khoảng bài học ở trên rồi bấm &quot;Thêm bài&quot; để nạp kế hoạch bài học.
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-slate-200/90 dark:border-border/80 bg-white dark:bg-card p-2.5 sm:p-3 divide-y divide-slate-100 dark:divide-border/60 shadow-2xs">
+        <RichTextEditor
+          rows={8}
+          minHeight="min-h-[180px]"
+          value={value}
+          onChange={onChange}
+          placeholder="Nhập nội dung các bài học tháng tới (các buổi cách nhau bởi dòng trống)..."
+          toolbarMode="full"
+        />
+      ) : (
+        /* Chế độ xem (readOnly) - hiển thị gộp trong 1 khung, các buổi cách nhau bằng xuống dòng */
+        <div className="rounded-xl border border-slate-200/90 dark:border-border/70 bg-white dark:bg-card p-3 sm:p-3.5 shadow-2xs">
+          {sections.length > 0 ? (
+            <div className="space-y-3 sm:space-y-3.5">
               {sections.map((sec, idx) => (
                 <div
                   key={sec.id || idx}
-                  className="py-3 first:pt-1 last:pb-1 space-y-2 group"
+                  className="space-y-1"
                 >
-                  {/* Dòng tiêu đề buổi học & Nút xóa */}
-                  <div className="flex items-center gap-1.5 justify-between">
-                    <input
-                      type="text"
-                      value={sec.title}
-                      onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
-                      placeholder="Tiêu đề buổi học (VD: Buổi 1: Chủ đề Zoo Animals - Từ vựng & Phát âm)"
-                      className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 flex-1 min-w-0 placeholder:text-muted-foreground/40 placeholder:font-normal"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveSection(idx)}
-                      className="h-6 w-6 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer transition-colors"
-                      title="Xóa buổi này khỏi kế hoạch"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                  <h5 className="font-semibold text-xs sm:text-[13px] text-slate-900 dark:text-slate-100 leading-snug">
+                    {sec.title}
+                  </h5>
+                  <div className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
+                    {renderRichText(sec.content)}
                   </div>
-
-                  {/* Thanh công cụ biên tập Rich Text cho nội dung bài học */}
-                  <RichTextEditor
-                    rows={2}
-                    minHeight="min-h-[50px]"
-                    value={sec.content}
-                    onChange={(newVal) => handleUpdateSection(idx, 'content', newVal)}
-                    placeholder="Nhập nội dung bài học chi tiết (dạng soạn thảo, gạch đầu dòng, tô màu, highlight)..."
-                    toolbarMode="full"
-                  />
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      ) : (
-        /* Chế độ xem (readOnly) - hiển thị từng section phẳng với viền ngoài cùng và đường line */
-        <div className="rounded-xl border border-slate-200/90 dark:border-border/70 bg-white dark:bg-card p-3 sm:p-3.5 divide-y divide-slate-100 dark:divide-border/50 shadow-2xs">
-          {sections.length > 0 ? (
-            sections.map((sec, idx) => (
-              <div
-                key={sec.id || idx}
-                className="py-2.5 first:pt-0.5 last:pb-0 space-y-1"
-              >
-                <h5 className="font-semibold text-xs sm:text-[13px] text-slate-900 dark:text-slate-100 leading-snug">
-                  {sec.title}
-                </h5>
-                <div className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
-                  {renderRichText(sec.content)}
-                </div>
-              </div>
-            ))
           ) : (
             <div className="text-xs text-muted-foreground/60 italic font-sans py-1">
               Chưa có nội dung bài học tháng tới.
