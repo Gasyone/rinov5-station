@@ -239,7 +239,7 @@ export function getStudentNotes(student: Student): StudentNote[] {
     {
       id: `note-${student.id}-2`,
       text: `Sales note: Học viên nhút nhát, cần xếp lớp sỹ số nhỏ để tương tác được nhiều. Phụ huynh đồng ý cam kết đầu ra.`,
-      author: student.saleName || 'Sale Consultant',
+      author: student.saleName || 'Nguyễn Hoàng Sale',
       timestamp: '15:30 15/05/2026',
     },
   ]

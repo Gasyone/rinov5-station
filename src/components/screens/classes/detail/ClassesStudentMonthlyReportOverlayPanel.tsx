@@ -299,22 +299,24 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
         {/* Scrollable Form Content */}
         <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-4 custom-scrollbar pr-0.5">
-          {/* Month Selector */}
-          <div className="flex items-center justify-between text-xs gap-2">
-            <span className="font-semibold text-muted-foreground shrink-0">Kỳ báo cáo:</span>
-            <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
-              <SelectTrigger className="h-8 text-xs font-bold w-full max-w-[260px] bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTH_OPTIONS.map((m) => (
-                  <SelectItem key={m.value} value={m.value} className="text-xs">
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Month Selector (Ẩn khi đang chỉnh sửa) */}
+          {!isEditing && (
+            <div className="flex items-center justify-between text-xs gap-2">
+              <span className="font-semibold text-muted-foreground shrink-0">Kỳ báo cáo:</span>
+              <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
+                <SelectTrigger className="h-8 text-xs font-bold w-full max-w-[260px] bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTH_OPTIONS.map((m) => (
+                    <SelectItem key={m.value} value={m.value} className="text-xs">
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Thông báo thời hạn chỉnh sửa khi đang sửa */}
           {isEditing && (

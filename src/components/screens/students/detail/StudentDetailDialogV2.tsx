@@ -377,6 +377,9 @@ export function StudentDetailDialogV2({
       if (updatedData.avatar) target.avatar = updatedData.avatar
       target.gender = updatedData.gender
       target.dob = updatedData.dob
+      if (updatedData.notes !== undefined) {
+        target.notes = updatedData.notes
+      }
     }
     setRevision((r) => r + 1)
     toast.success('Đã cập nhật thông tin học viên thành công!')
@@ -565,12 +568,15 @@ export function StudentDetailDialogV2({
           open={isEditProfileOpen}
           onOpenChange={setIsEditProfileOpen}
           initialData={{
+            id: student.id,
             name: student.name,
             englishName: student.englishName,
             avatar: student.avatar,
             gender: student.gender,
             dob: student.dob,
+            notes: student.notes,
           }}
+          student={student}
           onSave={handleSaveProfile}
         />
       )}

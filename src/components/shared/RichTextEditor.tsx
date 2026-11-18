@@ -101,9 +101,8 @@ export function RichTextEditor({
   const [activeColor, setActiveColor] = useState<string | null>('#F97316')
   const [colorMenuOpen, setColorMenuOpen] = useState(false)
 
-  // Character and word count
+  // Character count
   const charCount = value ? value.length : 0
-  const wordCount = value && value.trim() ? value.trim().split(/\s+/).filter(Boolean).length : 0
 
   /** Helper: Wrap selection with before/after tags or insert at cursor */
   const applyWrap = (before: string, after: string = '') => {
@@ -414,35 +413,45 @@ export function RichTextEditor({
           </>
         )}
 
-        {/* Nhóm 5: Danh sách & Thụt lề */}
-        <button
-          type="button"
-          onClick={() => applyLinePrefix('- ')}
-          className="h-6 w-6 flex items-center justify-center rounded hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
-          title="Danh sách gạch đầu dòng"
-        >
-          <List className="h-3.5 w-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => applyLinePrefix('1. ')}
-          className="h-6 w-6 flex items-center justify-center rounded hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
-          title="Danh sách đánh số"
-        >
-          <ListOrdered className="h-3.5 w-3.5" />
-        </button>
+        {/* Nhóm 5: Danh sách & Thụt lề (Gộp 3 kiểu danh sách vào 1 icon có menu lựa chọn) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="h-6 px-1.5 rounded flex items-center gap-0.5 hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
+              title="Kiểu danh sách (Gạch đầu dòng, Đánh số, Checklist)"
+            >
+              <List className="h-3.5 w-3.5" />
+              <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-auto min-w-[135px] p-1 text-[11px] font-normal">
+            <DropdownMenuItem
+              onClick={() => applyLinePrefix('- ')}
+              className="cursor-pointer flex items-center gap-2 py-1 px-2 text-[11px] whitespace-nowrap"
+            >
+              <List className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>Gạch đầu dòng</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => applyLinePrefix('1. ')}
+              className="cursor-pointer flex items-center gap-2 py-1 px-2 text-[11px] whitespace-nowrap"
+            >
+              <ListOrdered className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>Đánh số thứ tự</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => applyLinePrefix('- [ ] ')}
+              className="cursor-pointer flex items-center gap-2 py-1 px-2 text-[11px] whitespace-nowrap"
+            >
+              <ListTodo className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>Checklist</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {toolbarMode === 'full' && (
           <>
-            <button
-              type="button"
-              onClick={() => applyLinePrefix('- [ ] ')}
-              className="h-6 w-6 flex items-center justify-center rounded hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
-              title="Danh sách kiểm tra (Checklist)"
-            >
-              <ListTodo className="h-3.5 w-3.5" />
-            </button>
             <button
               type="button"
               onClick={() => applyLinePrefix('  ')}
@@ -596,6 +605,22 @@ export function RichTextEditor({
         >
           <RemoveFormatting className="h-3.5 w-3.5" />
         </button>
+
+        {/* Đếm số ký tự ở cuối dòng công cụ (bỏ đếm từ, bỏ footer) */}
+        <div className="ml-auto flex items-center pl-2 text-[11px] select-none shrink-0 font-sans">
+          <span
+            className={cn(
+              maxLength && charCount >= maxLength
+                ? 'text-destructive font-semibold'
+                : maxLength && charCount >= maxLength - 30
+                ? 'text-amber-600 font-medium'
+                : 'text-muted-foreground'
+            )}
+            title={maxLength ? `Tối đa ${maxLength} ký tự` : undefined}
+          >
+            {maxLength ? `${charCount}/${maxLength}` : charCount} ký tự
+          </span>
+        </div>
       </div>
 
       {/* ── EDITOR TEXTAREA ── */}
@@ -619,30 +644,6 @@ export function RichTextEditor({
           minHeight
         )}
       />
-
-      {/* ── FOOTER: ĐẾM KÝ TỰ VÀ TỪ (CHUẨN THEO ẢNH: 21 ký tự • 5 từ) ── */}
-      <div className="flex items-center justify-between px-3 py-1 bg-muted/20 border-t border-border/50 text-[11px] text-muted-foreground select-none">
-        <div className="flex items-center gap-1.5 font-sans">
-          <span
-            className={cn(
-              maxLength && charCount >= maxLength
-                ? 'text-destructive font-semibold'
-                : maxLength && charCount >= maxLength - 30
-                ? 'text-amber-600 font-medium'
-                : 'text-muted-foreground'
-            )}
-            title={maxLength ? `Tối đa ${maxLength} ký tự` : undefined}
-          >
-            {maxLength ? `${charCount}/${maxLength}` : charCount} ký tự
-          </span>
-          <span>•</span>
-          <span>{wordCount} từ</span>
-        </div>
-
-        {maxLength && charCount >= maxLength && (
-          <span className="text-[10.5px] text-destructive font-medium">Đã đạt giới hạn</span>
-        )}
-      </div>
     </div>
   )
 }

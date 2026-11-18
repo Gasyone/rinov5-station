@@ -8,44 +8,85 @@ import { getStatusColors, resolveStatusSemantic, type StatusSemantic } from '@/l
 import { cn } from '@/lib/utils'
 import type { UnifiedSlot } from '@/components/screens/my-schedule/myScheduleTypes'
 import { getAssociatedBookingTest } from '@/components/screens/my-schedule/myScheduleHelpers'
+import type { BookingTest } from '@/mocks/bookingTests'
 import type { GenericSessionData } from './SessionHoverCard'
 
-interface BookingEventHoverCardProps {
-  session: GenericSessionData
+export interface BookingEventHoverCardProps {
+  session?: GenericSessionData
+  booking?: BookingTest
   children: ReactNode
   openDelay?: number
   closeDelay?: number
   side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+  className?: string
+}
+
+function maskPhone(phone?: string): string {
+  if (!phone) return ''
+  const cleaned = phone.replace(/\s+/g, '')
+  if (cleaned.length < 7) return phone
+  return `${cleaned.slice(0, 3)}****${cleaned.slice(-3)}`
 }
 
 export function BookingEventHoverCard({
   session,
+  booking: explicitBooking,
   children,
   openDelay = 150,
   closeDelay = 100,
   side = 'right',
+  align = 'start',
+  className,
 }: BookingEventHoverCardProps) {
-  const isCancelled = session.status === 'cancelled'
+  // Booking test details: prioritize explicit booking prop, fallback to associated booking from session
+  const booking =
+    explicitBooking ||
+    (session?.type === 'placement_test' ? getAssociatedBookingTest(session as UnifiedSlot) : null)
+
+  const isCancelled = booking ? booking.status === 'cancelled' : session?.status === 'cancelled'
 
   // Standardize values for Booking Event
-  const title = session.title || session.className || 'Sự kiện trải nghiệm'
-  const subject = session.subject
-  const level = session.level
-  const room = session.schoolRoom || session.roomName || session.location
-  const branch = session.branch
+  const title = session?.title || session?.className || 'Sự kiện trải nghiệm'
+  const subject = session?.subject
+  const level = session?.level
+  const room = session?.schoolRoom || session?.roomName || session?.location || booking?.room
+  const branch = session?.branch || booking?.school
 
-  // Time & Duration
-  const timeDisplay = session.timeSlot 
-    ? session.timeSlot 
-    : session.timeLabel && session.endTimeLabel 
-    ? `${session.timeLabel} - ${session.endTimeLabel}` 
-    : session.timeLabel || 'N/A'
+  // Time & Duration (strictly format time range without date or order id)
+  let timeDisplay = 'N/A'
+  if (session?.timeSlot) {
+    timeDisplay = session.timeSlot
+  } else if (session?.timeLabel && session?.endTimeLabel) {
+    timeDisplay = `${session.timeLabel} - ${session.endTimeLabel}`
+  } else if (session?.timeLabel) {
+    timeDisplay = session.timeLabel
+  } else if (booking?.testTime) {
+    const parts = booking.testTime.trim().split(' ')
+    const timeStr = parts.length > 1 ? parts[1] : parts[0]
+    if (timeStr && timeStr.includes(':')) {
+      const [hStr, mStr] = timeStr.split(':')
+      const h = Number(hStr)
+      const m = Number(mStr)
+      if (!isNaN(h) && !isNaN(m)) {
+        const slotM = m < 30 ? 0 : 30
+        const startH = String(h).padStart(2, '0')
+        const startM = String(slotM).padStart(2, '0')
+        const endMinutes = h * 60 + slotM + 30
+        const endH = String(Math.floor(endMinutes / 60)).padStart(2, '0')
+        const endM = String(endMinutes % 60).padStart(2, '0')
+        timeDisplay = `${startH}:${startM} - ${endH}:${endM}`
+      } else {
+        timeDisplay = timeStr
+      }
+    } else {
+      timeDisplay = booking.testTime
+    }
+  }
 
   // Teaching Staff / Organizer
-  const primaryTeacher = session.teacher || session.teacherName || session.organizer || session.personLabel
+  const primaryTeacher = session?.teacher || session?.teacherName || session?.organizer || session?.personLabel
 
-  // Booking test details
-  const booking = session.type === 'placement_test' ? getAssociatedBookingTest(session as UnifiedSlot) : null
   let studentName = title
   let parentInfo = ''
   let testStatusText = ''
@@ -53,10 +94,25 @@ export function BookingEventHoverCard({
 
   if (booking) {
     studentName = booking.childName
-    parentInfo = `PH: ${booking.familyName} (${booking.phone})`
+    const parentDisplayName =
+      booking.parentName ||
+      (booking.parentRole ? `${booking.familyName} (${booking.parentRole})` : booking.familyName) ||
+      booking.familyMembers?.[0]?.name ||
+      ''
+    const phoneStr = booking.phone
+      ? (booking.phone.includes('*') ? booking.phone : maskPhone(booking.phone))
+      : ''
+    if (parentDisplayName && phoneStr) {
+      parentInfo = `PH: ${parentDisplayName} (${phoneStr})`
+    } else if (parentDisplayName) {
+      parentInfo = `PH: ${parentDisplayName}`
+    } else if (phoneStr) {
+      parentInfo = `PH: ${phoneStr}`
+    }
+
     const bookingStatusMap: Record<string, string> = {
-      booked_assessment: 'Đã đặt lịch test',
-      ipad_test_booked: 'Đã đặt lịch test',
+      booked_assessment: 'Đã đặt lịch',
+      ipad_test_booked: 'Đã đặt lịch',
       unassigned_teacher: 'Chưa gán GV',
       checkin: 'Đã check-in',
       ipad_test_started: 'Đang test',
@@ -71,15 +127,15 @@ export function BookingEventHoverCard({
     testStatusSemantic = resolveStatusSemantic(booking.status)
   } else {
     // Graceful fallback for sessions created from Lead or other sources
-    if (session.subtitle?.startsWith('PH:')) {
+    if (session?.subtitle?.startsWith('PH:')) {
       parentInfo = session.subtitle
-    } else if (session.note?.startsWith('PH:')) {
+    } else if (session?.note?.startsWith('PH:')) {
       parentInfo = session.note
     }
-    const statusVal = session.status || 'completed'
+    const statusVal = session?.status || 'completed'
     const fallbackStatusMap: Record<string, string> = {
       completed: 'Hoàn tất',
-      scheduled: 'Đã đặt lịch test',
+      scheduled: 'Đã đặt lịch',
       testing: 'Đang test',
       checkin: 'Đã check-in',
       failed: 'Không đạt',
@@ -89,20 +145,20 @@ export function BookingEventHoverCard({
     testStatusSemantic = resolveStatusSemantic(statusVal)
   }
 
-  const displaySubject = subject || (booking ? (booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy') : 'Tiếng Anh')
-  
+  const displaySubject = subject || (booking ? (booking.subject === 'math' ? 'Toán tư duy' : 'Tiếng Anh') : 'Tiếng Anh')
+
   // Resolve Program (Chương trình)
-  let displayProgram = booking?.program || session.kctName || 'Chương trình Station'
+  let displayProgram = booking?.program || session?.kctName || 'Chương trình Station'
   if (displayProgram === 'Station Program') displayProgram = 'Chương trình Station'
   else if (!displayProgram.startsWith('Chương trình')) displayProgram = `Chương trình ${displayProgram}`
 
   // Resolve Registered Level / Bracket (Trình độ)
-  const registeredLevel = level || (booking?.program && booking.program !== 'Station Program' ? booking.program : 'Pre-Starters (<=6)')
+  const registeredLevel = level || booking?.expectedLevel?.trim() || (booking?.program && booking.program !== 'Station Program' ? booking.program : 'Pre-Starters (<=6)')
 
   // Resolve Assessment Level & Sub-level (Trình độ đánh giá)
-  const assessedLevel = booking?.testResult?.level || session.lessonSubtitle || (session.status === 'completed' ? level : undefined)
+  const assessedLevel = booking?.testResult?.level || session?.lessonSubtitle || (session?.status === 'completed' ? level : undefined)
   const assessedSubLevel = booking?.testResult?.subLevel || booking?.testResult?.lwrLevel
-  const hasAssessmentResult = Boolean(assessedLevel && assessedLevel !== '' && assessedLevel !== '-')
+  const hasAssessmentResult = Boolean(assessedLevel && assessedLevel !== '' && assessedLevel !== '-' && assessedLevel !== 'Chưa đặt')
 
   // Location formatting
   let locationDisplay = ''
@@ -110,7 +166,7 @@ export function BookingEventHoverCard({
     if (room.toLowerCase().includes(branch.toLowerCase()) || branch.toLowerCase().includes(room.toLowerCase())) {
       locationDisplay = room
     } else {
-      locationDisplay = `${room} • ${branch}`
+      locationDisplay = `${branch} - ${room}`
     }
   } else {
     locationDisplay = room || branch || ''
@@ -118,19 +174,19 @@ export function BookingEventHoverCard({
 
   // Check if booking/session actually has a test result or result link
   const hasResult = Boolean(
-    session.resultLink ||
+    session?.resultLink ||
     booking?.resultLink ||
-    (booking?.testResult?.level && booking.testResult.level !== '') ||
+    (booking?.testResult?.level && booking.testResult.level !== '' && booking.testResult.level !== 'Chưa đặt') ||
     (booking?.testResult?.speaking && booking.testResult.speaking !== '-') ||
     (booking?.testResult?.lwr && booking.testResult.lwr !== '-') ||
     booking?.isTested ||
-    session.status === 'completed'
+    session?.status === 'completed'
   )
 
   // Responsible Person for Booking/Event
   let displayResponsiblePerson = primaryTeacher || 'Robert L.'
   if (booking) {
-    displayResponsiblePerson = booking.teacher || booking.ops || booking.createdBy || session.teacher || session.teacherName || 'Robert L.'
+    displayResponsiblePerson = booking.teacher || booking.ops || booking.createdBy || session?.teacher || session?.teacherName || 'Robert L.'
   }
   if (!displayResponsiblePerson || displayResponsiblePerson.includes('Phòng Tuyển sinh') || displayResponsiblePerson.startsWith('Phòng')) {
     if (booking?.teacher && !booking.teacher.startsWith('Phòng')) displayResponsiblePerson = booking.teacher
@@ -145,9 +201,12 @@ export function BookingEventHoverCard({
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}
-        align="start"
+        align={align}
         sideOffset={8}
-        className="w-80 p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-50 animate-in fade-in-0 zoom-in-95"
+        className={cn(
+          'w-80 p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-[100] animate-in fade-in-0 zoom-in-95',
+          className
+        )}
       >
         {/* Top Header Ribbon */}
         <div
@@ -167,7 +226,7 @@ export function BookingEventHoverCard({
           {/* Type Badge */}
           <div className="flex items-center gap-1">
             <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
-              {session.typeLabel || 'Trải nghiệm'}
+              {session?.typeLabel || 'Trải nghiệm'}
             </span>
           </div>
         </div>
@@ -213,7 +272,7 @@ export function BookingEventHoverCard({
             <span className="font-medium text-foreground/90">
               Trình độ:{' '}
               <a
-                href={session.testLink || booking?.testLink || `/app/booking_test/results/${booking?.id || 'demo'}`}
+                href={session?.testLink || booking?.testLink || `/app/booking_test/results/${booking?.id || 'demo'}`}
                 onClick={(e) => e.stopPropagation()}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -256,7 +315,7 @@ export function BookingEventHoverCard({
               </div>
               {hasResult ? (
                 <a
-                  href={session.resultLink || booking?.resultLink || `/app/booking_test/results/${booking?.id || 'demo'}`}
+                  href={session?.resultLink || booking?.resultLink || `/app/booking_test/results/${booking?.id || 'demo'}`}
                   onClick={(e) => e.stopPropagation()}
                   target="_blank"
                   rel="noopener noreferrer"

@@ -98,6 +98,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { PermissionsScreen } = await import('@/components/screens/permissions/PermissionsScreen')
     return { default: PermissionsScreen }
   }),
+  notifications: safeLazy(async () => {
+    const { NotificationsScreen } = await import('@/components/screens/notifications/NotificationsScreen')
+    return { default: NotificationsScreen }
+  }),
   branches: safeLazy(async () => {
     const { BranchesScreen } = await import('@/components/screens/branches/BranchesScreen')
     return { default: BranchesScreen }

@@ -87,28 +87,28 @@ export function MonthlyReportSectionB({
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#FF9E08] to-[#F05A28] text-white text-xs font-bold shadow-2xs">
           B
         </span>
-        <h3 className="text-[18px] sm:text-[20px] font-bold text-slate-900 tracking-tight">
+        <h3 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 tracking-tight">
           Kế hoạch học tập tháng tới {monthName}
         </h3>
       </div>
 
       {/* ── 1. NỘI DUNG BÀI HỌC TRỌNG TÂM (GỘP CHUNG 1 THẺ, CÁC BUỔI CÁCH NHAU BẰNG XUỐNG DÒNG) ── */}
       <div className="space-y-2.5">
-        <h4 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 flex items-center gap-1.5">
+        <h4 className="text-[15px] sm:text-[15.5px] font-semibold text-slate-800 flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#FF9E08]" />
           <span>1. Nội dung bài học trọng tâm</span>
         </h4>
 
         {b1Content && b1Content.trim() ? (
-          <div className="rounded-xl border border-slate-200/90 bg-white p-3 sm:p-4 text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal shadow-2xs break-words">
+          <div className="rounded-xl border border-slate-200/90 bg-white p-3 sm:p-4 text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal shadow-2xs break-words">
             {sessions.length > 0 ? (
               <div className="space-y-3.5 sm:space-y-4">
                 {sessions.map((session, idx) => (
-                  <div key={idx} className="space-y-1.5">
-                    <h5 className="font-bold text-[16px] sm:text-[16.5px] text-slate-900 leading-snug">
+                  <div key={idx} className="space-y-1">
+                    <h5 className="font-semibold text-[14.5px] sm:text-[15px] text-slate-900 leading-snug">
                       {session.title}
                     </h5>
-                    <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
+                    <div className="text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal break-words">
                       {renderRichText(session.body)}
                     </div>
                   </div>
@@ -119,7 +119,7 @@ export function MonthlyReportSectionB({
             )}
           </div>
         ) : (
-          <div className="rounded-xl border border-slate-200 bg-white p-3 text-base text-slate-400 italic">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-400 italic">
             Chưa có nội dung bài học tháng tới.
           </div>
         )}
@@ -128,7 +128,7 @@ export function MonthlyReportSectionB({
       {/* ── 2. LỘ TRÌNH ÔN TẬP RIÊNG TẠI NHÀ (DANH SÁCH THẺ TUẦN, BỎ TRỤC LINE DỌC & VÒNG TRÒN SỐ) ── */}
       {validWeeks.length > 0 && (
         <div className="space-y-2.5 pt-1">
-          <h4 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 flex items-center gap-1.5">
+          <h4 className="text-[15px] sm:text-[15.5px] font-semibold text-slate-800 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF9E08]" />
             <span>2. Lộ trình ôn tập riêng tại nhà</span>
           </h4>
@@ -144,11 +144,11 @@ export function MonthlyReportSectionB({
                   className="rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 flex flex-col sm:flex-row items-stretch justify-between shadow-2xs overflow-hidden transition-all min-h-[58px]"
                 >
                   {/* Phần nội dung & tiêu đề Tuần */}
-                  <div className="flex-1 min-w-0 py-3 px-3.5 sm:px-4 space-y-1.5">
-                    <h5 className="font-bold text-[16px] sm:text-[16.5px] text-slate-900 leading-snug">
+                  <div className="flex-1 min-w-0 py-3 px-3.5 sm:px-4 space-y-1">
+                    <h5 className="font-semibold text-[14.5px] sm:text-[15px] text-slate-900 leading-snug">
                       {item.title || `Tuần ${idx + 1}`}
                     </h5>
-                    <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
+                    <div className="text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal break-words">
                       {renderRichText(item.content)}
                     </div>
                   </div>

@@ -257,14 +257,14 @@ export function MonthlyReportLandingScreen({
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#EA2D2D] to-[#F98A3A] text-white text-xs font-bold shadow-2xs">
               A
             </span>
-            <h3 className="text-[18px] sm:text-[20px] font-bold text-slate-900 tracking-tight">
+            <h3 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 tracking-tight">
               Đánh giá quá trình học tập {activeMonthConfig.current}
             </h3>
           </div>
 
           {/* 1. Nhận xét thái độ & thói quen học tập (Điểm nổi bật & Điểm cần lưu ý) */}
           <div className="space-y-2.5">
-            <h4 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 flex items-center gap-1.5">
+            <h4 className="text-[15px] sm:text-[15.5px] font-semibold text-slate-800 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2D2D]" />
               1. Nhận xét thái độ & thói quen học tập
             </h4>
@@ -272,22 +272,22 @@ export function MonthlyReportLandingScreen({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {/* Thẻ Điểm nổi bật (Nền trắng viền thanh lịch, chữ đen sắc nét) */}
               <div className="rounded-xl p-3 sm:p-4 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-2">
-                <div className="flex items-center gap-1.5 text-slate-900 font-bold text-[15.5px] sm:text-[16px]">
+                <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-[14.5px] sm:text-[15px]">
                   <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
                   <span>Điểm nổi bật & cần phát huy</span>
                 </div>
-                <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
+                <div className="text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal break-words">
                   {renderRichText(highlightItem?.body || report.sectionA1Content)}
                 </div>
               </div>
 
               {/* Thẻ Điểm cần lưu ý (Nền trắng viền thanh lịch, chữ đen sắc nét) */}
               <div className="rounded-xl p-3 sm:p-4 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-2">
-                <div className="flex items-center gap-1.5 text-slate-900 font-bold text-[15.5px] sm:text-[16px]">
+                <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-[14.5px] sm:text-[15px]">
                   <Lightbulb className="h-4 w-4 text-amber-600 shrink-0" />
                   <span>Điểm cần lưu ý & rèn luyện thêm</span>
                 </div>
-                <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
+                <div className="text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal break-words">
                   {renderRichText(
                     noteItem?.body ||
                       'Con tiếp tục duy trì nỗ lực học tập để đạt kết quả tốt nhất trong kỳ học tới.'
@@ -297,31 +297,40 @@ export function MonthlyReportLandingScreen({
             </div>
           </div>
 
-          {/* 2. Nhận xét về năng lực & kết quả học tập chi tiết */}
+          {/* 2. Nhận xét về năng lực & kết quả học tập chi tiết (Gộp chung 1 thẻ giống thiết kế B.1) */}
           <div className="space-y-2.5 pt-0.5">
-            <h4 className="text-[16.5px] sm:text-[17.5px] font-bold text-slate-900 flex items-center gap-1.5">
+            <h4 className="text-[15px] sm:text-[15.5px] font-semibold text-slate-800 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2D2D]" />
               2. Nhận xét về năng lực & kết quả học tập chi tiết
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-              {academicItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl p-3 sm:p-4 border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all space-y-2"
-                >
-                  <div className="flex items-center gap-1.5 text-[15.5px] sm:text-[16px] font-bold text-slate-900">
-                    <span className="h-2 w-2 rounded-full shrink-0 bg-slate-400" />
-                    <span>
-                      {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
-                    </span>
+            {report.sectionA2Content && report.sectionA2Content.trim() ? (
+              <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal shadow-2xs break-words">
+                {academicItems.length > 0 ? (
+                  <div className="space-y-3.5 sm:space-y-4">
+                    {academicItems.map((item, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <h5 className="font-semibold text-[14.5px] sm:text-[15px] text-slate-900 leading-snug flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+                          <span>
+                            {item.label ? item.label.replace(':', '') : `Năng lực ${idx + 1}`}
+                          </span>
+                        </h5>
+                        <div className="text-[15.5px] sm:text-[16px] leading-relaxed text-slate-800 font-normal break-words">
+                          {renderRichText(item.body)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="text-[17px] sm:text-[17.5px] leading-[1.7] text-slate-900 font-normal break-words">
-                    {renderRichText(item.body)}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ) : (
+                  renderRichText(report.sectionA2Content)
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-400 italic">
+                Chưa có nhận xét về năng lực học tập.
+              </div>
+            )}
           </div>
         </div>
 

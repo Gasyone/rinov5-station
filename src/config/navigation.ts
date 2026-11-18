@@ -142,6 +142,7 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Cấu hình Hệ thống',
     icon: Settings,
     items: [
+      { id: 'notifications', label: 'Trung tâm thông báo', href: '/app/notifications' },
       { id: 'lead_lifecycle_config', label: 'Cấu hình Phễu & Kho Lead', href: '/app/lead_lifecycle_config' },
       { id: 'care_conditions_config', label: 'Danh mục chăm sóc', href: '/app/care_conditions_config' },
       { id: 'permissions', label: 'Nhóm quyền', href: '/app/permissions' },

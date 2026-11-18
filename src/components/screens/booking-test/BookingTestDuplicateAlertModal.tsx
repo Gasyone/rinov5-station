@@ -16,7 +16,7 @@ import {
   maskPhone,
   getParentDisplayName,
 } from './bookingTestHelpers'
-import { BookingTestScheduleHoverCard } from './BookingTestScheduleHoverCard'
+import { BookingEventHoverCard } from '@/components/screens/calendar/BookingEventHoverCard'
 
 interface BookingTestDuplicateAlertModalProps {
   open: boolean
@@ -110,7 +110,7 @@ export function BookingTestDuplicateAlertModal({
               {/* Cột 1: Thời gian & Hover Popover Profile */}
               <div>
                 <span className="text-muted-foreground block text-[11px]">Thời gian:</span>
-                <BookingTestScheduleHoverCard booking={booking} side="right" align="start">
+                <BookingEventHoverCard booking={booking} side="right" align="start">
                   <div
                     className="inline-flex items-center gap-1 font-semibold text-primary text-xs hover:underline decoration-dotted underline-offset-2 transition-colors cursor-pointer group mt-0.5"
                     title="Hover để xem toàn bộ hồ sơ chi tiết ca test"
@@ -118,7 +118,7 @@ export function BookingTestDuplicateAlertModal({
                     <span>{formatTestTimeWithDay(booking.testTime) || booking.testTime}</span>
                     <Info className="size-3 text-primary/70 group-hover:text-primary shrink-0" />
                   </div>
-                </BookingTestScheduleHoverCard>
+                </BookingEventHoverCard>
               </div>
 
               {/* Cột 2: Cơ sở */}

@@ -24,7 +24,7 @@ import {
 } from './bookingTestStaffHelpers'
 import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDialog'
 import { BookingTestLevelPopover } from './BookingTestLevelPopover'
-import { BookingTestScheduleHoverCard } from './BookingTestScheduleHoverCard'
+import { BookingEventHoverCard } from '@/components/screens/calendar/BookingEventHoverCard'
 import {
   applyBookingCheckIn,
   formatStudentMetaLine,
@@ -163,16 +163,6 @@ export function BookingTestTableRow({
                 >
                   {booking.childName}
                 </p>
-                <a
-                  href={`/booking-test?bookingId=${booking.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="font-mono text-[10.5px] text-muted-foreground/80 hover:text-primary hover:underline shrink-0"
-                  title="Mở trang kết quả đặt lịch & mẫu Zalo gửi phụ huynh"
-                >
-                  #{booking.id}
-                </a>
                 {isCheckedIn ? (
                   <span title="Đã check-in" className="inline-flex shrink-0">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 fill-emerald-100 dark:fill-emerald-950" />
@@ -258,7 +248,7 @@ export function BookingTestTableRow({
         className="w-[175px] min-w-[160px] xl:w-[190px] 2xl:w-[210px] px-2 xl:px-2.5"
         onClick={(event) => event.stopPropagation()}
       >
-        <BookingTestScheduleHoverCard booking={booking} side="bottom" align="start">
+        <BookingEventHoverCard booking={booking} side="bottom" align="start">
           <div
             onClick={() => {
               window.open(
@@ -289,7 +279,7 @@ export function BookingTestTableRow({
               )}
             </p>
           </div>
-        </BookingTestScheduleHoverCard>
+        </BookingEventHoverCard>
       </td>
 
       {/* 5. Speaking & LWR (hoặc LWR Level cho môn Toán): Điểm số */}

@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
+  ArrowRight,
   Bell,
   Check,
   CheckCheck,
@@ -28,6 +30,7 @@ import {
 import { RenderNotificationText } from './NotificationEntityToken'
 
 export function HeaderNotificationCenter() {
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [onlyUnread, setOnlyUnread] = useState(false)
@@ -57,15 +60,27 @@ export function HeaderNotificationCenter() {
     return mounted ? notifications.filter((n) => !n.read).length : 0
   }, [mounted, notifications])
 
-  // Pick top 2 notifications for header ticker
-  const topTwoNotifications = useMemo(() => {
+  // Unread notifications for ticker rotation; if none, fall back to recent
+  const tickerNotifications = useMemo(() => {
     if (!mounted || sortedNotifications.length === 0) return []
-    // Prioritize unread notifications first, then fill with recent
     const unread = sortedNotifications.filter((n) => !n.read)
-    const read = sortedNotifications.filter((n) => n.read)
-    const combined = [...unread, ...read]
-    return combined.slice(0, 2)
+    if (unread.length > 0) return unread
+    return sortedNotifications.slice(0, 5)
   }, [mounted, sortedNotifications])
+
+  const [tickerIndex, setTickerIndex] = useState(0)
+  const [isTickerPaused, setIsTickerPaused] = useState(false)
+
+  // Auto-rotate every 5 seconds (5000ms), paused when hovered
+  useEffect(() => {
+    if (!mounted || isTickerPaused || tickerNotifications.length <= 1) return
+
+    const timer = setInterval(() => {
+      setTickerIndex((prev) => (prev + 1) % tickerNotifications.length)
+    }, 5000)
+
+    return () => clearInterval(timer)
+  }, [mounted, isTickerPaused, tickerNotifications.length])
 
   // Filtered list for the modal
   const modalNotifications = useMemo(() => {
@@ -82,13 +97,13 @@ export function HeaderNotificationCenter() {
     window.open(route, '_blank')
   }
 
-  const notif1 = topTwoNotifications[0]
-  const notif2 = topTwoNotifications[1]
-
-  const notif1Config = notif1 ? getBusinessIconConfig(notif1) : null
-  const notif2Config = notif2 ? getBusinessIconConfig(notif2) : null
-  const Icon1 = notif1Config?.icon
-  const Icon2 = notif2Config?.icon
+  const safeTickerIndex =
+    tickerNotifications.length > 0 ? tickerIndex % tickerNotifications.length : 0
+  const activeTickerNotif = tickerNotifications[safeTickerIndex]
+  const tickerIconConfig = activeTickerNotif
+    ? getBusinessIconConfig(activeTickerNotif)
+    : null
+  const TickerIcon = tickerIconConfig?.icon
 
   return (
     <>
@@ -119,14 +134,17 @@ export function HeaderNotificationCenter() {
               )}
             </div>
 
-            {/* Desktop & Tablet: Fixed 540px 2-line Center Ticker Bar (Phẳng, không viền, không nền) */}
+            {/* Desktop & Tablet: Fixed 540px Single-line Center Ticker Bar (Phẳng, không viền, không nền) */}
             <div
               role="button"
               tabIndex={0}
+              onMouseEnter={() => setIsTickerPaused(true)}
+              onMouseLeave={() => setIsTickerPaused(false)}
               className={cn(
-                'group hidden md:flex items-center gap-2.5 h-[36px] px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none text-left w-[540px] shrink-0 hover:bg-muted/20'
+                'group hidden md:flex items-center gap-2.5 h-[36px] px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none text-left w-[540px] shrink-0',
+                'bg-transparent border border-transparent shadow-none hover:bg-muted/20'
               )}
-              title="Nhấp để mở rộng danh sách thông báo"
+              title="Nhấp để xem chi tiết danh sách thông báo (Tự động dừng khi rê chuột)"
             >
               {/* Bell Icon + Unread Counter */}
               <div className="relative shrink-0 flex items-center justify-center">
@@ -138,71 +156,49 @@ export function HeaderNotificationCenter() {
                 )}
               </div>
 
-              {/* 2 Lines Displaying 2 Notifications */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center leading-tight gap-0.5 overflow-hidden">
-                {/* Line 1: First Notification */}
-                {notif1 ? (
-                  <div className="flex items-center gap-1.5 text-[11.5px] min-w-0">
+              <div className="h-3.5 w-px bg-border/60 shrink-0" />
+
+              {/* 1 Single Notification with Smooth Fade Animation */}
+              <div className="flex-1 min-w-0 overflow-hidden">
+                {activeTickerNotif ? (
+                  <div
+                    key={activeTickerNotif.id}
+                    className="flex items-center gap-2 text-xs min-w-0 animate-in fade-in-50 duration-300"
+                  >
                     <span
                       className={cn(
                         'h-1.5 w-1.5 rounded-full shrink-0',
-                        !notif1.read ? 'bg-primary' : 'bg-transparent'
+                        !activeTickerNotif.read ? 'bg-primary' : 'bg-transparent'
                       )}
                     />
-                    {Icon1 && <Icon1 className={cn('h-3.5 w-3.5 shrink-0', notif1Config.color)} />}
+                    {TickerIcon && (
+                      <TickerIcon className={cn('h-3.5 w-3.5 shrink-0', tickerIconConfig.color)} />
+                    )}
                     <span
                       className={cn(
-                        'truncate font-normal',
-                        !notif1.read ? 'text-foreground' : 'text-muted-foreground'
+                        'truncate flex-1',
+                        !activeTickerNotif.read ? 'text-foreground font-medium' : 'text-muted-foreground'
                       )}
                     >
-                      {notif1.title}
+                      {activeTickerNotif.title}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/60 shrink-0 ml-auto pl-2 whitespace-nowrap">
-                      {getRelativeTime(notif1.timestamp)}
+
+                    <span className="text-[11px] text-muted-foreground/60 shrink-0 whitespace-nowrap">
+                      {getRelativeTime(activeTickerNotif.timestamp)}
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70 min-w-0">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 min-w-0">
                     <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
                     <span className="truncate">Chưa có thông báo nào</span>
                   </div>
                 )}
-
-                {/* Line 2: Second Notification */}
-                {notif2 ? (
-                  <div className="flex items-center gap-1.5 text-[11px] min-w-0">
-                    <span
-                      className={cn(
-                        'h-1.5 w-1.5 rounded-full shrink-0',
-                        !notif2.read ? 'bg-primary' : 'bg-transparent'
-                      )}
-                    />
-                    {Icon2 && <Icon2 className={cn('h-3.5 w-3.5 shrink-0', notif2Config.color)} />}
-                    <span
-                      className={cn(
-                        'truncate font-normal',
-                        !notif2.read ? 'text-foreground' : 'text-muted-foreground'
-                      )}
-                    >
-                      {notif2.title}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/50 shrink-0 ml-auto pl-2 whitespace-nowrap">
-                      {getRelativeTime(notif2.timestamp)}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground/50 min-w-0">
-                    <span className="h-1.5 w-1.5 rounded-full bg-transparent shrink-0" />
-                    <span className="truncate italic">Không có thông báo mới khác</span>
-                  </div>
-                )}
               </div>
 
-              {/* Expand Button: Bỏ viền, bỏ nền */}
+              {/* Expand Indicator */}
               <div
                 role="button"
-                className="inline-flex items-center gap-1.5 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors shrink-0 bg-transparent border-0 shadow-none cursor-pointer ml-1"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground group-hover:text-primary transition-colors shrink-0 cursor-pointer ml-1"
                 title="Mở rộng xem tất cả thông báo"
                 onClick={(e) => {
                   e.stopPropagation()
@@ -463,12 +459,16 @@ export function HeaderNotificationCenter() {
 
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               size="sm"
-              className="h-8 px-3 text-xs"
-              onClick={() => setIsModalOpen(false)}
+              className="h-8 px-3 text-xs font-medium gap-1.5 shadow-xs"
+              onClick={() => {
+                setIsModalOpen(false)
+                router.push('/app/notifications')
+              }}
             >
-              Đóng
+              <span>Xem tất cả</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         </PopoverContent>

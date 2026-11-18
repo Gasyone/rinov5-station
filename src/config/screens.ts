@@ -178,4 +178,8 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Sơ đồ tổ chức',
     description: 'Quản lý cây sơ đồ tổ chức, cơ cấu phòng ban và phân bổ nhân sự theo khối/vùng/chi nhánh',
   },
+  notifications: {
+    label: 'Trung tâm thông báo',
+    description: 'Quản lý toàn bộ thông báo hệ thống, phân loại cảnh báo nghiệp vụ và cấu hình nhận tin',
+  },
 }

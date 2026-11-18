@@ -8,18 +8,21 @@ import {
   FileText,
   AlertTriangle,
   GraduationCap,
+  UserCheck,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react'
 
 export type NotificationCategory =
-  | 'student_care' // Học vụ & Chăm sóc học viên (Vắng học, Bảo lưu, Xếp lớp)
-  | 'schedule' // Lịch học & Buổi học (Lịch mới, Hủy buổi, Đổi phòng)
-  | 'commercial' // Đơn hàng & Tài chính (Đơn mới, Thu phí, Tái phí)
-  | 'ticket' // Khiếu nại & Chất lượng (Ticket phản ánh phụ huynh/học viên)
-  | 'operations' // Vận hành lớp học (Điểm danh, Báo cáo buổi học)
-  // Legacy aliases
+  | 'operations' // Vận hành Lớp & Lịch học (Lịch ca dạy, Hủy buổi, Đổi phòng, Điểm danh) - CAP-OPS
+  | 'student_care' // Học vụ & Chăm sóc học viên (Vắng học, Bảo lưu, Học bù, Sa sút) - CAP-CARE
+  | 'admissions' // Tuyển sinh & Ghi danh (Booking Test, Lớp học thử, Lead mới) - CAP-ADM
+  | 'commercial' // Đơn hàng & Học phí (Đơn mới, Phiếu thu, Tái phí, Công nợ) - CAP-COM / CAP-FIN
+  | 'ticket' // Khiếu nại & Hỗ trợ (Ticket phản ánh phụ huynh, SLA 2h) - CAP-CARE
+  | 'system' // Hệ thống & Tài khoản (Phân quyền, Bảo trì, Cảnh báo bảo mật) - CAP-SYS
+  // Aliases for backwards compatibility
+  | 'schedule'
   | 'workflow'
-  | 'system'
   | 'reminder'
   | 'alert'
 
@@ -39,13 +42,14 @@ export interface NotificationItem {
 }
 
 const CATEGORY_LABELS: Record<NotificationCategory, string> = {
+  operations: 'Vận hành & Lịch học',
   student_care: 'Chăm sóc học viên',
-  schedule: 'Lịch học',
-  commercial: 'Đơn hàng & Thu phí',
+  admissions: 'Tuyển sinh & Ghi danh',
+  commercial: 'Đơn hàng & Học phí',
   ticket: 'Ticket & Khiếu nại',
-  operations: 'Vận hành lớp học',
+  system: 'Hệ thống & Tài khoản',
+  schedule: 'Vận hành & Lịch học',
   workflow: 'Luồng nghiệp vụ',
-  system: 'Hệ thống',
   reminder: 'Nhắc nhở',
   alert: 'Cảnh báo',
 }
@@ -72,7 +76,7 @@ export function getBusinessIconConfig(notif: NotificationItem): { icon: LucideIc
   const title = notif.title.toLowerCase()
   const msg = notif.message.toLowerCase()
 
-  // 1. Buổi học bị hủy / Thay đổi lịch đột xuất (Lịch biểu)
+  // 1. Buổi học bị hủy / Thay đổi lịch đột xuất (Lịch biểu & Vận hành)
   if (title.includes('hủy') || msg.includes('hủy')) {
     return { icon: CalendarX, color: 'text-rose-500 dark:text-rose-400' }
   }
@@ -82,33 +86,43 @@ export function getBusinessIconConfig(notif: NotificationItem): { icon: LucideIc
     return { icon: ClipboardCheck, color: 'text-blue-500 dark:text-blue-400' }
   }
 
-  // 3. Đơn hàng mới / Thanh toán học phí (CRM & Thương mại)
+  // 3. Tuyển sinh: Test đầu vào & Học thử
+  if (notif.category === 'admissions' || title.includes('test') || title.includes('học thử') || title.includes('trải nghiệm')) {
+    return { icon: UserCheck, color: 'text-violet-500 dark:text-violet-400' }
+  }
+
+  // 4. Đơn hàng mới / Thanh toán học phí (CRM & Thương mại)
   if (notif.category === 'commercial' && (title.includes('đơn hàng') || title.includes('ord-') || title.includes('phiếu thu'))) {
     return { icon: CreditCard, color: 'text-emerald-500 dark:text-emerald-400' }
   }
 
-  // 4. Tái phí học viên (Tái phí & Công nợ)
+  // 5. Tái phí học viên (Tái phí & Công nợ)
   if (title.includes('tái phí') || msg.includes('tái phí')) {
     return { icon: CircleDollarSign, color: 'text-amber-500 dark:text-amber-400' }
   }
 
-  // 5. Đơn bảo lưu / Nghỉ phép (Bảo lưu & Nghỉ phép)
+  // 6. Đơn bảo lưu / Nghỉ phép (Bảo lưu & Nghỉ phép)
   if (title.includes('bảo lưu') || title.includes('nghỉ phép') || msg.includes('bảo lưu')) {
     return { icon: FileText, color: 'text-indigo-500 dark:text-indigo-400' }
   }
 
-  // 6. Ticket phản ánh & Khiếu nại (Ticket & Chất lượng)
+  // 7. Ticket phản ánh & Khiếu nại (Ticket & Chất lượng)
   if (notif.category === 'ticket' || title.includes('ticket') || title.includes('phàn nàn') || title.includes('khiếu nại')) {
     return { icon: MessageSquareWarning, color: 'text-amber-500 dark:text-amber-400' }
   }
 
-  // 7. Học vụ & Chăm sóc học viên (Vắng học, Điểm thi, Xếp lớp)
+  // 8. Hệ thống & Tài khoản
+  if (notif.category === 'system' || title.includes('bảo trì') || title.includes('phân quyền') || title.includes('bảo mật')) {
+    return { icon: ShieldCheck, color: 'text-zinc-500 dark:text-zinc-400' }
+  }
+
+  // 9. Học vụ & Chăm sóc học viên (Vắng học, Điểm thi, Xếp lớp)
   if (notif.category === 'student_care' || title.includes('vắng') || title.startsWith('hv')) {
     return { icon: GraduationCap, color: 'text-indigo-500 dark:text-indigo-400' }
   }
 
-  // 8. Lịch học mới / Lịch test (Lịch biểu trung tâm)
-  if (notif.category === 'schedule' || title.includes('lịch')) {
+  // 10. Vận hành & Lịch học
+  if (notif.category === 'operations' || notif.category === 'schedule' || title.includes('lịch') || title.includes('phòng')) {
     return { icon: CalendarDays, color: 'text-sky-500 dark:text-sky-400' }
   }
 
@@ -182,7 +196,7 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
     title: 'Buổi học SESSION-012 lớp IELTS-02 thông báo hủy đột xuất',
     message:
       'Lý do: GV Phạm Văn K báo ốm đột xuất. 14 học viên trong lớp đã được hệ thống gửi tin ZNS thông báo dời lịch, nhân sự vận hành cần phối hợp xếp lịch dạy bù vào cuối tuần.',
-    category: 'schedule',
+    category: 'operations',
     priority: 'high',
     read: false,
     timestamp: new Date(Date.now() - 45 * 60000),
@@ -249,7 +263,7 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
     title: 'Thời khóa biểu mới lớp TOEIC-03 đã được duyệt xếp phòng',
     message:
       'Lịch học cố định vào Thứ 3 - Thứ 5 hàng tuần (18:00 - 19:30) tại Phòng Lab 204. Phòng Đào tạo đã phân công GV Vũ Hoàng L phụ trách và hoàn tất cấp phát giáo trình.',
-    category: 'schedule',
+    category: 'operations',
     priority: 'low',
     read: true,
     timestamp: new Date(Date.now() - 14 * 3600000),
@@ -288,7 +302,7 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
     title: 'Lịch kiểm tra trải nghiệm đầu vào cho 3 học viên mới',
     message:
       'Ca kiểm tra xếp lớp lúc 15h30 ngày mai tại Phòng Test 01. Đã phân công giám thị và chuẩn bị sẵn đề thi 4 kỹ năng trên hệ thống máy tính trung tâm.',
-    category: 'schedule',
+    category: 'admissions',
     priority: 'low',
     read: true,
     timestamp: new Date(Date.now() - 36 * 3600000),
@@ -301,7 +315,7 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
     title: 'Lớp trải nghiệm Robotics chiều nay tại cơ sở Cầu Giấy',
     message:
       'Sĩ số ghi nhận: 8/10 học viên đã xác nhận tham dự. Bộ phận Lễ tân và Trợ giảng đã chuẩn bị đầy đủ bộ kit lắp ráp và quà tặng chào mừng cho các bạn nhỏ.',
-    category: 'student_care',
+    category: 'admissions',
     priority: 'low',
     read: true,
     timestamp: new Date(Date.now() - 48 * 3600000),
@@ -314,7 +328,7 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
     title: 'Yêu cầu điều chuyển phòng học cho lớp IELTS-08 đã duyệt',
     message:
       'Do nhu cầu bổ sung thêm máy chiếu và loa ngoài, lớp được chuyển từ Phòng 201 sang Hội trường A. Học viên và giáo viên đã nhận được tin nhắn cập nhật phòng học mới.',
-    category: 'schedule',
+    category: 'operations',
     priority: 'medium',
     read: true,
     timestamp: new Date(Date.now() - 54 * 3600000),

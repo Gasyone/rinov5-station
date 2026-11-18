@@ -315,10 +315,16 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   submitted: 'success',
   overdue: 'error',
 
-  // Priority (Tickets, Rules)
+  // Priority (Tickets, Rules, Notifications)
   high: 'error',
   medium: 'warning',
   low: 'info',
+
+  // Notification read status
+  unread: 'error',
+  read: 'neutral',
+  chua_doc: 'error',
+  da_doc: 'neutral',
 
   // Leave/Reserve types
   leave: 'info',

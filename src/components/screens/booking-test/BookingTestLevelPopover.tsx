@@ -241,7 +241,7 @@ export function BookingTestLevelPopover({
           type="button"
           variant="ghost"
           size="icon-xs"
-          className="h-4 w-4 text-muted-foreground/60 hover:text-primary transition-colors shrink-0 cursor-pointer p-0"
+          className="h-4 w-4 text-muted-foreground/60 hover:text-primary transition-opacity opacity-0 group-hover/level:opacity-100 shrink-0 cursor-pointer p-0"
           title="Sửa trình độ trực tiếp trên dòng"
           aria-label={`Sửa trình độ cho ${booking.childName}`}
           onClick={(e) => {
@@ -281,12 +281,11 @@ export function BookingTestLevelPopover({
               <span className="text-muted-foreground/35 text-[10px] shrink-0 select-none">•</span>
               <button
                 type="button"
-                className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0"
-                title="Cập nhật kết quả bài chấm tay"
+                className="inline-flex items-center text-[11px] text-muted-foreground hover:text-primary hover:underline transition-colors cursor-pointer shrink-0 leading-tight"
+                title="Sửa / cập nhật kết quả bài chấm tay"
                 onClick={() => onOpenManualUpload?.(booking.id)}
               >
-                <Upload className="h-3 w-3 shrink-0" />
-                <span>Upload</span>
+                <span>Sửa</span>
               </button>
             </div>
           ) : (

@@ -393,20 +393,22 @@ Link xem chi tiết: ${getLandingPageUrl()}`
             )}
           </div>
 
-          {/* Action button & Select Reporting Month Dropdown */}
+          {/* Action button & Select Reporting Month Dropdown (Ẩn khi đang chỉnh sửa) */}
           <div className="flex items-center gap-2 me-6">
-            <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
-              <SelectTrigger className="h-7 text-xs font-normal w-[180px] sm:w-[210px] bg-background border-border/70 rounded-md">
-                <SelectValue placeholder="Chọn kỳ báo cáo" />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTH_OPTIONS.map((m) => (
-                  <SelectItem key={m.value} value={m.value} className="text-xs font-normal">
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isEditing && (
+              <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
+                <SelectTrigger className="h-7 text-xs font-normal w-[180px] sm:w-[210px] bg-background border-border/70 rounded-md">
+                  <SelectValue placeholder="Chọn kỳ báo cáo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTH_OPTIONS.map((m) => (
+                    <SelectItem key={m.value} value={m.value} className="text-xs font-normal">
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             {!isEditing ? (
               <Button

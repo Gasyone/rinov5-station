@@ -10,6 +10,7 @@ import {
   StudentDetailEditProfileDialog,
   type StudentProfileUpdateData,
 } from '../students/detail/StudentDetailEditProfileDialog'
+import { getStudentNotes } from '../students/detail/studentDetailHelpers'
 import { stableHash } from './operationsAlertHelpers'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
 import { StudentCareReportTab } from './StudentCareReportTab'
@@ -362,6 +363,9 @@ export function StudentCareDetailPage({
       if (updatedData.avatar) targetStudent.avatar = updatedData.avatar
       targetStudent.gender = updatedData.gender
       targetStudent.dob = updatedData.dob
+      if (updatedData.notes !== undefined) {
+        targetStudent.notes = updatedData.notes
+      }
     }
 
     // 2. Update in mockCareAlerts
@@ -371,6 +375,9 @@ export function StudentCareDetailPage({
     if (foundAlert) {
       foundAlert.studentName = updatedData.name
       foundAlert.englishName = updatedData.englishName
+      if (updatedData.notes !== undefined) {
+        foundAlert.studentNote = updatedData.notes
+      }
     }
 
     setRevision((r) => r + 1)
@@ -402,6 +409,15 @@ export function StudentCareDetailPage({
     onRefresh?.()
     toast.success('Đã cập nhật ghi chú học viên!')
   }
+
+  const careNoteHistory = useMemo(() => {
+    if (!resolvedStudent) return []
+    const helperNotes = getStudentNotes(resolvedStudent)
+    return helperNotes.map((n) => ({
+      ...n,
+      author: n.author === 'Sale Consultant' ? 'Nguyễn Hoàng Sale' : n.author,
+    }))
+  }, [resolvedStudent])
 
   if (!student) return null
 
@@ -580,18 +596,22 @@ export function StudentCareDetailPage({
         />
       )}
 
-      {/* Dialog: Chỉnh sửa thông tin học viên (Ảnh 2) */}
+      {/* Dialog: Chỉnh sửa thông tin học viên */}
       {resolvedStudent && isEditProfileOpen && (
         <StudentDetailEditProfileDialog
           open={isEditProfileOpen}
           onOpenChange={setIsEditProfileOpen}
           initialData={{
+            id: resolvedStudent.id,
             name: resolvedStudent.name,
             englishName: resolvedStudent.englishName,
             avatar: resolvedStudent.avatar,
             gender: resolvedStudent.gender,
             dob: resolvedStudent.dob,
+            notes: resolvedStudent.notes,
+            noteHistory: careNoteHistory,
           }}
+          student={resolvedStudent}
           onSave={handleSaveProfile}
         />
       )}
